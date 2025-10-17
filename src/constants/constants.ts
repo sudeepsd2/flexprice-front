@@ -155,3 +155,4 @@ export const subscriptionLineItemEntityTypeOptions = [
 	{ label: 'Plan', value: SUBSCRIPTION_LINE_ITEM_ENTITY_TYPE.PLAN },
 	{ label: 'Addon', value: SUBSCRIPTION_LINE_ITEM_ENTITY_TYPE.ADDON },
 ];
+
