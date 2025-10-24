@@ -1,14 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, Button, Input, Toggle, Select } from '@/components/atoms';
 import { toast } from 'react-hot-toast';
-import { AlertSettings, AlertThreshold } from '@/models/Feature';
+import { AlertSettings, AlertThreshold, AlertLevel } from '@/models/Feature';
 
 interface FeatureAlertDialogProps {
 	open: boolean;
-	alertSettings: AlertSettings | undefined;
+	alertSettings?: AlertSettings; // Made optional
 	onSave: (alertSettings: AlertSettings) => void;
 	onClose: () => void;
 }
+
+// Moved outside component to avoid reallocation
+const validateThreshold = (threshold: AlertThreshold | undefined, name: string): boolean => {
+	if (threshold) {
+		if (!threshold.threshold || parseFloat(threshold.threshold) < 0) {
+			toast.error(`Please enter a valid ${name} threshold value`);
+			return false;
+		}
+	}
+	return true;
+};
 
 const FeatureAlertDialog: React.FC<FeatureAlertDialogProps> = ({ open, alertSettings, onSave, onClose }) => {
 	const [localAlertSettings, setLocalAlertSettings] = useState<AlertSettings>({
@@ -18,7 +29,7 @@ const FeatureAlertDialog: React.FC<FeatureAlertDialogProps> = ({ open, alertSett
 		info: undefined,
 	});
 
-	// Sync local state with props
+	// Sync local state with props - removed 'open' dependency to prevent re-sync on dialog toggle
 	useEffect(() => {
 		if (alertSettings) {
 			setLocalAlertSettings({
@@ -35,7 +46,7 @@ const FeatureAlertDialog: React.FC<FeatureAlertDialogProps> = ({ open, alertSett
 				info: undefined,
 			});
 		}
-	}, [alertSettings, open]);
+	}, [alertSettings]);
 
 	const handleSave = () => {
 		// Validation
@@ -46,20 +57,10 @@ const FeatureAlertDialog: React.FC<FeatureAlertDialogProps> = ({ open, alertSett
 				return;
 			}
 
-			// Validate threshold values
-			const validateThreshold = (threshold: AlertThreshold | undefined, name: string) => {
-				if (threshold) {
-					if (!threshold.threshold || parseFloat(threshold.threshold) < 0) {
-						toast.error(`Please enter a valid ${name} threshold value`);
-						return false;
-					}
-				}
-				return true;
-			};
-
-			if (!validateThreshold(localAlertSettings.critical, 'critical')) return;
-			if (!validateThreshold(localAlertSettings.warning, 'warning')) return;
-			if (!validateThreshold(localAlertSettings.info, 'info')) return;
+			// Validate threshold values using AlertLevel enum
+			if (!validateThreshold(localAlertSettings.critical, AlertLevel.CRITICAL)) return;
+			if (!validateThreshold(localAlertSettings.warning, AlertLevel.WARNING)) return;
+			if (!validateThreshold(localAlertSettings.info, AlertLevel.INFO)) return;
 
 			// Validate threshold ordering for "below" condition
 			if (localAlertSettings.critical?.condition === 'below') {
@@ -118,51 +119,54 @@ const FeatureAlertDialog: React.FC<FeatureAlertDialogProps> = ({ open, alertSett
 		onClose();
 	};
 
-	const handleThresholdChange = (level: 'critical' | 'warning' | 'info', field: 'threshold' | 'condition', value: string) => {
-		setLocalAlertSettings((prev: AlertSettings) => {
-			const currentThreshold = prev[level] || { threshold: '0', condition: 'below' as const };
+	const handleThresholdChange = (level: AlertLevel, field: 'threshold' | 'condition', value: string) => {
+		// Move state construction logic outside
+		const currentThreshold = localAlertSettings[level] || { threshold: '0', condition: 'below' as const };
 
-			// If condition is being changed, sync all other thresholds to use the same condition
-			if (field === 'condition') {
-				const newCondition = value as 'above' | 'below';
-				return {
-					...prev,
-					critical: prev.critical ? { ...prev.critical, condition: newCondition } : undefined,
-					warning: prev.warning ? { ...prev.warning, condition: newCondition } : undefined,
-					info: prev.info ? { ...prev.info, condition: newCondition } : undefined,
-				};
-			}
-
-			return {
-				...prev,
+		// If condition is being changed, sync all other thresholds to use the same condition
+		if (field === 'condition') {
+			const newCondition = value as 'above' | 'below';
+			const newState: AlertSettings = {
+				...localAlertSettings,
+				critical: localAlertSettings.critical ? { ...localAlertSettings.critical, condition: newCondition } : undefined,
+				warning: localAlertSettings.warning ? { ...localAlertSettings.warning, condition: newCondition } : undefined,
+				info: localAlertSettings.info ? { ...localAlertSettings.info, condition: newCondition } : undefined,
+			};
+			setLocalAlertSettings(newState);
+		} else {
+			const newState: AlertSettings = {
+				...localAlertSettings,
 				[level]: {
 					...currentThreshold,
 					[field]: value,
 				},
 			};
-		});
+			setLocalAlertSettings(newState);
+		}
 	};
 
-	const handleRemoveThreshold = (level: 'critical' | 'warning' | 'info') => {
-		setLocalAlertSettings((prev: AlertSettings) => ({
-			...prev,
+	const handleRemoveThreshold = (level: AlertLevel) => {
+		const newState: AlertSettings = {
+			...localAlertSettings,
 			[level]: undefined,
-		}));
+		};
+		setLocalAlertSettings(newState);
 	};
 
-	const handleAddThreshold = (level: 'critical' | 'warning' | 'info') => {
+	const handleAddThreshold = (level: AlertLevel) => {
 		const defaultCondition =
 			localAlertSettings.critical?.condition || localAlertSettings.warning?.condition || localAlertSettings.info?.condition || 'below';
-		setLocalAlertSettings((prev: AlertSettings) => ({
-			...prev,
+		const newState: AlertSettings = {
+			...localAlertSettings,
 			[level]: {
 				threshold: '0',
 				condition: defaultCondition,
 			},
-		}));
+		};
+		setLocalAlertSettings(newState);
 	};
 
-	const renderThresholdInput = (level: 'critical' | 'warning' | 'info', label: string, description: string) => {
+	const renderThresholdInput = (level: AlertLevel, label: string, description: string) => {
 		const threshold = localAlertSettings[level];
 
 		return (
@@ -213,6 +217,11 @@ const FeatureAlertDialog: React.FC<FeatureAlertDialogProps> = ({ open, alertSett
 		);
 	};
 
+	const handleToggleChange = (enabled: boolean) => {
+		const newState: AlertSettings = { ...localAlertSettings, alert_enabled: enabled };
+		setLocalAlertSettings(newState);
+	};
+
 	return (
 		<Dialog
 			className='min-w-max'
@@ -226,10 +235,10 @@ const FeatureAlertDialog: React.FC<FeatureAlertDialogProps> = ({ open, alertSett
 				{/* Alert Toggle */}
 				<Toggle
 					title='Enable Alerts'
-					label='Monitor feature usage against wallet balance thresholds'
-					description='Get notified when wallet balance crosses configured thresholds for this feature'
+					label='Monitor feature usage against configured thresholds'
+					description='Get notified when usage crosses configured thresholds for this feature'
 					checked={localAlertSettings.alert_enabled || false}
-					onChange={(enabled) => setLocalAlertSettings((prev: AlertSettings) => ({ ...prev, alert_enabled: enabled }))}
+					onChange={handleToggleChange}
 				/>
 
 				{/* Alert Configuration */}
@@ -237,14 +246,14 @@ const FeatureAlertDialog: React.FC<FeatureAlertDialogProps> = ({ open, alertSett
 					<div className='space-y-4'>
 						<div className='mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md'>
 							<p className='text-xs text-blue-800'>
-								Configure thresholds to monitor wallet balance. Alerts trigger when balance crosses these thresholds. All thresholds must
-								use the same condition (above or below).
+								Configure thresholds to monitor usage. Alerts trigger when usage crosses these thresholds. All thresholds must use the same
+								condition (above or below).
 							</p>
 						</div>
 
-						{renderThresholdInput('critical', 'Critical Threshold', 'Alert when balance reaches critical level')}
-						{renderThresholdInput('warning', 'Warning Threshold', 'Alert when balance reaches warning level')}
-						{renderThresholdInput('info', 'Info Threshold', 'Alert when balance reaches info level')}
+						{renderThresholdInput(AlertLevel.CRITICAL, 'Critical Threshold', 'Alert when usage reaches critical level')}
+						{renderThresholdInput(AlertLevel.WARNING, 'Warning Threshold', 'Alert when usage reaches warning level')}
+						{renderThresholdInput(AlertLevel.INFO, 'Info Threshold', 'Alert when usage reaches info level')}
 					</div>
 				)}
 

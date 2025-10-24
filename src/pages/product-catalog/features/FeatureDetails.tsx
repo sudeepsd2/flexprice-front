@@ -253,23 +253,15 @@ const FeatureDetails = () => {
 				onSave={async (alertSettings: AlertSettings) => {
 					if (!featureId) return;
 					try {
-						console.log('[FeatureAlertSettings] Updating alert settings for feature:', featureId, alertSettings);
 						await FeatureApi.updateFeature(featureId, {
 							alert_settings: alertSettings,
 						});
 						setShowAlertDialog(false);
 						refetchQueries(['fetchFeatureDetails', featureId]);
 						toast.success('Alert settings updated successfully');
-						console.log('[FeatureAlertSettings] Successfully updated alert settings');
 					} catch (e: any) {
-						console.error('[FeatureAlertSettings] Failed to update alert settings:', {
-							featureId,
-							alertSettings,
-							error: e,
-							message: e?.message,
-							response: e?.response?.data,
-						});
-						toast.error(e?.response?.data?.error?.message || e?.message || 'Failed to update alert settings');
+						const errorMessage = e?.response?.data?.error?.message || e?.message || 'Failed to update alert settings';
+						toast.error(errorMessage);
 					}
 				}}
 				onClose={() => setShowAlertDialog(false)}

@@ -658,12 +658,8 @@ const AddFeaturePage = () => {
 			toast.success('Feature created successfully');
 		},
 		onError: (error: ServerError) => {
-			console.error('[FeatureCreate] Failed to create feature:', {
-				error,
-				message: error?.error?.message,
-				response: error,
-			});
-			toast.error(error.error?.message || 'An error occurred while creating feature. Please try again.');
+			const errorMessage = error.error?.message || 'An error occurred while creating feature. Please try again.';
+			toast.error(errorMessage);
 		},
 	});
 

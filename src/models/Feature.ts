@@ -1,6 +1,12 @@
 import { BaseModel, Metadata } from './base';
 import { Meter } from './Meter';
 
+export enum AlertLevel {
+	CRITICAL = 'critical',
+	WARNING = 'warning',
+	INFO = 'info',
+}
+
 export interface AlertThreshold {
 	threshold: string;
 	condition: 'above' | 'below';
