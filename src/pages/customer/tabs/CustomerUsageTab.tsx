@@ -2,13 +2,26 @@ import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
-import { Card, CardHeader, Loader, FeatureMultiSelect, Input, Button, DateTimePicker } from '@/components/atoms';
+import { Card, CardHeader, Loader, FeatureMultiSelect, Input, Button, DateTimePicker, Select } from '@/components/atoms';
 import CustomerApi from '@/api/CustomerApi';
 import toast from 'react-hot-toast';
 import EventsApi from '@/api/EventsApi';
 import Feature from '@/models/Feature';
 import { RefreshCw } from 'lucide-react';
 import { GetUsageAnalyticsRequest } from '@/types/dto';
+import { WindowSize } from '@/models';
+
+const windowSizeOptions = [
+	{ label: 'Minute', value: WindowSize.MINUTE },
+	{ label: '15 Minute', value: WindowSize.FIFTEEN_MIN },
+	{ label: '30 Minute', value: WindowSize.THIRTY_MIN },
+	{ label: 'Hour', value: WindowSize.HOUR },
+	{ label: '3 Hour', value: WindowSize.THREE_HOUR },
+	{ label: '6 Hour', value: WindowSize.SIX_HOUR },
+	{ label: '12 Hour', value: WindowSize.TWELVE_HOUR },
+	{ label: 'Day', value: WindowSize.DAY },
+	{ label: 'Week', value: WindowSize.WEEK },
+];
 
 const CustomerUsageTab = () => {
 	const { id: customerId } = useParams();
@@ -19,6 +32,7 @@ const CustomerUsageTab = () => {
 	const [sources, setSources] = useState<string>('');
 	const [startDate, setStartDate] = useState<Date>(new Date(new Date().setDate(new Date().getDate() - 7)));
 	const [endDate, setEndDate] = useState<Date>(new Date());
+	const [windowSize, setWindowSize] = useState<WindowSize>(WindowSize.HOUR);
 
 	const {
 		data: customer,
@@ -62,8 +76,12 @@ const CustomerUsageTab = () => {
 			params.end_time = endDate.toISOString();
 		}
 
+		if (windowSize) {
+			params.window_size = windowSize;
+		}
+
 		return params;
-	}, [customer?.external_id, selectedFeatures, sources, startDate, endDate]);
+	}, [customer?.external_id, selectedFeatures, sources, startDate, endDate, windowSize]);
 
 	// Debounced API parameters with 400ms delay
 	const [debouncedApiParams, setDebouncedApiParams] = useState<GetUsageAnalyticsRequest | null>(null);
@@ -104,6 +122,7 @@ const CustomerUsageTab = () => {
 		setSources('');
 		setStartDate(new Date(new Date().setDate(new Date().getDate() - 7)));
 		setEndDate(new Date());
+		setWindowSize(WindowSize.HOUR);
 	};
 
 	if (customerLoading || usageLoading) {
@@ -132,7 +151,7 @@ const CustomerUsageTab = () => {
 			<div>
 				<div className=''>
 					<div className='flex items-end justify-between gap-2'>
-						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4'>
 							<FeatureMultiSelect
 								label='Features'
 								placeholder='Select features to filter'
@@ -147,6 +166,13 @@ const CustomerUsageTab = () => {
 								placeholder='Select start date and time'
 							/>
 							<DateTimePicker title='End Date' date={endDate} setDate={handleEndDateChange} placeholder='Select end date and time' />
+							<Select
+								label='Window Size'
+								className='w-full'
+								onChange={(value) => setWindowSize(value as WindowSize)}
+								value={windowSize}
+								options={windowSizeOptions.map((option) => ({ label: option.label, value: option.value }))}
+							/>
 						</div>
 						<Button variant='outline' onClick={resetFilters} size='icon'>
 							<RefreshCw className='size-9' />
