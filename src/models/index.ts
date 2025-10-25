@@ -44,6 +44,10 @@ export { ENTITLEMENT_ENTITY_TYPE } from './Entitlement';
 export type { default as Environment } from './Environment';
 export { ENVIRONMENT_TYPE } from './Environment';
 
+// Analytics
+export type { UsageAnalyticItem, UsageAnalyticPoint } from './Analytics';
+export { WindowSize } from './Analytics';
+
 // Event
 export type { Event } from './Event';
 

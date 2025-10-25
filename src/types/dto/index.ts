@@ -11,7 +11,15 @@ export type {
 
 export type { GetConnectionsPayload, GetConnectionsResponse, CreateConnectionPayload, UpdateConnectionPayload } from './Connection';
 
-export type { GetEventsPayload, GetEventsResponse, GetUsageByMeterPayload, GetUsageByMeterResponse, FireEventsPayload } from './Events';
+export type {
+	GetEventsPayload,
+	GetEventsResponse,
+	GetUsageByMeterPayload,
+	GetUsageByMeterResponse,
+	FireEventsPayload,
+	GetUsageAnalyticsRequest,
+	GetUsageAnalyticsResponse,
+} from './Events';
 
 export type { GetTasksPayload, GetTasksResponse, AddTaskPayload } from './Task';
 

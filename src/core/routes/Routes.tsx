@@ -18,6 +18,7 @@ import {
 	InvoiceDetailsPage,
 	CustomerInvoiceTab as Invoice,
 	CustomerOverviewTab as Overview,
+	CustomerUsageTab as UsageTab,
 	CustomerWalletTab as WalletTab,
 	CustomerSubscriptionDetailsPage,
 	AddCreditNotePage as AddCreditPage,
@@ -95,6 +96,7 @@ export const RouteNames = {
 	createInvoice: '/customer-management/customers/:customerId/invoices/create',
 	creditNotes: '/customer-management/credit-notes',
 	payments: '/customer-management/payments',
+	usage: '/customer-management/usage',
 
 	// product catalog routes
 	productCatalog: '/product-catalog',
@@ -319,6 +321,10 @@ export const MainRouter = createBrowserRouter([
 							{
 								path: 'tax-association',
 								element: <TaxAssociation />,
+							},
+							{
+								path: 'usage',
+								element: <UsageTab />,
 							},
 
 							{
