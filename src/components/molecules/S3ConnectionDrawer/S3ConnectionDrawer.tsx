@@ -92,6 +92,7 @@ const S3ConnectionDrawer: FC<S3ConnectionDrawerProps> = ({ isOpen, onOpenChange,
 				name: formData.name,
 				provider_type: 's3',
 				encrypted_secret_data: {
+					provider_type: 's3' as const,
 					aws_access_key_id: formData.aws_access_key_id,
 					aws_secret_access_key: formData.aws_secret_access_key,
 					aws_session_token: formData.aws_session_token || undefined,
