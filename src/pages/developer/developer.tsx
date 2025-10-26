@@ -5,12 +5,23 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { SecretKey } from '@/models/SecretKey';
 import usePagination from '@/hooks/usePagination';
 import { formatDateShort } from '@/utils/common/helper_functions';
-import { Plus, Eye, Pencil, EyeOff, LucideIcon, ShieldCheck, Key, Trash2, Loader } from 'lucide-react';
+import { Plus, Eye, Pencil, EyeOff, LucideIcon, ShieldCheck, Key, Trash2, Loader, AlertTriangleIcon } from 'lucide-react';
 import { useState } from 'react';
 import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
 import { toast } from 'react-hot-toast';
 import { EmptyPage } from '@/components/organisms';
 import GUIDES from '@/constants/guides';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
 // Utility function to format permissions for display
 export const formatPermissionDisplay = (permissions: readonly string[]): string => {
 	const hasRead = permissions.includes('read');
@@ -64,7 +75,7 @@ const baseColumns: ColumnData<SecretKey>[] = [
 		title: 'Name',
 		render(rowData: SecretKey) {
 			return (
-				<div className='flex items-center gap-2 font-medium'>
+				<div className='flex gap-2 items-center font-medium'>
 					<span>{rowData.name}</span>
 				</div>
 			);
@@ -74,8 +85,8 @@ const baseColumns: ColumnData<SecretKey>[] = [
 		title: 'Token',
 		render(rowData: SecretKey) {
 			return (
-				<div className='flex items-center gap-2'>
-					<div className='bg-gray-100 px-3 py-1 rounded-md font-mono text-sm flex items-center'>
+				<div className='flex gap-2 items-center'>
+					<div className='flex items-center px-3 py-1 font-mono text-sm bg-gray-100 rounded-md'>
 						<Key size={14} className='mr-2 text-gray-600' />
 						<span className='text-gray-700'>{rowData.display_id}</span>
 					</div>
@@ -91,9 +102,9 @@ const baseColumns: ColumnData<SecretKey>[] = [
 			const colorClass = getPermissionColor(rowData.permissions);
 
 			return (
-				<div className={`flex items-center gap-2 ${colorClass}`}>
+				<div className={`flex gap-2 items-center ${colorClass}`}>
 					<PermissionIcon size={16} />
-					<span className='capitalize font-medium'>{permissionText}</span>
+					<span className='font-medium capitalize'>{permissionText}</span>
 				</div>
 			);
 		},
@@ -111,6 +122,7 @@ const baseColumns: ColumnData<SecretKey>[] = [
 const DeveloperPage = () => {
 	const { page, limit, offset } = usePagination();
 	const [isSecretKeyDrawerOpen, setIsSecretKeyDrawerOpen] = useState(false);
+	const [secretKeyIdToDelete, setSecretKeyIdToDelete] = useState<string | null>(null);
 
 	const {
 		data: secretKeys,
@@ -136,6 +148,10 @@ const DeveloperPage = () => {
 		setIsSecretKeyDrawerOpen(true);
 	};
 
+	const handleDeleteSecretKey = (id: string) => {
+		setSecretKeyIdToDelete(id);
+	};
+
 	const columns: ColumnData<SecretKey>[] = [
 		...baseColumns,
 		{
@@ -149,7 +165,7 @@ const DeveloperPage = () => {
 							options={[
 								{
 									label: 'Delete',
-									onSelect: () => deleteSecretKey(rowData.id),
+									onSelect: () => handleDeleteSecretKey(rowData.id),
 									disabled: isDeletingSecretKey,
 									icon: <Trash2 size={16} />,
 								},
@@ -181,6 +197,42 @@ const DeveloperPage = () => {
 		<div>
 			<ApiDocsContent tags={['secrets']} />
 			<SecretKeyDrawer isOpen={isSecretKeyDrawerOpen} onOpenChange={setIsSecretKeyDrawerOpen} />
+
+			{/* Alert Dialog for API Key Deletion */}
+			<AlertDialog open={!!secretKeyIdToDelete} onOpenChange={(open) => !open && setSecretKeyIdToDelete(null)}>
+				<AlertDialogContent className='max-w-md bg-white border border-gray-200 shadow-lg'>
+					<AlertDialogHeader>
+						<div className='flex gap-3 items-center mb-2'>
+							<div className='flex flex-shrink-0 justify-center items-center w-10 h-10 bg-red-100 rounded-full'>
+								<AlertTriangleIcon className='w-5 h-5 text-red-600' />
+							</div>
+							<AlertDialogTitle className='text-left text-gray-900'>Do you want to permanently delete this API key?</AlertDialogTitle>
+						</div>
+					</AlertDialogHeader>
+					<AlertDialogDescription className='text-left text-gray-600'>
+						This action will permanently delete the API key. This step cannot be undone.
+					</AlertDialogDescription>
+					<AlertDialogFooter className='flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2'>
+						<AlertDialogCancel className='mt-2 text-gray-700 bg-white border border-gray-300 sm:mt-0 hover:bg-gray-50 hover:text-gray-900'>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={() => secretKeyIdToDelete && deleteSecretKey(secretKeyIdToDelete)}
+							disabled={isDeletingSecretKey}
+							className='text-white bg-red-600 hover:bg-red-700 focus:ring-red-600'>
+							{isDeletingSecretKey ? (
+								<>
+									<Loader className='mr-2 w-4 h-4 animate-spin' />
+									Deleting...
+								</>
+							) : (
+								'Delete API Key'
+							)}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+
 			{secretKeys?.items.length === 0 && (
 				<EmptyPage
 					onAddClick={handleAddSecretKey}
@@ -212,4 +264,5 @@ const DeveloperPage = () => {
 		</div>
 	);
 };
+
 export default DeveloperPage;
