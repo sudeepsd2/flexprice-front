@@ -5,8 +5,6 @@ import { useMutation } from '@tanstack/react-query';
 import CostSheetApi from '@/api/CostSheetApi';
 import toast from 'react-hot-toast';
 import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
-import { useNavigate } from 'react-router-dom';
-import { RouteNames } from '@/core/routes/Routes';
 
 interface Props {
 	data?: CostSheet | null;
@@ -18,7 +16,6 @@ interface Props {
 
 const CostSheetDrawer: FC<Props> = ({ data, open, onOpenChange, trigger, refetchQueryKeys }) => {
 	const isEdit = !!data;
-	const navigate = useNavigate();
 
 	const [formData, setFormData] = useState<Partial<CostSheet>>(
 		data || {
