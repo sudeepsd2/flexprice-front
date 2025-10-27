@@ -144,3 +144,6 @@ export { SubscriptionTable } from './SubscriptionTable';
 
 export { default as CustomerUsageChart } from './CustomerUsageChart';
 export { default as CustomerCostChart } from './CustomerCostChart';
+
+export { CostDataTable } from './CostDataTable';
+export { default as MetricCard } from './MetricCard';

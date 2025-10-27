@@ -8,9 +8,7 @@ import toast from 'react-hot-toast';
 import CostSheetApi from '@/api/CostSheetApi';
 import { GetCostAnalyticsRequest } from '@/types/dto/Cost';
 import Feature from '@/models/Feature';
-import { formatNumber } from '@/utils/common';
-import { CostDataTable } from '@/components/molecules/CostDataTable';
-import { getCurrencySymbol } from '@/utils/common/helper_functions';
+import { MetricCard, CostDataTable } from '@/components/molecules';
 
 const CustomerCostTab = () => {
 	const { id: customerId } = useParams();
@@ -153,73 +151,27 @@ const CustomerCostTab = () => {
 
 						return (
 							<div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
-								{/* Revenue Card */}
-								<div className='bg-white border border-[#E5E7EB] p-[25px] flex flex-col gap-3 relative' style={{ isolation: 'isolate' }}>
-									<p className='text-[14px] leading-[21px] text-[#4B5563] font-normal' style={{ fontFamily: 'Inter' }}>
-										Revenue
-									</p>
-									<p className='text-[24px] leading-[28px] text-[#111827] font-medium' style={{ fontFamily: 'Inter' }}>
-										{getCurrencySymbol(costData.currency)} {formatNumber(totalRevenue, 2)}
-									</p>
-								</div>
-
-								{/* Cost Card */}
-								<div className='bg-white border border-[#E5E7EB] p-[25px] flex flex-col gap-3 relative' style={{ isolation: 'isolate' }}>
-									<p className='text-[14px] leading-[21px] text-[#4B5563] font-normal' style={{ fontFamily: 'Inter' }}>
-										Cost
-									</p>
-									<p className='text-[24px] leading-[28px] text-[#111827] font-medium' style={{ fontFamily: 'Inter' }}>
-										{getCurrencySymbol(costData.currency)} {formatNumber(totalCost, 2)}
-									</p>
-								</div>
-
-								{/* Margin Card */}
-								<div className='bg-white border border-[#E5E7EB] p-[25px] flex flex-col gap-3 relative' style={{ isolation: 'isolate' }}>
-									<p className='text-[14px] leading-[21px] text-[#4B5563] font-normal' style={{ fontFamily: 'Inter' }}>
-										Margin
-									</p>
-									<p
-										className={`text-[24px] leading-[28px] font-medium ${margin >= 0 ? 'text-[#111827]' : 'text-[#DC2626]'}`}
-										style={{ fontFamily: 'Inter' }}>
-										{getCurrencySymbol(costData.currency)} {formatNumber(margin, 2)}
-									</p>
-									<div className='absolute right-[13.46px] top-[13px] flex items-center px-2 py-1 gap-[3.99px] z-10'>
-										<span
-											className={`text-[12px] leading-[18px] font-medium ${margin >= 0 ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}
-											style={{ fontFamily: 'Inter' }}>
-											{margin >= 0 ? '↑' : '↓'}
-										</span>
-										<span
-											className={`text-[12px] leading-[18px] font-medium ${margin >= 0 ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}
-											style={{ fontFamily: 'Inter' }}>
-											{formatNumber(Math.abs(marginPercent), 2)}%
-										</span>
-									</div>
-								</div>
-
-								{/* ROI Card */}
-								<div className='bg-white border border-[#E5E7EB] p-[25px] flex flex-col gap-3 relative' style={{ isolation: 'isolate' }}>
-									<p className='text-[14px] leading-[21px] text-[#4B5563] font-normal' style={{ fontFamily: 'Inter' }}>
-										ROI
-									</p>
-									<p
-										className={`text-[24px] leading-[28px] font-medium ${roi >= 0 ? 'text-[#111827]' : 'text-[#DC2626]'}`}
-										style={{ fontFamily: 'Inter' }}>
-										{getCurrencySymbol(costData.currency)} {formatNumber(roi, 2)}
-									</p>
-									<div className='absolute right-[12.74px] top-[13px] flex items-center px-2 py-1 gap-[3.99px] z-10'>
-										<span
-											className={`text-[12px] leading-[18px] font-medium ${roi >= 0 ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}
-											style={{ fontFamily: 'Inter' }}>
-											{roi >= 0 ? '↑' : '↓'}
-										</span>
-										<span
-											className={`text-[12px] leading-[18px] font-medium ${roi >= 0 ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}
-											style={{ fontFamily: 'Inter' }}>
-											{formatNumber(Math.abs(roiPercent), 2)}%
-										</span>
-									</div>
-								</div>
+								<MetricCard title='Revenue' value={totalRevenue} currency={costData.currency} />
+								<MetricCard title='Cost' value={totalCost} currency={costData.currency} />
+								<MetricCard
+									title='Margin'
+									value={margin}
+									currency={costData.currency}
+									showPercentage={true}
+									percentage={marginPercent}
+									showChangeIndicator={true}
+									isNegative={margin < 0}
+								/>
+								<MetricCard
+									title='ROI'
+									value={roi}
+									currency={costData.currency}
+									showPercentage={true}
+									percentage={roiPercent}
+									showChangeIndicator={true}
+									isNegative={roi < 0}
+									indicatorRightPosition='[12.74px]'
+								/>
 							</div>
 						);
 					})()
