@@ -43,6 +43,9 @@ import {
 	Addons as AddonsPage,
 	AddonDetails as AddonDetailsPage,
 	AddonCharges as AddonChargesPage,
+	CostSheets as CostSheetsPage,
+	CostSheetDetails as CostSheetDetailsPage,
+	CostSheetCharges as CostSheetChargesPage,
 	Pricing as PricingPage,
 	AddCharges as AddChargesPage,
 	Coupons as CouponsPage,
@@ -119,6 +122,11 @@ export const RouteNames = {
 	addons: '/product-catalog/addons',
 	addonDetails: '/product-catalog/addons',
 	addonCharges: '/product-catalog/addons/:addonId/add-charges',
+
+	// cost sheet routes
+	costSheets: '/product-catalog/cost-sheets',
+	costSheetDetails: '/product-catalog/cost-sheets',
+	costSheetCharges: '/product-catalog/cost-sheets/:costSheetId/add-charges',
 
 	// tools routes
 	tools: '/tools',
@@ -219,6 +227,18 @@ export const MainRouter = createBrowserRouter([
 					{
 						path: RouteNames.addonCharges,
 						element: <AddonChargesPage />,
+					},
+					{
+						path: RouteNames.costSheets,
+						element: <CostSheetsPage />,
+					},
+					{
+						path: `${RouteNames.costSheetDetails}/:id`,
+						element: <CostSheetDetailsPage />,
+					},
+					{
+						path: RouteNames.costSheetCharges,
+						element: <CostSheetChargesPage />,
 					},
 					{
 						path: RouteNames.addCharges,

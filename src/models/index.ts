@@ -6,6 +6,9 @@ export { ENTITY_STATUS } from './base';
 export type { default as Addon } from './Addon';
 export { ADDON_TYPE, ADDON_STATUS } from './Addon';
 
+// CostSheet
+export type { default as CostSheet } from './CostSheet';
+
 // Connection
 export type { Connection } from './Connection';
 export { CONNECTION_PROVIDER_TYPE, CONNECTION_STATUS } from './Connection';

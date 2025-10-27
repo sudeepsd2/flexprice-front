@@ -122,6 +122,8 @@ export { default as WalletAlertDialog } from './WalletAlertDialog';
 export { FeatureAlertDialog } from './FeatureAlertDialog';
 
 export { AddonTable, AddonModal } from './AddonTable';
+export { default as CostSheetDrawer } from './CostSheetDrawer/CostSheetDrawer';
+export { default as CostSheetTable } from './CostSheetTable/CostSheetTable';
 
 export { default as SubscriptionCoupon } from './SubscriptionCoupon/SubscriptionCoupon';
 
