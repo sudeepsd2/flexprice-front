@@ -14,7 +14,6 @@ Build usage-based, credit-based, or hybrid pricing models with full control. Fle
 
 [Documentation](https://docs.flexprice.io) • [Demo](https://www.loom.com/share/60d8308781254fe0bc5be341501f9fd5) • [Website](https://flexprice.io/) • [LinkedIn](https://www.linkedin.com/company/flexpriceio)
 
-
 [![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)](https://pkg.go.dev/github.com/flexprice/go-sdk) [![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](https://pypi.org/project/flexprice) [![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)](https://www.npmjs.com/package/@flexprice/sdk) 
 
 </h5>
@@ -22,7 +21,8 @@ Build usage-based, credit-based, or hybrid pricing models with full control. Fle
 ---
 
 ## Open architecture
-The Flexprice core (metering, credits, pricing, billing) has an open and composable design. 
+
+The Flexprice core (metering, credits, pricing, billing) has an open and composable design.
 
 <p align="center">
   <img align="center" src="./assets/open-arch.jpg" alt="open architechture"/>
@@ -259,6 +259,26 @@ Our comprehensive documentation covers all aspects of the FlexPrice frontend:
 
 - [Flexprice Docs](https://docs.flexprice.io) - Documenttation for Flexprice sdk and Apis
 - [Contributing Guide](docs/getting-started.md) - How to contribute to the project
+
+## 👨🏻‍💻 Let's Build Together! 👩🏻‍💻
+
+Whether you're a newbie coder or a wizard 🧙‍♀️, your perspective is golden. Take a peek at our:
+
+📜 [Contribution Guidelines](CONTRIBUTING.md)
+
+🏗️ [Local Development Setup](docs/getting-started.md)
+
+❤️ [Code of Conduct](code_of_conduct.md)
+
+## Contributors
+
+<a href="https://github.com/flexprice/flexprice-front/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=flexprice/flexprice-front" />
+</a>
+
+<!-- ## Repo Activity -->
+
+<!-- ![Alt](https://repobeats.axiom.co/api/embed/4d6e208eab20ff0615787615c4fa022591adfa6b.svg 'Repobeats analytics image') -->
 
 ## 🤝 Contributing
 
