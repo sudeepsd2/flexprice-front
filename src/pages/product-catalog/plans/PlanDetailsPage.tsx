@@ -1,45 +1,57 @@
-import { ActionButton, Button, CardHeader, Chip, Loader, Page, Spacer, NoDataCard } from '@/components/atoms';
+// React imports
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+
+// Third-party libraries
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { EyeOff, Plus, Pencil, Trash2 } from 'lucide-react';
+import { uniqueId } from 'lodash';
+import toast from 'react-hot-toast';
+
+// Internal components
+import { ActionButton, Button, Card, CardHeader, Chip, Loader, NoDataCard, Page, Spacer } from '@/components/atoms';
+import { formatAmount } from '@/components/atoms/Input/Input';
 import {
 	AddEntitlementDrawer,
 	ApiDocsContent,
 	ColumnData,
-	FlexpriceTable,
-	RedirectCell,
-	PlanDrawer,
 	CreditGrantModal,
+	DetailsCard,
+	FlexpriceTable,
 	MetadataModal,
+	PlanDrawer,
+	RedirectCell,
 } from '@/components/molecules';
-import { DetailsCard } from '@/components/molecules';
-import { RouteNames } from '@/core/routes/Routes';
-import { FEATURE_TYPE } from '@/models/Feature';
-import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
-import { EntitlementApi, PlanApi, CreditGrantApi } from '@/api';
-import formatDate from '@/utils/common/format_date';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { EyeOff, Plus, Pencil, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Card } from '@/components/atoms';
-import formatChips from '@/utils/common/format_chips';
+import { PlanPriceTable } from '@/components/organisms';
 import { getFeatureTypeChips } from '@/components/molecules/CustomerUsageTable/CustomerUsageTable';
-import { formatAmount } from '@/components/atoms/Input/Input';
-import { Entitlement } from '@/models/Entitlement';
-import { ENTITY_STATUS } from '@/models/base';
+
+// API imports
+import { CreditGrantApi, EntitlementApi, PlanApi } from '@/api';
+
+// Core services and routes
+import { RouteNames } from '@/core/routes/Routes';
+
+// Models and types
 import {
+	Plan,
+	Entitlement,
+	ENTITY_STATUS,
+	FEATURE_TYPE,
+	ENTITLEMENT_ENTITY_TYPE,
 	CREDIT_GRANT_PERIOD_UNIT,
 	CREDIT_GRANT_EXPIRATION_TYPE,
 	CreditGrant,
 	CREDIT_SCOPE,
 	CREDIT_GRANT_CADENCE,
 	CREDIT_GRANT_PERIOD,
-} from '@/models/CreditGrant';
-import { uniqueId } from 'lodash';
+} from '@/models';
+import { EntitlementResponse } from '@/types';
+
+// Constants and utilities
+import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
+import formatDate from '@/utils/common/format_date';
+import formatChips from '@/utils/common/format_chips';
 import { formatExpirationPeriod } from '@/pages';
-import { ENTITLEMENT_ENTITY_TYPE } from '@/models/Entitlement';
-import { EntitlementResponse } from '@/types/dto';
-import { PlanPriceTable } from '@/components/organisms';
-import { Plan } from '@/models';
 
 const creditGrantColumns: ColumnData<CreditGrant>[] = [
 	{

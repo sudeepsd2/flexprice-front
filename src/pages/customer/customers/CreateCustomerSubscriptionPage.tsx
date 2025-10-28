@@ -1,30 +1,35 @@
-import { Button, SelectOption } from '@/components/atoms';
-import Preview from '@/components/organisms/Subscription/Preview';
-import UsageTable from '@/components/organisms/Subscription/UsageTable';
-import { cn } from '@/lib/utils';
-import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
-import { CustomerApi, PlanApi, SubscriptionApi, AddonApi, TaxApi } from '@/api';
-import { toSentenceCase } from '@/utils/common/helper_functions';
-import { ExpandedPlan } from '@/types';
-import { useMutation, useQuery } from '@tanstack/react-query';
+// React imports
 import { useState, useEffect, useMemo } from 'react';
-import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
+
+// Third-party libraries
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { uniqueId } from 'lodash';
+import toast from 'react-hot-toast';
+
+// Internal components
+import { Button, SelectOption } from '@/components/atoms';
 import { ApiDocsContent } from '@/components/molecules';
+import { Preview, UsageTable, SubscriptionForm } from '@/components/organisms';
+
+// API imports
+import { AddonApi, CustomerApi, PlanApi, SubscriptionApi, TaxApi } from '@/api';
+
+// Core services and routes
 import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
 import { RouteNames } from '@/core/routes/Routes';
-import { SubscriptionPhase } from '@/models/Subscription';
-import { CreateSubscriptionPayload } from '@/types/dto/Subscription';
-import { BILLING_CADENCE, INVOICE_CADENCE } from '@/models/Invoice';
+
+// Models and types - consolidated from index files
+import { BILLING_CADENCE, INVOICE_CADENCE, SubscriptionPhase, Coupon, TAXRATE_ENTITY_TYPE, EXPAND } from '@/models';
+import { ExpandedPlan, CreateSubscriptionPayload, AddAddonToSubscriptionRequest, TaxRateOverride } from '@/types';
+
+// Constants and utilities
 import { BILLING_PERIOD } from '@/constants/constants';
-import { uniqueId } from 'lodash';
-import SubscriptionForm from '@/components/organisms/Subscription/SubscriptionForm';
+import { cn } from '@/lib/utils';
+import { toSentenceCase } from '@/utils/common/helper_functions';
 import { ExtendedPriceOverride, getLineItemOverrides } from '@/utils/common/price_override_helpers';
-import { Coupon } from '@/models/Coupon';
-import { AddAddonToSubscriptionRequest } from '@/types/dto/Addon';
-import { TAXRATE_ENTITY_TYPE } from '@/models/Tax';
-import { TaxRateOverride } from '@/types/dto/tax';
-import { EXPAND } from '@/models/expand';
+// Store
+import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
 
 type Params = {
 	id: string;
