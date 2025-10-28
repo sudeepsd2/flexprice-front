@@ -2,7 +2,7 @@ import { FC, useCallback, useState, useMemo } from 'react';
 import { Button, Card, CardHeader, NoDataCard } from '@/components/atoms';
 import { FlexpriceTable, ColumnData, DropdownMenu, RolloutChargesModal, RolloutOption } from '@/components/molecules';
 import { Price, Plan } from '@/models';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Pencil } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { PriceApi } from '@/api/PriceApi';
 import { PlanApi } from '@/api/PlanApi';
@@ -21,6 +21,7 @@ import { Dialog } from '@/components/ui';
 interface PlanChargesTableProps {
 	plan: Plan;
 	onPriceUpdate?: () => void;
+	onEditPrice?: (price: Price) => void;
 }
 
 const formatBillingPeriod = (billingPeriod: string) => {
@@ -42,7 +43,7 @@ const formatBillingPeriod = (billingPeriod: string) => {
 	}
 };
 
-const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate }) => {
+const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate, onEditPrice }) => {
 	const navigate = useNavigate();
 	const [showRolloutModal, setShowRolloutModal] = useState(false);
 	const [selectedPrice, setSelectedPrice] = useState<Price | null>(null);
@@ -180,6 +181,11 @@ const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate }) => {
 				return (
 					<DropdownMenu
 						options={[
+							{
+								label: 'Edit Price',
+								icon: <Pencil />,
+								onSelect: () => onEditPrice?.(row),
+							},
 							{
 								label: 'Terminate Price',
 								icon: <Trash2 />,

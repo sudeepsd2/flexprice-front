@@ -1,6 +1,6 @@
 import { FC, useState, useEffect } from 'react';
 import { Dialog } from '@/components/atoms';
-import { Input, Button, Select, SelectOption } from '@/components/atoms';
+import { Input, Button, Select, SelectOption, DatePicker } from '@/components/atoms';
 import { Price, BILLING_MODEL, TIER_MODE, CreatePriceTier, TransformQuantity, PRICE_TYPE } from '@/models/Price';
 import { formatAmount, removeFormatting } from '@/components/atoms/Input/Input';
 import { getCurrencySymbol } from '@/utils/common/helper_functions';
@@ -14,6 +14,7 @@ interface Props {
 	onPriceOverride: (priceId: string, override: Partial<ExtendedPriceOverride>) => void;
 	onResetOverride: (priceId: string) => void;
 	overriddenPrices: Record<string, ExtendedPriceOverride>;
+	showEffectiveFrom?: boolean; // Optional prop to conditionally show effective_from date
 }
 
 const billingModelOptions: SelectOption[] = [
@@ -23,7 +24,15 @@ const billingModelOptions: SelectOption[] = [
 	{ label: 'Slab Tiered', value: 'SLAB_TIERED' },
 ];
 
-const PriceOverrideDialog: FC<Props> = ({ isOpen, onOpenChange, price, onPriceOverride, onResetOverride, overriddenPrices }) => {
+const PriceOverrideDialog: FC<Props> = ({
+	isOpen,
+	onOpenChange,
+	price,
+	onPriceOverride,
+	onResetOverride,
+	overriddenPrices,
+	showEffectiveFrom = false,
+}) => {
 	const [overrideAmount, setOverrideAmount] = useState('');
 	const [overrideQuantity, setOverrideQuantity] = useState<number | undefined>(undefined);
 	const [overrideBillingModel, setOverrideBillingModel] = useState<BILLING_MODEL | 'SLAB_TIERED'>(price.billing_model);
@@ -32,6 +41,7 @@ const PriceOverrideDialog: FC<Props> = ({ isOpen, onOpenChange, price, onPriceOv
 	const [overrideTransformQuantity, setOverrideTransformQuantity] = useState<TransformQuantity>({
 		divide_by: 1,
 	});
+	const [effectiveFrom, setEffectiveFrom] = useState<Date | undefined>(undefined);
 	const [isOverridden, setIsOverridden] = useState(false);
 
 	// Check if this price is currently overridden
@@ -47,6 +57,9 @@ const PriceOverrideDialog: FC<Props> = ({ isOpen, onOpenChange, price, onPriceOv
 			setOverrideTierMode(currentOverride.tier_mode || price.tier_mode || TIER_MODE.VOLUME);
 			setOverrideTiers(currentOverride.tiers || []);
 			setOverrideTransformQuantity(currentOverride.transform_quantity || { divide_by: 1, round: 'up' });
+			if (showEffectiveFrom && currentOverride.effective_from) {
+				setEffectiveFrom(new Date(currentOverride.effective_from));
+			}
 		} else {
 			// Prefill with original price values
 			setOverrideAmount(price.amount);
@@ -76,8 +89,20 @@ const PriceOverrideDialog: FC<Props> = ({ isOpen, onOpenChange, price, onPriceOv
 
 			// Prefill transform quantity with original value if it exists
 			setOverrideTransformQuantity(price.transform_quantity || { divide_by: 1, round: 'up' });
+			if (showEffectiveFrom) {
+				setEffectiveFrom(undefined);
+			}
 		}
-	}, [price.id, overriddenPrices, price.billing_model, price.tier_mode, price.tiers, price.amount, price.transform_quantity]);
+	}, [
+		price.id,
+		overriddenPrices,
+		price.billing_model,
+		price.tier_mode,
+		price.tiers,
+		price.amount,
+		price.transform_quantity,
+		showEffectiveFrom,
+	]);
 
 	const handleOverride = () => {
 		const override: Partial<ExtendedPriceOverride> = {};
@@ -114,6 +139,11 @@ const PriceOverrideDialog: FC<Props> = ({ isOpen, onOpenChange, price, onPriceOv
 			override.transform_quantity = overrideTransformQuantity;
 		}
 
+		// Include effective_from if showEffectiveFrom is enabled
+		if (showEffectiveFrom && effectiveFrom) {
+			override.effective_from = effectiveFrom.toISOString();
+		}
+
 		if (Object.keys(override).length > 0) {
 			onPriceOverride(price.id, override);
 		} else {
@@ -146,6 +176,9 @@ const PriceOverrideDialog: FC<Props> = ({ isOpen, onOpenChange, price, onPriceOv
 		}
 		// Reset transform_quantity to original value or default
 		setOverrideTransformQuantity(price.transform_quantity || { divide_by: 1, round: 'up' });
+		if (showEffectiveFrom) {
+			setEffectiveFrom(undefined);
+		}
 		setIsOverridden(false);
 	};
 
@@ -157,6 +190,9 @@ const PriceOverrideDialog: FC<Props> = ({ isOpen, onOpenChange, price, onPriceOv
 			setOverrideBillingModel(currentOverride.billing_model || price.billing_model);
 			setOverrideTiers(currentOverride.tiers || []);
 			setOverrideTransformQuantity(currentOverride.transform_quantity || { divide_by: 1, round: 'up' });
+			if (showEffectiveFrom && currentOverride.effective_from) {
+				setEffectiveFrom(new Date(currentOverride.effective_from));
+			}
 		} else {
 			setOverrideAmount('');
 			setOverrideQuantity(undefined);
@@ -180,6 +216,9 @@ const PriceOverrideDialog: FC<Props> = ({ isOpen, onOpenChange, price, onPriceOv
 			}
 			// Reset to original transform_quantity or default
 			setOverrideTransformQuantity(price.transform_quantity || { divide_by: 1, round: 'up' });
+			if (showEffectiveFrom) {
+				setEffectiveFrom(undefined);
+			}
 		}
 		onOpenChange(false);
 	};
@@ -207,7 +246,8 @@ const PriceOverrideDialog: FC<Props> = ({ isOpen, onOpenChange, price, onPriceOv
 			overrideQuantity !== undefined ||
 			billingModelChanged ||
 			overrideTiers.length > 0 ||
-			overrideTransformQuantity !== undefined
+			overrideTransformQuantity !== undefined ||
+			(showEffectiveFrom && effectiveFrom !== undefined)
 		);
 	};
 
@@ -346,6 +386,21 @@ const PriceOverrideDialog: FC<Props> = ({ isOpen, onOpenChange, price, onPriceOv
 									<div className='text-xs text-gray-500'>Original: {price.transform_quantity.divide_by} units per package</div>
 								)}
 							</div>
+						</div>
+					)}
+
+					{/* Effective From Date - Only show if showEffectiveFrom is true */}
+					{showEffectiveFrom && (
+						<div className='space-y-2'>
+							<DatePicker
+								label='Effective From (Optional)'
+								placeholder='Select date for scheduled update'
+								date={effectiveFrom}
+								setDate={setEffectiveFrom}
+								minDate={new Date()}
+								className='w-full'
+							/>
+							<p className='text-xs text-gray-500'>Schedule this price change to take effect on a future date</p>
 						</div>
 					)}
 
