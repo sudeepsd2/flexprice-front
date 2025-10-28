@@ -1,13 +1,13 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
+import { useBreadcrumbsStore } from '@/store';
 import { Page, Input, DateRangePicker, FeatureMultiSelect, Loader } from '@/components/atoms';
 import CostSheetApi from '@/api/CostSheetApi';
 import toast from 'react-hot-toast';
-import { GetCostAnalyticsRequest } from '@/types/dto/Cost';
-import Feature from '@/models/Feature';
+import { GetCostAnalyticsRequest } from '@/types';
+import { Feature } from '@/models';
 import { ApiDocsContent, MetricCard } from '@/components/molecules';
-import { CostDataTable } from '@/components/molecules/CostDataTable';
+import { CostDataTable } from '@/components/molecules';
 
 const CostAnalyticsPage: React.FC = () => {
 	const { updateBreadcrumb } = useBreadcrumbsStore();
@@ -15,7 +15,7 @@ const CostAnalyticsPage: React.FC = () => {
 	// Filter states
 	const [customerId, setCustomerId] = useState<string>('');
 	const [selectedFeatures, setSelectedFeatures] = useState<Feature[]>([]);
-	const [startDate, setStartDate] = useState<Date>(new Date(new Date().setDate(new Date().getDate() - 90)));
+	const [startDate, setStartDate] = useState<Date>(new Date(new Date().setDate(new Date().getDate() - 30)));
 	const [endDate, setEndDate] = useState<Date>(new Date());
 
 	// Prepare API parameters

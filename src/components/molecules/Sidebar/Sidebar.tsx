@@ -1,4 +1,4 @@
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, useSidebar } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, useSidebar } from '@/components/ui';
 import React from 'react';
 import SidebarNav, { NavItem } from './SidebarMenu';
 import FlexpriceSidebarFooter from './SidebarFooter';
@@ -70,10 +70,10 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 					title: 'Payments',
 					url: RouteNames.payments,
 				},
-				// {
-				// 	title: 'Analytics',
-				// 	url: RouteNames.analytics,
-				// },
+				{
+					title: 'Analytics',
+					url: RouteNames.analytics,
+				},
 			],
 		},
 		{

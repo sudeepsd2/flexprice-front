@@ -27,6 +27,9 @@ jobs:
           export NODE_OPTIONS="--max-old-space-size=4096"
           npm install
 
+      - name: Generate Version Meta
+        run: npm run generate-meta
+
       - name: Build Project Artifacts
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096"

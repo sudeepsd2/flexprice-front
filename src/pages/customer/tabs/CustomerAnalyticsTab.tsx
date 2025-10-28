@@ -1,22 +1,20 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
+import { useBreadcrumbsStore } from '@/store';
 import { Loader, FeatureMultiSelect, DateRangePicker } from '@/components/atoms';
 import CustomerApi from '@/api/CustomerApi';
 import toast from 'react-hot-toast';
 import EventsApi from '@/api/EventsApi';
 import CostSheetApi from '@/api/CostSheetApi';
-import Feature from '@/models/Feature';
-import { GetUsageAnalyticsRequest } from '@/types/dto';
-import { GetCostAnalyticsRequest } from '@/types/dto/Cost';
+import { Feature } from '@/models';
+import { GetUsageAnalyticsRequest, GetCostAnalyticsRequest } from '@/types';
 import { WindowSize } from '@/models';
-import CustomerUsageChart from '@/components/molecules/CustomerUsageChart';
-import FlexpriceTable, { ColumnData } from '@/components/molecules/Table';
-import { UsageAnalyticItem } from '@/models/Analytics';
-import { formatNumber } from '@/utils/common';
+import { CustomerUsageChart, FlexpriceTable, type ColumnData } from '@/components/molecules';
+import { UsageAnalyticItem } from '@/models';
+import { formatNumber } from '@/utils';
 import { MetricCard, CostDataTable } from '@/components/molecules';
-import { getCurrencySymbol } from '@/utils/common/helper_functions';
+import { getCurrencySymbol } from '@/utils';
 
 const CustomerAnalyticsTab = () => {
 	const { id: customerId } = useParams();
@@ -24,7 +22,7 @@ const CustomerAnalyticsTab = () => {
 
 	// Filter states
 	const [selectedFeatures, setSelectedFeatures] = useState<Feature[]>([]);
-	const [startDate, setStartDate] = useState<Date | undefined>(new Date(new Date().setDate(new Date().getDate() - 90)));
+	const [startDate, setStartDate] = useState<Date | undefined>(new Date(new Date().setDate(new Date().getDate() - 30)));
 	const [endDate, setEndDate] = useState<Date | undefined>(new Date());
 
 	const {

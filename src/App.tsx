@@ -4,7 +4,11 @@ import { UserProvider } from '@/hooks/UserContext';
 import { Toaster } from 'react-hot-toast';
 import { DocsProvider } from './context/DocsContext';
 import ReactQueryProvider from './core/services/tanstack/ReactQueryProvider';
+import useVersionCheck from '@/hooks/useVersionCheck';
+
 const App = () => {
+	useVersionCheck();
+
 	return (
 		<ReactQueryProvider>
 			<UserProvider>

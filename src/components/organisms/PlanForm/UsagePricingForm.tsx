@@ -92,7 +92,6 @@ const UsagePricingForm: FC<Props> = ({
 		tieredModelError: '',
 	});
 
-
 	// Load price data when editing
 	useEffect(() => {
 		if (price.internal_state === 'edit') {
