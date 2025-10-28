@@ -1,4 +1,4 @@
-import { NODE_ENV, NodeEnv } from '@/types/env';
+import { NODE_ENV, NodeEnv } from '@/types';
 import { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { Button } from '@/components/atoms';
