@@ -18,14 +18,16 @@ const PlanDetailsSection = ({ plan, setPlanField, errors, isEdit = false }: Prop
 				error={errors.name}
 				onChange={(e) => {
 					setPlanField('name', e);
-					setPlanField('lookup_key', 'plan-' + e.replace(/\s/g, '-').toLowerCase());
+					// Only auto-generate lookup key if creating a new plan AND lookup key is empty
+					if (!isEdit || !plan.lookup_key) {
+						setPlanField('lookup_key', 'plan-' + e.replace(/\s/g, '-').toLowerCase());
+					}
 				}}
 			/>
 
 			<Spacer height={'20px'} />
 			<Input
 				label='Lookup Key'
-				disabled={isEdit}
 				error={errors.lookup_key}
 				onChange={(e) => setPlanField('lookup_key', e)}
 				value={plan.lookup_key}

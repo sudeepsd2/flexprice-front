@@ -156,18 +156,21 @@ const PlanDrawer: FC<Props> = ({ data, open, onOpenChange, trigger, refetchQuery
 				value={formData.name}
 				error={errors.name}
 				onChange={(e) => {
-					setFormData({
+					const updates: any = {
 						...formData,
 						name: e,
-						lookup_key: isEdit ? formData.lookup_key : 'plan-' + e.replace(/\s/g, '-').toLowerCase(),
-					});
+					};
+					// Only auto-generate lookup key if creating a new plan AND lookup key is empty or follows the auto-generated pattern
+					if (!isEdit || !formData.lookup_key) {
+						updates.lookup_key = 'plan-' + e.replace(/\s/g, '-').toLowerCase();
+					}
+					setFormData(updates);
 				}}
 			/>
 
 			<Spacer height={'20px'} />
 			<Input
 				label='Lookup Key'
-				disabled={isEdit}
 				error={errors.lookup_key}
 				onChange={(e) => setFormData({ ...formData, lookup_key: e })}
 				value={formData.lookup_key}
