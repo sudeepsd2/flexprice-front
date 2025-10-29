@@ -30,17 +30,26 @@ export interface CreateConnectionPayload {
 				aws_access_key_id?: string;
 				aws_secret_access_key?: string;
 				aws_session_token?: string;
+		  }
+		| {
+				provider_type: 'hubspot';
+				access_token?: string;
+				client_secret?: string;
 		  };
 	sync_config?: {
-		plan: {
+		plan?: {
 			inbound: boolean;
 			outbound: boolean;
 		};
-		subscription: {
+		subscription?: {
 			inbound: boolean;
 			outbound: boolean;
 		};
-		invoice: {
+		invoice?: {
+			inbound: boolean;
+			outbound: boolean;
+		};
+		deal?: {
 			inbound: boolean;
 			outbound: boolean;
 		};
@@ -49,16 +58,20 @@ export interface CreateConnectionPayload {
 
 export interface UpdateConnectionPayload {
 	name: string;
-	sync_config: {
-		plan: {
+	sync_config?: {
+		plan?: {
 			inbound: boolean;
 			outbound: boolean;
 		};
-		subscription: {
+		subscription?: {
 			inbound: boolean;
 			outbound: boolean;
 		};
-		invoice: {
+		invoice?: {
+			inbound: boolean;
+			outbound: boolean;
+		};
+		deal?: {
 			inbound: boolean;
 			outbound: boolean;
 		};
