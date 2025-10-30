@@ -237,7 +237,7 @@ const ForceRunDrawer: FC<ForceRunDrawerProps> = ({ isOpen, onOpenChange, onConfi
 
 	return (
 		<Dialog open={isOpen} onOpenChange={handleClose}>
-			<DialogContent className='w-full max-w-md'>
+			<DialogContent className='w-full max-w-md bg-white'>
 				<DialogHeader>
 					<DialogTitle>Manual Export</DialogTitle>
 					<DialogDescription>Choose to run the export for the current interval or specify a custom time range.</DialogDescription>
