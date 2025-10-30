@@ -21,6 +21,10 @@ export type { EventFilterData } from './EventFilter';
 
 export { default as PlansTable } from './PlansTable';
 
+export { default as GroupsTable } from './GroupsTable';
+
+export { default as GroupDrawer } from './GroupDrawer';
+
 export { default as CouponTable } from './CouponTable';
 
 export { default as CouponModal } from './CouponModal';
@@ -151,3 +155,5 @@ export { default as TestimonialCard } from './TestimonialCard/TestimonialCard';
 export { default as CustomerHeader } from './Customer/CustomerHeader';
 export { default as CustomerUsageTable } from './CustomerUsageTable';
 export { CostDataTable } from './CostDataTable';
+
+export { default as HubSpotConnectionDrawer } from './HubSpotConnectionDrawer';

@@ -9,6 +9,10 @@ export { ADDON_TYPE, ADDON_STATUS } from './Addon';
 // CostSheet
 export type { default as CostSheet } from './CostSheet';
 
+// Group
+export type { Group } from './Group';
+export { GROUP_ENTITY_TYPE } from './Group';
+
 // Connection
 export type { Connection } from './Connection';
 export { CONNECTION_PROVIDER_TYPE, CONNECTION_STATUS } from './Connection';
@@ -64,6 +68,11 @@ export type { default as FeatureDefault } from './Feature';
 
 // ImportTask
 export type { ImportTask } from './ImportTask';
+
+// ScheduledTask
+export type { ScheduledTask, ScheduledTaskJobConfig } from './ScheduledTask';
+export type { ScheduledEntityType, ScheduledTaskInterval } from './ScheduledTask';
+export { SCHEDULED_ENTITY_TYPE, SCHEDULED_TASK_INTERVAL } from './ScheduledTask';
 
 // Integration
 export type { Integration } from './Integration';

@@ -13,8 +13,7 @@ import { DetailsCard } from '@/components/molecules';
 import { RouteNames } from '@/core/routes/Routes';
 import { FEATURE_TYPE } from '@/models/Feature';
 import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
-import EntitlementApi from '@/api/EntitlementApi';
-import { PlanApi } from '@/api/PlanApi';
+import { EntitlementApi, PlanApi, CreditGrantApi } from '@/api';
 import formatDate from '@/utils/common/format_date';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { EyeOff, Plus, Pencil, Trash2 } from 'lucide-react';
@@ -37,7 +36,6 @@ import {
 } from '@/models/CreditGrant';
 import { uniqueId } from 'lodash';
 import { formatExpirationPeriod } from '@/pages';
-import CreditGrantApi from '@/api/CreditGrantApi';
 import { ENTITLEMENT_ENTITY_TYPE } from '@/models/Entitlement';
 import { EntitlementResponse } from '@/types/dto';
 import { PlanPriceTable } from '@/components/organisms';
@@ -259,8 +257,9 @@ const PlanDetailsPage = () => {
 	}
 
 	const planDetails = [
-		{ label: 'Plan Name', value: planData?.name },
-		{ label: 'Plan Description', value: planData?.description || '--' },
+		{ label: 'Name', value: planData?.name },
+		{ label: 'Lookup Key', value: planData?.lookup_key || '--' },
+		{ label: 'Description', value: planData?.description || '--' },
 		{ label: 'Created Date', value: formatDate(planData?.created_at ?? '') },
 		{
 			label: 'Status',

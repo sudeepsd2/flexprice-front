@@ -1,7 +1,9 @@
 import { FC, useState, useEffect } from 'react';
 import { Button, Input, Sheet, Spacer, Select } from '@/components/atoms';
 import { useMutation } from '@tanstack/react-query';
-import ScheduledTaskApi, { ScheduledTask, CreateScheduledTaskPayload } from '@/api/ScheduledTaskApi';
+import { TaskApi } from '@/api';
+import { ScheduledTask, SCHEDULED_ENTITY_TYPE, SCHEDULED_TASK_INTERVAL } from '@/models';
+import { CreateScheduledTaskPayload } from '@/types/dto';
 import toast from 'react-hot-toast';
 
 interface ExportDrawerProps {
@@ -13,8 +15,8 @@ interface ExportDrawerProps {
 }
 
 interface ExportFormData {
-	entity_type: 'events' | 'invoices';
-	interval: 'hourly' | 'daily';
+	entity_type: SCHEDULED_ENTITY_TYPE;
+	interval: SCHEDULED_TASK_INTERVAL;
 	enabled: boolean;
 	bucket: string;
 	region: string;
@@ -33,8 +35,8 @@ interface ValidationErrors {
 
 const ExportDrawer: FC<ExportDrawerProps> = ({ isOpen, onOpenChange, connectionId, exportTask, onSave }) => {
 	const [formData, setFormData] = useState<ExportFormData>({
-		entity_type: 'events',
-		interval: 'hourly',
+		entity_type: SCHEDULED_ENTITY_TYPE.EVENTS,
+		interval: SCHEDULED_TASK_INTERVAL.HOURLY,
 		enabled: true,
 		bucket: '',
 		region: 'us-east-1',
@@ -49,7 +51,7 @@ const ExportDrawer: FC<ExportDrawerProps> = ({ isOpen, onOpenChange, connectionI
 	useEffect(() => {
 		if (exportTask) {
 			setFormData({
-				entity_type: exportTask.entity_type as 'events' | 'invoices',
+				entity_type: exportTask.entity_type,
 				interval: exportTask.interval,
 				enabled: exportTask.enabled,
 				bucket: exportTask.job_config.bucket,
@@ -60,8 +62,8 @@ const ExportDrawer: FC<ExportDrawerProps> = ({ isOpen, onOpenChange, connectionI
 			});
 		} else {
 			setFormData({
-				entity_type: 'events',
-				interval: 'hourly',
+				entity_type: SCHEDULED_ENTITY_TYPE.EVENTS,
+				interval: SCHEDULED_TASK_INTERVAL.HOURLY,
 				enabled: true,
 				bucket: '',
 				region: 'us-east-1',
@@ -116,7 +118,7 @@ const ExportDrawer: FC<ExportDrawerProps> = ({ isOpen, onOpenChange, connectionI
 				},
 			};
 
-			return await ScheduledTaskApi.createScheduledTask(payload);
+			return await TaskApi.createScheduledTask(payload);
 		},
 		onSuccess: (response) => {
 			toast.success('Export task created successfully');
@@ -144,7 +146,7 @@ const ExportDrawer: FC<ExportDrawerProps> = ({ isOpen, onOpenChange, connectionI
 				},
 			};
 
-			return await ScheduledTaskApi.updateScheduledTask(exportTask!.id, payload);
+			return await TaskApi.updateScheduledTask(exportTask!.id, payload);
 		},
 		onSuccess: (response) => {
 			toast.success('Export task updated successfully');
@@ -181,11 +183,11 @@ const ExportDrawer: FC<ExportDrawerProps> = ({ isOpen, onOpenChange, connectionI
 					<label className='block text-sm font-medium text-gray-700 mb-2'>Entity Type</label>
 					<Select
 						value={formData.entity_type}
-						onChange={(value) => handleChange('entity_type', value as 'events' | 'invoices')}
+						onChange={(value) => handleChange('entity_type', value as SCHEDULED_ENTITY_TYPE)}
 						error={errors.entity_type}
 						options={[
-							{ value: 'events', label: 'Events' },
-							{ value: 'invoices', label: 'Invoices' },
+							{ value: SCHEDULED_ENTITY_TYPE.EVENTS, label: 'Events' },
+							{ value: SCHEDULED_ENTITY_TYPE.INVOICE, label: 'Invoice' },
 						]}
 					/>
 					<p className='text-xs text-gray-500 mt-1'>Select the type of data to export</p>
@@ -196,11 +198,11 @@ const ExportDrawer: FC<ExportDrawerProps> = ({ isOpen, onOpenChange, connectionI
 					<label className='block text-sm font-medium text-gray-700 mb-2'>Export Interval</label>
 					<Select
 						value={formData.interval}
-						onChange={(value) => handleChange('interval', value as 'hourly' | 'daily')}
+						onChange={(value) => handleChange('interval', value as SCHEDULED_TASK_INTERVAL)}
 						error={errors.interval}
 						options={[
-							{ value: 'hourly', label: 'Hourly' },
-							{ value: 'daily', label: 'Daily' },
+							{ value: SCHEDULED_TASK_INTERVAL.HOURLY, label: 'Hourly' },
+							{ value: SCHEDULED_TASK_INTERVAL.DAILY, label: 'Daily' },
 						]}
 					/>
 					<p className='text-xs text-gray-500 mt-1'>How often to run the export</p>

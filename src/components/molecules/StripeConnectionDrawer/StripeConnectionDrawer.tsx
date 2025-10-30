@@ -14,6 +14,7 @@ import {
 	getSubscriptionWebhookEvents,
 	getInvoiceWebhookEvents,
 } from '@/types';
+import { CONNECTION_PROVIDER_TYPE } from '@/models';
 
 interface StripeConnectionDrawerProps {
 	isOpen: boolean;
@@ -155,9 +156,9 @@ const StripeConnectionDrawer: FC<StripeConnectionDrawerProps> = ({ isOpen, onOpe
 		mutationFn: async () => {
 			const payload = {
 				name: formData.name,
-				provider_type: 'stripe',
+				provider_type: CONNECTION_PROVIDER_TYPE.STRIPE,
 				encrypted_secret_data: {
-					provider_type: 'stripe' as const,
+					provider_type: CONNECTION_PROVIDER_TYPE.STRIPE,
 					secret_key: formData.secret_key,
 					webhook_secret: formData.webhook_secret,
 				},

@@ -54,6 +54,7 @@ export interface InternalPrice extends Partial<Price> {
 	isEdit?: boolean;
 	isTrialPeriod?: boolean;
 	internal_state?: 'edit' | 'new' | 'saved';
+	group_id?: string;
 }
 
 const SetupChargesSection: React.FC<Props> = ({ plan, setPlanField }) => {

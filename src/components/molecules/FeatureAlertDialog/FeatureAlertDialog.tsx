@@ -258,13 +258,6 @@ const FeatureAlertDialog: React.FC<FeatureAlertDialogProps> = ({ open, alertSett
 				{/* Alert Configuration */}
 				{localAlertSettings.alert_enabled && (
 					<div className='space-y-4'>
-						<div className='mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md'>
-							<p className='text-xs text-blue-800'>
-								Configure thresholds to monitor usage. The first threshold added sets the condition for all thresholds. You can remove any
-								threshold at any time.
-							</p>
-						</div>
-
 						{renderThresholdInput(AlertLevel.CRITICAL, 'Critical Threshold', 'Alert when usage reaches critical level')}
 						{renderThresholdInput(AlertLevel.WARNING, 'Warning Threshold', 'Alert when usage reaches warning level')}
 						{renderThresholdInput(AlertLevel.INFO, 'Info Threshold', 'Alert when usage reaches info level')}

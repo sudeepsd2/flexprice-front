@@ -2,8 +2,10 @@ import { Price } from '@/models/Price';
 import { FC, useState, useEffect } from 'react';
 import { Button, Input, Select, SelectOption, Spacer } from '@/components/atoms';
 import SelectMeter from './SelectMeter';
+import SelectGroup from './SelectGroup';
 // import { Pencil, Trash2 } from 'lucide-react';
 import { Meter } from '@/models/Meter';
+import { Group } from '@/models/Group';
 import { formatBillingPeriodForPrice, getCurrencySymbol } from '@/utils/common/helper_functions';
 import { billlingPeriodOptions, currencyOptions } from '@/constants/constants';
 import VolumeTieredPricingForm from './VolumeTieredPricingForm';
@@ -74,6 +76,7 @@ const UsagePricingForm: FC<Props> = ({
 	const [billingModel, setBillingModel] = useState(price.billing_model || billingModels[0].value);
 	const [meterId, setMeterId] = useState<string>(price.meter_id || '');
 	const [activeMeter, setActiveMeter] = useState<Meter | null>(price.meter || null);
+	const [groupId, setGroupId] = useState<string | undefined>(price.group_id);
 	const [tieredPrices, setTieredPrices] = useState<PriceTier[]>([
 		{ from: 0, up_to: 1, unit_amount: '', flat_amount: '0' },
 		{ from: 1, up_to: null, unit_amount: '', flat_amount: '0' },
@@ -271,6 +274,7 @@ const UsagePricingForm: FC<Props> = ({
 			invoice_cadence: INVOICE_CADENCE.ARREAR,
 			entity_type: entityType,
 			entity_id: entityId || '',
+			group_id: groupId,
 		};
 
 		let finalPrice: Partial<Price>;
@@ -343,6 +347,14 @@ const UsagePricingForm: FC<Props> = ({
 					}
 				}}
 				value={meterId}
+			/>
+			<Spacer height='8px' />
+			<SelectGroup
+				value={groupId}
+				onChange={(group: Group | null) => setGroupId(group?.id)}
+				label='Group'
+				placeholder='Select a group (optional)'
+				description='Assign this price to a group for better organization'
 			/>
 			<Spacer height='8px' />
 			<Select

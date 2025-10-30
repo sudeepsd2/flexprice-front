@@ -49,6 +49,7 @@ import {
 	AddCharges as AddChargesPage,
 	Coupons as CouponsPage,
 	CouponDetails,
+	Groups as GroupsPage,
 	// Usage pages
 	Events as EventsPage,
 	Query as QueryPage,
@@ -126,6 +127,9 @@ export const RouteNames = {
 	costSheets: '/product-catalog/cost-sheets',
 	costSheetDetails: '/product-catalog/cost-sheets',
 	costSheetCharges: '/product-catalog/cost-sheets/:costSheetId/add-charges',
+
+	// group routes
+	groups: '/product-catalog/groups',
 
 	// tools routes
 	tools: '/tools',
@@ -251,6 +255,10 @@ export const MainRouter = createBrowserRouter([
 					{
 						path: `${RouteNames.couponDetails}/:id`,
 						element: <CouponDetails />,
+					},
+					{
+						path: RouteNames.groups,
+						element: <GroupsPage />,
 					},
 				],
 			},

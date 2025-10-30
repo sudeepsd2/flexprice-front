@@ -8,6 +8,8 @@ import { Switch } from '@/components/ui/switch';
 import RecurringChargePreview from './RecurringChargePreview';
 import { BILLING_CADENCE, INVOICE_CADENCE } from '@/models/Invoice';
 import { BILLING_PERIOD, PRICE_ENTITY_TYPE } from '@/models/Price';
+import SelectGroup from './SelectGroup';
+import { Group } from '@/models/Group';
 
 interface Props {
 	price: Partial<InternalPrice>;
@@ -78,6 +80,10 @@ const RecurringChargesForm = ({
 		}
 	};
 
+	const handleGroupChange = (group: Group | null) => {
+		setLocalPrice({ ...localPrice, group_id: group?.id || undefined });
+	};
+
 	if (price.internal_state === 'saved') {
 		return <RecurringChargePreview charge={price} onEditClicked={onEditClicked} onDeleteClicked={onDeleteClicked} />;
 	}
@@ -109,6 +115,14 @@ const RecurringChargesForm = ({
 				error={errors.amount}
 				inputPrefix={getCurrencySymbol(localPrice.currency || '')}
 				suffix={<span className='text-[#64748B]'> {`per ${formatBillingPeriodForPrice(localPrice.billing_period || '')}`}</span>}
+			/>
+			<Spacer height={'8px'} />
+			<SelectGroup
+				value={localPrice.group_id}
+				onChange={handleGroupChange}
+				label='Group'
+				placeholder='Select a group (optional)'
+				description='Assign this price to a group for better organization'
 			/>
 			<Spacer height={'16px'} />
 			<FormHeader title='Billing Timing' variant='form-component-title' />

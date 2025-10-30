@@ -1,8 +1,8 @@
-import { Connection } from '@/models';
+import { Connection, CONNECTION_PROVIDER_TYPE } from '@/models';
 
 export interface GetConnectionsPayload {
 	status?: string;
-	provider_type?: string;
+	provider_type?: CONNECTION_PROVIDER_TYPE;
 	limit?: number;
 	offset?: number;
 }
@@ -16,31 +16,40 @@ export interface GetConnectionsResponse {
 
 export interface CreateConnectionPayload {
 	name: string;
-	provider_type: string;
+	provider_type: CONNECTION_PROVIDER_TYPE;
 	encrypted_secret_data:
 		| {
-				provider_type: 'stripe';
+				provider_type: CONNECTION_PROVIDER_TYPE.STRIPE;
 				account_id?: string;
 				publishable_key?: string;
 				secret_key?: string;
 				webhook_secret?: string;
 		  }
 		| {
-				provider_type: 's3';
+				provider_type: CONNECTION_PROVIDER_TYPE.S3;
 				aws_access_key_id?: string;
 				aws_secret_access_key?: string;
 				aws_session_token?: string;
+		  }
+		| {
+				provider_type: CONNECTION_PROVIDER_TYPE.HUBSPOT;
+				access_token?: string;
+				client_secret?: string;
 		  };
 	sync_config?: {
-		plan: {
+		plan?: {
 			inbound: boolean;
 			outbound: boolean;
 		};
-		subscription: {
+		subscription?: {
 			inbound: boolean;
 			outbound: boolean;
 		};
-		invoice: {
+		invoice?: {
+			inbound: boolean;
+			outbound: boolean;
+		};
+		deal?: {
 			inbound: boolean;
 			outbound: boolean;
 		};
@@ -49,16 +58,20 @@ export interface CreateConnectionPayload {
 
 export interface UpdateConnectionPayload {
 	name: string;
-	sync_config: {
-		plan: {
+	sync_config?: {
+		plan?: {
 			inbound: boolean;
 			outbound: boolean;
 		};
-		subscription: {
+		subscription?: {
 			inbound: boolean;
 			outbound: boolean;
 		};
-		invoice: {
+		invoice?: {
+			inbound: boolean;
+			outbound: boolean;
+		};
+		deal?: {
 			inbound: boolean;
 			outbound: boolean;
 		};

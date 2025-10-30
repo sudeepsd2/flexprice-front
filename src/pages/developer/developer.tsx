@@ -1,16 +1,17 @@
 import { Button, Page, ShortPagination } from '@/components/atoms';
-import { ColumnData, DropdownMenu, FlexpriceTable, SecretKeyDrawer, ApiDocsContent } from '@/components/molecules';
+import { ColumnData, FlexpriceTable, SecretKeyDrawer, ApiDocsContent } from '@/components/molecules';
 import SecretKeysApi from '@/api/SecretKeysApi';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { SecretKey } from '@/models/SecretKey';
 import usePagination from '@/hooks/usePagination';
 import { formatDateShort } from '@/utils/common/helper_functions';
-import { Plus, Eye, Pencil, EyeOff, LucideIcon, ShieldCheck, Key, Trash2, Loader } from 'lucide-react';
+import { Plus, Eye, Pencil, EyeOff, LucideIcon, ShieldCheck, Key, Loader, TrashIcon } from 'lucide-react';
 import { useState } from 'react';
-import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
 import { toast } from 'react-hot-toast';
 import { EmptyPage } from '@/components/organisms';
 import GUIDES from '@/constants/guides';
+import ActionButton from '@/components/atoms/ActionButton/ActionButton';
+
 // Utility function to format permissions for display
 export const formatPermissionDisplay = (permissions: readonly string[]): string => {
 	const hasRead = permissions.includes('read');
@@ -64,7 +65,7 @@ const baseColumns: ColumnData<SecretKey>[] = [
 		title: 'Name',
 		render(rowData: SecretKey) {
 			return (
-				<div className='flex items-center gap-2 font-medium'>
+				<div className='flex gap-2 items-center font-medium'>
 					<span>{rowData.name}</span>
 				</div>
 			);
@@ -74,8 +75,8 @@ const baseColumns: ColumnData<SecretKey>[] = [
 		title: 'Token',
 		render(rowData: SecretKey) {
 			return (
-				<div className='flex items-center gap-2'>
-					<div className='bg-gray-100 px-3 py-1 rounded-md font-mono text-sm flex items-center'>
+				<div className='flex gap-2 items-center'>
+					<div className='flex items-center px-3 py-1 font-mono text-sm bg-gray-100 rounded-md'>
 						<Key size={14} className='mr-2 text-gray-600' />
 						<span className='text-gray-700'>{rowData.display_id}</span>
 					</div>
@@ -91,9 +92,9 @@ const baseColumns: ColumnData<SecretKey>[] = [
 			const colorClass = getPermissionColor(rowData.permissions);
 
 			return (
-				<div className={`flex items-center gap-2 ${colorClass}`}>
+				<div className={`flex gap-2 items-center ${colorClass}`}>
 					<PermissionIcon size={16} />
-					<span className='capitalize font-medium'>{permissionText}</span>
+					<span className='font-medium capitalize'>{permissionText}</span>
 				</div>
 			);
 		},
@@ -121,17 +122,6 @@ const DeveloperPage = () => {
 		queryFn: () => SecretKeysApi.getAllSecretKeys({ limit, offset }),
 	});
 
-	const { mutate: deleteSecretKey, isPending: isDeletingSecretKey } = useMutation({
-		mutationFn: (id: string) => SecretKeysApi.deleteSecretKey(id),
-		onSuccess: () => {
-			refetchQueries(['secret-keys']);
-			toast.success('API key deleted successfully');
-		},
-		onError: (error: ServerError) => {
-			toast.error(error.error.message || 'Failed to delete secret key');
-		},
-	});
-
 	const handleAddSecretKey = () => {
 		setIsSecretKeyDrawerOpen(true);
 	};
@@ -145,15 +135,16 @@ const DeveloperPage = () => {
 			render(rowData: SecretKey) {
 				return (
 					<div className='flex justify-end'>
-						<DropdownMenu
-							options={[
-								{
-									label: 'Delete',
-									onSelect: () => deleteSecretKey(rowData.id),
-									disabled: isDeletingSecretKey,
-									icon: <Trash2 size={16} />,
-								},
-							]}
+						<ActionButton
+							id={rowData.id}
+							deleteMutationFn={async (id: string) => {
+								await SecretKeysApi.deleteSecretKey(id);
+							}}
+							refetchQueryKey={'secret-keys'}
+							entityName={'API key'}
+							archiveText={'Delete'}
+							isEditDisabled
+							archiveIcon={<TrashIcon />}
 						/>
 					</div>
 				);
@@ -181,6 +172,9 @@ const DeveloperPage = () => {
 		<div>
 			<ApiDocsContent tags={['secrets']} />
 			<SecretKeyDrawer isOpen={isSecretKeyDrawerOpen} onOpenChange={setIsSecretKeyDrawerOpen} />
+
+			{/* Per-row actions handled via ActionButton */}
+
 			{secretKeys?.items.length === 0 && (
 				<EmptyPage
 					onAddClick={handleAddSecretKey}
@@ -212,4 +206,5 @@ const DeveloperPage = () => {
 		</div>
 	);
 };
+
 export default DeveloperPage;

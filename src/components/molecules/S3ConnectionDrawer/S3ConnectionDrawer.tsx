@@ -3,6 +3,7 @@ import { Button, Input, Sheet, Spacer } from '@/components/atoms';
 import { useMutation } from '@tanstack/react-query';
 import ConnectionApi from '@/api/ConnectionApi';
 import toast from 'react-hot-toast';
+import { CONNECTION_PROVIDER_TYPE } from '@/models';
 
 interface S3ConnectionDrawerProps {
 	isOpen: boolean;
@@ -90,9 +91,9 @@ const S3ConnectionDrawer: FC<S3ConnectionDrawerProps> = ({ isOpen, onOpenChange,
 		mutationFn: async () => {
 			const payload = {
 				name: formData.name,
-				provider_type: 's3',
+				provider_type: CONNECTION_PROVIDER_TYPE.S3,
 				encrypted_secret_data: {
-					provider_type: 's3' as const,
+					provider_type: CONNECTION_PROVIDER_TYPE.S3,
 					aws_access_key_id: formData.aws_access_key_id,
 					aws_secret_access_key: formData.aws_secret_access_key,
 					aws_session_token: formData.aws_session_token || undefined,

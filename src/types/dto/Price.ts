@@ -55,6 +55,7 @@ export interface CreatePriceRequest {
 	tiers?: CreatePriceTier[];
 	transform_quantity?: TransformQuantity;
 	price_unit_config?: PriceUnitConfig;
+	group_id?: string;
 }
 
 export interface GetPriceResponse extends Price {

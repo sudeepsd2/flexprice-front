@@ -5,6 +5,7 @@ import { Button, FormHeader, Page, Dialog } from '@/components/atoms';
 import { useState } from 'react';
 import IntegrationDrawer from '@/components/molecules/IntegrationDrawer/IntegrationDrawer';
 import StripeConnectionDrawer from '@/components/molecules/StripeConnectionDrawer';
+import HubSpotConnectionDrawer from '@/components/molecules/HubSpotConnectionDrawer';
 import { PencilIcon, TrashIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ApiDocsContent } from '@/components/molecules';
@@ -25,7 +26,7 @@ const IntegrationDetails = () => {
 	// Fetch connections from API
 	const { data: connectionsResponse, refetch: refetchConnections } = useQuery({
 		queryKey: ['connections', name],
-		queryFn: () => ConnectionApi.getAllConnections({ provider_type: name.toLowerCase() }),
+		queryFn: () => ConnectionApi.getAllConnections({ provider_type: name.toLowerCase() as CONNECTION_PROVIDER_TYPE }),
 		enabled: !!name,
 	});
 
@@ -126,6 +127,16 @@ const IntegrationDetails = () => {
 			{/* Integration Drawer for Add/Edit */}
 			{name.toLowerCase() === CONNECTION_PROVIDER_TYPE.STRIPE ? (
 				<StripeConnectionDrawer
+					isOpen={isDrawerOpen}
+					onOpenChange={(open) => {
+						setIsDrawerOpen(open);
+						if (!open) setEditingConnection(null);
+					}}
+					connection={editingConnection}
+					onSave={handleSaveConnection}
+				/>
+			) : name.toLowerCase() === CONNECTION_PROVIDER_TYPE.HUBSPOT ? (
+				<HubSpotConnectionDrawer
 					isOpen={isDrawerOpen}
 					onOpenChange={(open) => {
 						setIsDrawerOpen(open);
