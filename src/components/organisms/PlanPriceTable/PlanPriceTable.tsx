@@ -1,6 +1,6 @@
 import { FC, useCallback, useState } from 'react';
 import { Button, Card, CardHeader, NoDataCard } from '@/components/atoms';
-import { FlexpriceTable, ColumnData, DropdownMenu, TerminatePriceModal, SyncOption } from '@/components/molecules';
+import { FlexpriceTable, ColumnData, DropdownMenu, TerminatePriceModal, SyncOption, UpdatePriceDialog } from '@/components/molecules';
 import { Price, Plan } from '@/models';
 import { Plus, Trash2, Pencil } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
@@ -21,7 +21,6 @@ import { DeletePriceRequest } from '@/types/dto';
 interface PlanChargesTableProps {
 	plan: Plan;
 	onPriceUpdate?: () => void;
-	onEditPrice?: (price: Price) => void;
 }
 
 const formatBillingPeriod = (billingPeriod: string) => {
@@ -39,14 +38,16 @@ const formatBillingPeriod = (billingPeriod: string) => {
 		case BILLING_PERIOD.HALF_YEARLY:
 			return 'Half Yearly';
 		default:
-			return '赔偿';
+			return '--';
 	}
 };
 
-const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate, onEditPrice }) => {
+const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate }) => {
 	const navigate = useNavigate();
 	const [showTerminateModal, setShowTerminateModal] = useState(false);
-	const [selectedPrice, setSelectedPrice] = useState<Price | null>(null);
+	const [selectedPriceForTermination, setSelectedPriceForTermination] = useState<Price | null>(null);
+	const [selectedPriceForEdit, setSelectedPriceForEdit] = useState<Price | null>(null);
+	const [isPriceDialogOpen, setIsPriceDialogOpen] = useState(false);
 
 	// ===== MUTATIONS =====
 	const { mutateAsync: deletePrice, isPending: isDeletingPrice } = useMutation({
@@ -74,12 +75,23 @@ const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate, onEdit
 	const isPending = isDeletingPrice || isSyncing;
 
 	// ===== HANDLERS =====
+	const handleEditPrice = useCallback((price: Price) => {
+		setSelectedPriceForEdit(price);
+		setIsPriceDialogOpen(true);
+	}, []);
+
+	const handlePriceUpdateSuccess = useCallback(() => {
+		setIsPriceDialogOpen(false);
+		setSelectedPriceForEdit(null);
+		onPriceUpdate?.();
+	}, [onPriceUpdate]);
+
 	const handleTerminatePrice = useCallback(
 		(priceId: string) => {
 			const price = plan.prices?.find((p) => p.id === priceId);
 			if (!price) return;
 
-			setSelectedPrice(price);
+			setSelectedPriceForTermination(price);
 			setShowTerminateModal(true);
 		},
 		[plan.prices],
@@ -87,35 +99,30 @@ const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate, onEdit
 
 	const handleTerminateConfirm = useCallback(
 		async (endDate: string | undefined, syncOption?: SyncOption) => {
-			if (!selectedPrice) return;
+			if (!selectedPriceForTermination) return;
 
 			setShowTerminateModal(false);
 
 			try {
-				// Prepare delete request with end_date if provided
 				const deleteRequest: DeletePriceRequest | undefined = endDate ? { end_date: endDate } : undefined;
+				await deletePrice({ priceId: selectedPriceForTermination.id, data: deleteRequest });
 
-				// Delete the price
-				await deletePrice({ priceId: selectedPrice.id, data: deleteRequest });
-
-				// If user selected to sync with existing subscriptions
 				if (syncOption === SyncOption.EXISTING_ALSO) {
 					await syncPlanCharges();
 				}
 
-				// Refresh data
 				onPriceUpdate?.();
-				setSelectedPrice(null);
+				setSelectedPriceForTermination(null);
 			} catch (error) {
 				console.error('Error terminating price:', error);
 			}
 		},
-		[selectedPrice, deletePrice, syncPlanCharges, onPriceUpdate],
+		[selectedPriceForTermination, deletePrice, syncPlanCharges, onPriceUpdate],
 	);
 
 	const handleTerminateCancel = useCallback(() => {
 		setShowTerminateModal(false);
-		setSelectedPrice(null);
+		setSelectedPriceForTermination(null);
 	}, []);
 
 	// ===== TABLE COLUMNS =====
@@ -161,7 +168,7 @@ const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate, onEdit
 							{
 								label: 'Edit Price',
 								icon: <Pencil />,
-								onSelect: () => onEditPrice?.(row),
+								onSelect: () => handleEditPrice(row),
 							},
 							{
 								label: 'Terminate Price',
@@ -180,7 +187,7 @@ const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate, onEdit
 		<>
 			{/* Terminate Price Modal */}
 			<Dialog open={showTerminateModal} onOpenChange={setShowTerminateModal}>
-				{selectedPrice && (
+				{selectedPriceForTermination && (
 					<TerminatePriceModal
 						planId={plan.id}
 						onCancel={handleTerminateCancel}
@@ -190,6 +197,17 @@ const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate, onEdit
 					/>
 				)}
 			</Dialog>
+
+			{/* Update Price Dialog */}
+			{selectedPriceForEdit && (
+				<UpdatePriceDialog
+					isOpen={isPriceDialogOpen}
+					onOpenChange={setIsPriceDialogOpen}
+					price={selectedPriceForEdit}
+					planId={plan.id}
+					onSuccess={handlePriceUpdateSuccess}
+				/>
+			)}
 
 			{/* Charges Table */}
 			{(plan?.prices?.length ?? 0) > 0 ? (

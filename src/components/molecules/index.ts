@@ -117,6 +117,7 @@ export { MetadataModal } from './MetadataModal';
 export { default as SaveCardModal } from './SaveCardModal';
 
 export { default as PriceOverrideDialog } from './PriceOverrideDialog';
+export { default as UpdatePriceDialog } from './UpdatePriceDialog';
 
 export { default as WalletAlertDialog } from './WalletAlertDialog';
 

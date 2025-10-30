@@ -21,13 +21,12 @@ import {
 	MetadataModal,
 	PlanDrawer,
 	RedirectCell,
-	PriceOverrideDialog,
 } from '@/components/molecules';
 import { PlanPriceTable } from '@/components/organisms';
 import { getFeatureTypeChips } from '@/components/molecules/CustomerUsageTable/CustomerUsageTable';
 
 // API imports
-import { CreditGrantApi, EntitlementApi, PlanApi, PriceApi } from '@/api';
+import { CreditGrantApi, EntitlementApi, PlanApi } from '@/api';
 
 // Core services and routes
 import { RouteNames } from '@/core/routes/Routes';
@@ -46,7 +45,6 @@ import {
 	CREDIT_GRANT_CADENCE,
 	CREDIT_GRANT_PERIOD,
 	INVOICE_CADENCE,
-	Price,
 } from '@/models';
 import { EntitlementResponse } from '@/types';
 
@@ -55,8 +53,6 @@ import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
 import formatDate from '@/utils/common/format_date';
 import formatChips from '@/utils/common/format_chips';
 import { formatExpirationPeriod } from '@/utils/common/credit_grant_helpers';
-import { ExtendedPriceOverride } from '@/utils/common/price_override_helpers';
-import { UpdatePriceRequest } from '@/types/dto/Price';
 
 const creditGrantColumns: ColumnData<CreditGrant>[] = [
 	{
@@ -136,11 +132,6 @@ const PlanDetailsPage = () => {
 	const [newCreditGrants, setNewCreditGrants] = useState<CreditGrant[]>([]);
 	const queryClient = useQueryClient();
 
-	// Price override dialog state
-	const [selectedPrice, setSelectedPrice] = useState<Price | null>(null);
-	const [isPriceDialogOpen, setIsPriceDialogOpen] = useState(false);
-	const [overriddenPrices, setOverriddenPrices] = useState<Record<string, ExtendedPriceOverride>>({});
-
 	const {
 		data: planData,
 		isLoading,
@@ -201,21 +192,6 @@ const PlanDetailsPage = () => {
 		},
 		onError: (error: ServerError) => {
 			toast.error(error.error.message || 'Failed to update metadata');
-		},
-	});
-
-	const { mutate: updatePrice } = useMutation({
-		mutationFn: async ({ priceId, data }: { priceId: string; data: UpdatePriceRequest }) => {
-			return await PriceApi.UpdatePrice(priceId, data);
-		},
-		onSuccess: () => {
-			toast.success('Price updated successfully');
-			setIsPriceDialogOpen(false);
-			setSelectedPrice(null);
-			queryClient.invalidateQueries({ queryKey: ['fetchPlan', planId] });
-		},
-		onError: (error: ServerError) => {
-			toast.error(error.error.message || 'Failed to update price');
 		},
 	});
 
@@ -345,77 +321,6 @@ const PlanDetailsPage = () => {
 		setCreditGrantModalOpen(false);
 	};
 
-	// Price override handlers
-	const handleOpenPriceDialog = (price: Price) => {
-		setSelectedPrice(price);
-		setIsPriceDialogOpen(true);
-	};
-
-	const handlePriceOverride = (priceId: string, override: Partial<ExtendedPriceOverride>) => {
-		// Update local overridden prices state
-		setOverriddenPrices((prev) => ({
-			...prev,
-			[priceId]: { price_id: priceId, ...override } as ExtendedPriceOverride,
-		}));
-
-		// Save the price update to the API
-		if (selectedPrice) {
-			handleSavePriceUpdate(selectedPrice, override);
-		}
-	};
-
-	const handleResetOverride = (priceId: string) => {
-		// Remove from local overridden prices
-		setOverriddenPrices((prev) => {
-			const newState = { ...prev };
-			delete newState[priceId];
-			return newState;
-		});
-	};
-
-	const handleSavePriceUpdate = (price: Price, override: Partial<ExtendedPriceOverride>) => {
-		// Convert the override to UpdatePriceRequest format
-		const updateData: UpdatePriceRequest = {};
-
-		// Add amount if it exists and is different from original
-		if (override.amount && override.amount !== price.amount) {
-			updateData.amount = override.amount;
-		}
-
-		// Add billing_model if changed
-		if (override.billing_model && override.billing_model !== price.billing_model) {
-			// Handle SLAB_TIERED conversion - it maps to TIERED with SLAB tier mode
-			if (override.billing_model === 'SLAB_TIERED') {
-				updateData.billing_model = 'TIERED' as any; // This is a valid BILLING_MODEL value
-			} else {
-				updateData.billing_model = override.billing_model as any;
-			}
-		}
-
-		// Add tier_mode if changed
-		if (override.tier_mode && override.tier_mode !== (price.tier_mode || 'VOLUME')) {
-			updateData.tier_mode = override.tier_mode;
-		}
-
-		// Add tiers if changed
-		if (override.tiers && override.tiers.length > 0) {
-			updateData.tiers = override.tiers;
-		}
-
-		// Add transform_quantity if changed
-		if (override.transform_quantity) {
-			updateData.transform_quantity = override.transform_quantity;
-		}
-
-		// Add effective_from if provided (for scheduling price changes)
-		if (override.effective_from) {
-			updateData.effective_from = override.effective_from;
-		}
-
-		// Call the update mutation
-		updatePrice({ priceId: price.id, data: updateData });
-	};
-
 	// Combine existing and new credit grants for display
 	const allCreditGrants = [...(planData?.credit_grants || []), ...newCreditGrants];
 
@@ -445,17 +350,6 @@ const PlanDetailsPage = () => {
 			/>
 			<MetadataModal open={metadataModalOpen} data={metadata} onSave={updatePlanMetadata} onClose={() => setMetadataModalOpen(false)} />
 			<PlanDrawer data={planData as Plan} open={planDrawerOpen} onOpenChange={setPlanDrawerOpen} refetchQueryKeys={['fetchPlan']} />
-			{selectedPrice && (
-				<PriceOverrideDialog
-					isOpen={isPriceDialogOpen}
-					onOpenChange={setIsPriceDialogOpen}
-					price={selectedPrice}
-					onPriceOverride={handlePriceOverride}
-					onResetOverride={handleResetOverride}
-					overriddenPrices={overriddenPrices}
-					showEffectiveFrom={true}
-				/>
-			)}
 
 			<ApiDocsContent tags={['Plans']} />
 			<AddEntitlementDrawer
@@ -472,11 +366,7 @@ const PlanDetailsPage = () => {
 				<DetailsCard variant='stacked' title='Plan Details' data={planDetails} />
 
 				{/* plan charges table */}
-				<PlanPriceTable
-					plan={planData as Plan}
-					onPriceUpdate={() => queryClient.invalidateQueries({ queryKey: ['fetchPlan', planId] })}
-					onEditPrice={handleOpenPriceDialog}
-				/>
+				<PlanPriceTable plan={planData as Plan} onPriceUpdate={() => queryClient.invalidateQueries({ queryKey: ['fetchPlan', planId] })} />
 
 				{planData.entitlements?.length || 0 > 0 ? (
 					<Card variant='notched'>
