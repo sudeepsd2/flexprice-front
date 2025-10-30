@@ -73,7 +73,14 @@ const PlanDrawer: FC<Props> = ({ data, open, onOpenChange, trigger, refetchQuery
 			setMetadataString('');
 		}
 		setErrors({});
-	}, [data]);
+	}, [data, open]);
+
+	// Auto-generate lookup key from name when creating (not editing)
+	useEffect(() => {
+		if (!isEdit) {
+			setFormData((prev) => ({ ...prev, lookup_key: `plan-${prev.name?.toLowerCase().replace(/\s/g, '-') || ''}` }));
+		}
+	}, [formData.name, isEdit]);
 
 	const validateForm = () => {
 		const newErrors: Partial<Record<keyof CreatePlanRequest, string>> = {};
@@ -124,7 +131,7 @@ const PlanDrawer: FC<Props> = ({ data, open, onOpenChange, trigger, refetchQuery
 			const updateDto: UpdatePlanRequest & { id: string } = {
 				id: formData.id!,
 				name: formData.name.trim(),
-				lookup_key: formData.lookup_key,
+				lookup_key: formData.lookup_key, // Optional - matches backend structure
 				description: formData.description,
 				metadata,
 			};
@@ -156,20 +163,17 @@ const PlanDrawer: FC<Props> = ({ data, open, onOpenChange, trigger, refetchQuery
 				value={formData.name}
 				error={errors.name}
 				onChange={(e) => {
-					setFormData({
-						...formData,
-						name: e,
-						lookup_key: isEdit ? formData.lookup_key : 'plan-' + e.replace(/\s/g, '-').toLowerCase(),
-					});
+					setFormData({ ...formData, name: e });
 				}}
 			/>
 
 			<Spacer height={'20px'} />
 			<Input
 				label='Lookup Key'
-				disabled={isEdit}
 				error={errors.lookup_key}
-				onChange={(e) => setFormData({ ...formData, lookup_key: e })}
+				onChange={(e) => {
+					setFormData({ ...formData, lookup_key: e });
+				}}
 				value={formData.lookup_key}
 				placeholder='Enter a slug for the plan'
 				description={'A system identifier used for API calls and integrations.'}
