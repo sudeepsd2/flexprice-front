@@ -2,7 +2,7 @@ import { Card, CardHeader, NoDataCard } from '@/components/atoms';
 import { ChargeValueCell, ColumnData, FlexpriceTable, TerminateLineItemModal, DropdownMenu } from '@/components/molecules';
 import { formatDateShort } from '@/utils/common/helper_functions';
 import { LineItem } from '@/models/Subscription';
-import { FC, useState, useCallback, useEffect } from 'react';
+import { FC, useState, useCallback } from 'react';
 import { Trash2, Pencil } from 'lucide-react';
 import { ENTITY_STATUS } from '@/models/base';
 import { formatBillingPeriodForDisplay } from '@/utils/common/helper_functions';
@@ -15,44 +15,70 @@ interface Props {
 	isLoading?: boolean;
 }
 
+interface LineItemDropdownProps {
+	row: LineItem;
+	isDisabled: boolean;
+	onEdit: (lineItem: LineItem) => void;
+	onTerminate: (lineItem: LineItem) => void;
+}
+
+const LineItemDropdown: FC<LineItemDropdownProps> = ({ row, isDisabled, onEdit, onTerminate }) => {
+	const [isOpen, setIsOpen] = useState(false);
+
+	const handleClick = (e: React.MouseEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setIsOpen(!isOpen);
+	};
+
+	return (
+		<div data-interactive='true' onClick={handleClick}>
+			<DropdownMenu
+				isOpen={isOpen}
+				onOpenChange={setIsOpen}
+				options={[
+					{
+						label: 'Edit',
+						icon: <Pencil />,
+						onSelect: (e: Event) => {
+							e.preventDefault();
+							setIsOpen(false);
+							onEdit(row);
+						},
+						disabled: isDisabled,
+					},
+					{
+						label: 'Terminate',
+						icon: <Trash2 />,
+						onSelect: (e: Event) => {
+							e.preventDefault();
+							setIsOpen(false);
+							onTerminate(row);
+						},
+						disabled: isDisabled,
+					},
+				]}
+			/>
+		</div>
+	);
+};
+
 const SubscriptionLineItemTable: FC<Props> = ({ data, onEdit, onTerminate, isLoading }) => {
 	const [showTerminateModal, setShowTerminateModal] = useState(false);
 	const [selectedLineItem, setSelectedLineItem] = useState<LineItem | null>(null);
-	const [dropdownOpenStates, setDropdownOpenStates] = useState<Record<string, boolean>>({});
-
-	// ===== DROPDOWN STATE HELPERS =====
-	const setDropdownOpen = useCallback((lineItemId: string, isOpen: boolean) => {
-		setDropdownOpenStates((prev) => ({ ...prev, [lineItemId]: isOpen }));
-	}, []);
-
-	const closeDropdown = useCallback(
-		(lineItemId: string) => {
-			setDropdownOpen(lineItemId, false);
-		},
-		[setDropdownOpen],
-	);
-
-	const closeAllDropdowns = useCallback(() => {
-		setDropdownOpenStates({});
-	}, []);
 
 	// ===== HANDLERS =====
 	const handleEditClick = useCallback(
 		(lineItem: LineItem) => {
-			closeDropdown(lineItem.id);
 			onEdit?.(lineItem);
 		},
-		[closeDropdown, onEdit],
+		[onEdit],
 	);
 
-	const handleTerminateClick = useCallback(
-		(lineItem: LineItem) => {
-			closeDropdown(lineItem.id);
-			setSelectedLineItem(lineItem);
-			setShowTerminateModal(true);
-		},
-		[closeDropdown],
-	);
+	const handleTerminateClick = useCallback((lineItem: LineItem) => {
+		setSelectedLineItem(lineItem);
+		setShowTerminateModal(true);
+	}, []);
 
 	const handleTerminateConfirm = (endDate: string | undefined) => {
 		if (selectedLineItem) {
@@ -73,14 +99,6 @@ const SubscriptionLineItemTable: FC<Props> = ({ data, onEdit, onTerminate, isLoa
 			setSelectedLineItem(null);
 		}
 	};
-
-	// ===== EFFECTS =====
-	// Close all dropdowns when modal opens (additional safety measure)
-	useEffect(() => {
-		if (showTerminateModal) {
-			closeAllDropdowns();
-		}
-	}, [showTerminateModal, closeAllDropdowns]);
 
 	const columns: ColumnData<LineItem>[] = [
 		{
@@ -116,34 +134,8 @@ const SubscriptionLineItemTable: FC<Props> = ({ data, onEdit, onTerminate, isLoa
 				const defaultEndDate = '0001-01-01T00:00:00Z';
 				const hasEndDate = !!(row.end_date && row.end_date.trim() !== '' && row.end_date !== defaultEndDate);
 				const isDisabled = isArchived || hasEndDate;
-				const isDropdownOpen = dropdownOpenStates[row.id] || false;
 
-				return (
-					<DropdownMenu
-						isOpen={isDropdownOpen}
-						onOpenChange={(open) => setDropdownOpen(row.id, open)}
-						options={[
-							{
-								label: 'Edit',
-								icon: <Pencil />,
-								onSelect: (e: Event) => {
-									e.preventDefault();
-									handleEditClick(row);
-								},
-								disabled: isDisabled,
-							},
-							{
-								label: 'Terminate',
-								icon: <Trash2 />,
-								onSelect: (e: Event) => {
-									e.preventDefault();
-									handleTerminateClick(row);
-								},
-								disabled: isDisabled,
-							},
-						]}
-					/>
-				);
+				return <LineItemDropdown row={row} isDisabled={isDisabled} onEdit={handleEditClick} onTerminate={handleTerminateClick} />;
 			},
 		},
 	];

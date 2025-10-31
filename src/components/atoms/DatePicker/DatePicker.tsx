@@ -60,7 +60,7 @@ const DatePicker = ({
 					{date ? format(date, 'PPP') : placeholder}
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className={cn('w-auto p-0', popoverClassName, popoverContentClassName)} align='start'>
+			<PopoverContent className={cn('w-auto p-0 z-[60] pointer-events-auto', popoverClassName, popoverContentClassName)} align='start'>
 				<Calendar
 					mode='single'
 					disabled={disabled}

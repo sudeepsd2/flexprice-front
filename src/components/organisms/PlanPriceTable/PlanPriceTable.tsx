@@ -1,4 +1,4 @@
-import { FC, useCallback, useState, useEffect } from 'react';
+import { FC, useCallback, useState } from 'react';
 import { Button, Card, CardHeader, NoDataCard, Chip } from '@/components/atoms';
 import { FlexpriceTable, ColumnData, DropdownMenu, TerminatePriceModal, SyncOption, UpdatePriceDialog } from '@/components/molecules';
 import { Price, Plan, PRICE_STATUS } from '@/models';
@@ -22,6 +22,54 @@ interface PlanChargesTableProps {
 	plan: Plan;
 	onPriceUpdate?: () => void;
 }
+
+interface PriceDropdownProps {
+	row: Price;
+	hasEndDate: boolean;
+	onEditPrice: (price: Price) => void;
+	onTerminatePrice: (priceId: string) => void;
+}
+
+const PriceDropdown: FC<PriceDropdownProps> = ({ row, hasEndDate, onEditPrice, onTerminatePrice }) => {
+	const [isOpen, setIsOpen] = useState(false);
+
+	const handleClick = (e: React.MouseEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setIsOpen(!isOpen);
+	};
+
+	return (
+		<div data-interactive='true' onClick={handleClick}>
+			<DropdownMenu
+				isOpen={isOpen}
+				onOpenChange={setIsOpen}
+				options={[
+					{
+						label: 'Edit Price',
+						icon: <Pencil />,
+						onSelect: (e: Event) => {
+							e.preventDefault();
+							setIsOpen(false);
+							onEditPrice(row);
+						},
+						disabled: hasEndDate,
+					},
+					{
+						label: 'Terminate Price',
+						icon: <Trash2 />,
+						onSelect: (e: Event) => {
+							e.preventDefault();
+							setIsOpen(false);
+							onTerminatePrice(row.id);
+						},
+						disabled: hasEndDate,
+					},
+				]}
+			/>
+		</div>
+	);
+};
 
 const formatBillingPeriod = (billingPeriod: string) => {
 	switch (billingPeriod.toUpperCase()) {
@@ -86,7 +134,6 @@ const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate }) => {
 	const [selectedPriceForTermination, setSelectedPriceForTermination] = useState<Price | null>(null);
 	const [selectedPriceForEdit, setSelectedPriceForEdit] = useState<Price | null>(null);
 	const [isPriceDialogOpen, setIsPriceDialogOpen] = useState(false);
-	const [dropdownOpenStates, setDropdownOpenStates] = useState<Record<string, boolean>>({});
 
 	// ===== MUTATIONS =====
 	const { mutateAsync: deletePrice, isPending: isDeletingPrice } = useMutation({
@@ -113,32 +160,11 @@ const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate }) => {
 
 	const isPending = isDeletingPrice || isSyncing;
 
-	// ===== DROPDOWN STATE HELPERS =====
-	const setDropdownOpen = useCallback((priceId: string, isOpen: boolean) => {
-		setDropdownOpenStates((prev) => ({ ...prev, [priceId]: isOpen }));
-	}, []);
-
-	const closeDropdown = useCallback(
-		(priceId: string) => {
-			setDropdownOpen(priceId, false);
-		},
-		[setDropdownOpen],
-	);
-
-	const closeAllDropdowns = useCallback(() => {
-		setDropdownOpenStates({});
-	}, []);
-
 	// ===== HANDLERS =====
-	const handleEditPrice = useCallback(
-		(price: Price) => {
-			// Close dropdown first, then open modal (ActionButton pattern)
-			closeDropdown(price.id);
-			setSelectedPriceForEdit(price);
-			setIsPriceDialogOpen(true);
-		},
-		[closeDropdown],
-	);
+	const handleEditPrice = useCallback((price: Price) => {
+		setSelectedPriceForEdit(price);
+		setIsPriceDialogOpen(true);
+	}, []);
 
 	const handlePriceUpdateSuccess = useCallback(() => {
 		setIsPriceDialogOpen(false);
@@ -151,11 +177,10 @@ const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate }) => {
 			const price = plan.prices?.find((p) => p.id === priceId);
 			if (!price) return;
 
-			closeDropdown(priceId);
 			setSelectedPriceForTermination(price);
 			setShowTerminateModal(true);
 		},
-		[plan.prices, closeDropdown],
+		[plan.prices],
 	);
 
 	const handleTerminateConfirm = useCallback(
@@ -185,14 +210,6 @@ const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate }) => {
 		setShowTerminateModal(false);
 		setSelectedPriceForTermination(null);
 	}, []);
-
-	// ===== EFFECTS =====
-	// Close all dropdowns when modals open (additional safety measure)
-	useEffect(() => {
-		if (showTerminateModal || isPriceDialogOpen) {
-			closeAllDropdowns();
-		}
-	}, [showTerminateModal, isPriceDialogOpen, closeAllDropdowns]);
 
 	// ===== TABLE COLUMNS =====
 	const chargeColumns: ColumnData<Price>[] = [
@@ -241,34 +258,7 @@ const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate }) => {
 			hideOnEmpty: true,
 			render(row) {
 				const hasEndDate = !!(row.end_date && row.end_date.trim() !== '');
-				const isDropdownOpen = dropdownOpenStates[row.id] || false;
-
-				return (
-					<DropdownMenu
-						isOpen={isDropdownOpen}
-						onOpenChange={(open) => setDropdownOpen(row.id, open)}
-						options={[
-							{
-								label: 'Edit Price',
-								icon: <Pencil />,
-								onSelect: (e: Event) => {
-									e.preventDefault();
-									handleEditPrice(row);
-								},
-								disabled: hasEndDate,
-							},
-							{
-								label: 'Terminate Price',
-								icon: <Trash2 />,
-								onSelect: (e: Event) => {
-									e.preventDefault();
-									handleTerminatePrice(row.id);
-								},
-								disabled: hasEndDate,
-							},
-						]}
-					/>
-				);
+				return <PriceDropdown row={row} hasEndDate={hasEndDate} onEditPrice={handleEditPrice} onTerminatePrice={handleTerminatePrice} />;
 			},
 		},
 	];
