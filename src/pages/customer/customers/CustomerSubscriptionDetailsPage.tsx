@@ -12,16 +12,17 @@ import { useQuery } from '@tanstack/react-query';
 import { FC, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
-import { formatExpirationType } from '@/components/molecules/CreditGrant/CreditGrantTable';
+import { formatExpirationType } from '@/utils/common/credit_grant_helpers';
 import { CreditGrant, CREDIT_GRANT_EXPIRATION_TYPE } from '@/models/CreditGrant';
 import FlexpriceTable from '@/components/molecules/Table';
 import { INVOICE_TYPE } from '@/models/Invoice';
 import { TAXRATE_ENTITY_TYPE } from '@/models/Tax';
 import TaxAssociationTable from '@/components/molecules/TaxAssociationTable';
 import { SUBSCRIPTION_STATUS } from '@/models/Subscription';
+import { Subscription as SubscriptionType } from '@/models/Subscription';
 
-// Enhanced function to format expiration period with duration units
-export const formatExpirationPeriod = (grant: CreditGrant): string => {
+// Local helper function to format expiration period
+const formatExpirationPeriod = (grant: CreditGrant): string => {
 	if (grant.expiration_type === CREDIT_GRANT_EXPIRATION_TYPE.DURATION && grant.expiration_duration && grant.expiration_duration_unit) {
 		const duration = grant.expiration_duration;
 		const unit = grant.expiration_duration_unit.toLowerCase();
@@ -71,10 +72,10 @@ const columns: ColumnData<CreditGrant>[] = [
 const CustomerSubscriptionDetailsPage: FC = () => {
 	const { subscription_id, id: customerId } = useParams();
 	const { updateBreadcrumb } = useBreadcrumbsStore();
-	const { data: subscriptionDetails, isLoading: isSubscriptionDetailsLoading } = useQuery({
+	const { data: subscriptionDetails, isLoading: isSubscriptionDetailsLoading } = useQuery<SubscriptionType>({
 		queryKey: ['subscriptionDetails', subscription_id],
-		queryFn: async () => {
-			return await SubscriptionApi.getSubscriptionById(subscription_id!);
+		queryFn: async (): Promise<SubscriptionType> => {
+			return await SubscriptionApi.getSubscription(subscription_id!);
 		},
 		staleTime: 1,
 	});

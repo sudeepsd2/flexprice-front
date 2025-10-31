@@ -1,9 +1,11 @@
 import { Price } from '@/models/Price';
 import { FC, useState, useEffect } from 'react';
-import { Button, Input, Select, SelectOption, Spacer } from '@/components/atoms';
+import { Button, Input, Select, SelectOption, Spacer, DatePicker } from '@/components/atoms';
 import SelectMeter from './SelectMeter';
+import SelectGroup from './SelectGroup';
 // import { Pencil, Trash2 } from 'lucide-react';
 import { Meter } from '@/models/Meter';
+import { Group } from '@/models/Group';
 import { formatBillingPeriodForPrice, getCurrencySymbol } from '@/utils/common/helper_functions';
 import { billlingPeriodOptions, currencyOptions } from '@/constants/constants';
 import VolumeTieredPricingForm from './VolumeTieredPricingForm';
@@ -13,6 +15,15 @@ import { toast } from 'react-hot-toast';
 import { BILLING_CADENCE, INVOICE_CADENCE } from '@/models/Invoice';
 import { BILLING_MODEL, TIER_MODE, PRICE_ENTITY_TYPE } from '@/models/Price';
 import { BILLING_PERIOD, PRICE_TYPE } from '@/models/Price';
+
+/**
+ * Enum for internal price states to avoid typos and provide better type safety
+ */
+export enum PriceInternalState {
+	NEW = 'new',
+	EDIT = 'edit',
+	SAVED = 'saved',
+}
 interface Props {
 	onAdd: (price: InternalPrice) => void;
 	onUpdate: (price: InternalPrice) => void;
@@ -74,6 +85,7 @@ const UsagePricingForm: FC<Props> = ({
 	const [billingModel, setBillingModel] = useState(price.billing_model || billingModels[0].value);
 	const [meterId, setMeterId] = useState<string>(price.meter_id || '');
 	const [activeMeter, setActiveMeter] = useState<Meter | null>(price.meter || null);
+	const [groupId, setGroupId] = useState<string | undefined>(price.group_id);
 	const [tieredPrices, setTieredPrices] = useState<PriceTier[]>([
 		{ from: 0, up_to: 1, unit_amount: '', flat_amount: '0' },
 		{ from: 1, up_to: null, unit_amount: '', flat_amount: '0' },
@@ -84,6 +96,7 @@ const UsagePricingForm: FC<Props> = ({
 		unit: '',
 		price: '',
 	});
+	const [startDate, setStartDate] = useState<Date | undefined>(price.start_date ? new Date(price.start_date) : undefined);
 
 	const [errors, setErrors] = useState<Partial<Record<keyof Price, any>>>({});
 	const [inputErrors, setInputErrors] = useState({
@@ -94,7 +107,7 @@ const UsagePricingForm: FC<Props> = ({
 
 	// Load price data when editing
 	useEffect(() => {
-		if (price.internal_state === 'edit') {
+		if (price.internal_state === PriceInternalState.EDIT) {
 			setCurrency(price.currency || currencyOptions[0].value);
 			setBillingModel(price.billing_model || billingModels[0].value);
 			setMeterId(price.meter_id || '');
@@ -105,15 +118,16 @@ const UsagePricingForm: FC<Props> = ({
 				} as Meter);
 			}
 			setBillingPeriod(price.billing_period || billlingPeriodOptions[1].value);
+			setStartDate(price.start_date ? new Date(price.start_date) : undefined);
 
-			if (price.billing_model === 'FLAT_FEE') {
+			if (price.billing_model === BILLING_MODEL.FLAT_FEE) {
 				setFlatFee(price.amount || '');
-			} else if (price.billing_model === 'PACKAGE') {
+			} else if (price.billing_model === BILLING_MODEL.PACKAGE) {
 				setPackagedFee({
 					price: price.amount || '',
-					unit: (price.transform_quantity as any)?.divide_by?.toString() || '',
+					unit: price.transform_quantity?.divide_by?.toString() || '',
 				});
-			} else if (price.billing_model === 'TIERED' && Array.isArray(price.tiers)) {
+			} else if (price.billing_model === BILLING_MODEL.TIERED && Array.isArray(price.tiers)) {
 				setTieredPrices(
 					(price.tiers as unknown as TieredPrice[]).map((tier) => ({
 						from: tier.from,
@@ -249,7 +263,7 @@ const UsagePricingForm: FC<Props> = ({
 	};
 
 	const handleCancel = () => {
-		if (price.internal_state === 'edit') {
+		if (price.internal_state === PriceInternalState.EDIT) {
 			onDeleteClicked();
 		} else {
 			onDeleteClicked();
@@ -271,6 +285,8 @@ const UsagePricingForm: FC<Props> = ({
 			invoice_cadence: INVOICE_CADENCE.ARREAR,
 			entity_type: entityType,
 			entity_id: entityId || '',
+			group_id: groupId,
+			start_date: startDate ? startDate.toISOString() : undefined,
 		};
 
 		let finalPrice: Partial<Price>;
@@ -305,25 +321,25 @@ const UsagePricingForm: FC<Props> = ({
 			finalPrice = basePrice;
 		}
 		// If we're editing an existing price, preserve its ID and other important fields
-		if (price.internal_state === 'edit') {
+		if (price.internal_state === PriceInternalState.EDIT) {
 			const finalPriceWithEdit: InternalPrice = {
 				...price,
 				...finalPrice,
 				type: PRICE_TYPE.USAGE,
 				meter_id: meterId,
 				meter: activeMeter || price.meter,
-				internal_state: 'saved',
+				internal_state: PriceInternalState.SAVED,
 			};
 			onUpdate(finalPriceWithEdit);
 		} else {
 			onAdd({
 				...finalPrice,
-				internal_state: 'saved',
+				internal_state: PriceInternalState.SAVED,
 			} as InternalPrice);
 		}
 	};
 
-	if (price.internal_state === 'saved') {
+	if (price.internal_state === PriceInternalState.SAVED) {
 		return (
 			<div className='mb-2 space-y-2'>
 				<UsageChargePreview charge={price} index={0} onEdit={onEditClicked} onDelete={onDeleteClicked} />
@@ -345,6 +361,7 @@ const UsagePricingForm: FC<Props> = ({
 				value={meterId}
 			/>
 			<Spacer height='8px' />
+
 			<Select
 				value={currency}
 				options={currencyOptions}
@@ -450,7 +467,7 @@ const UsagePricingForm: FC<Props> = ({
 					{inputErrors.tieredModelError && <p className='text-red-500 text-sm'>{inputErrors.tieredModelError}</p>}
 				</div>
 			)}
-
+			<Spacer height='8px' />
 			{/* <Spacer height='12px' /> */}
 			{/* <CheckboxRadioGroup
 				title='Billing timing'
@@ -474,13 +491,33 @@ const UsagePricingForm: FC<Props> = ({
 				error={inputErrors.invoiceCadenceError}
 			/> */}
 			<Spacer height={'16px'} />
-			<Spacer height='16px' />
+			<DatePicker
+				date={startDate}
+				popoverTriggerClassName='w-full'
+				className='w-full'
+				popoverClassName='w-full'
+				popoverContentClassName='w-full'
+				setDate={setStartDate}
+				label='Start Date (Optional)'
+				placeholder='Select start date'
+				minDate={new Date()}
+			/>
+			<SelectGroup
+				value={groupId}
+				onChange={(group: Group | null) => setGroupId(group?.id)}
+				label='Group'
+				placeholder='Select a group (optional)'
+				description='Assign this price to a group for better organization'
+				hiddenIfEmpty
+			/>
+
+			<Spacer height={'16px'} />
 			<div className='flex justify-end'>
 				<Button onClick={handleCancel} variant='secondary' className='mr-4 text-zinc-900'>
-					{price.internal_state === 'edit' ? 'Delete' : 'Cancel'}
+					{price.internal_state === PriceInternalState.EDIT ? 'Delete' : 'Cancel'}
 				</Button>
 				<Button onClick={handleSubmit} variant='default' className='mr-4 font-normal'>
-					{price.internal_state === 'edit' ? 'Update' : 'Add'}
+					{price.internal_state === PriceInternalState.EDIT ? 'Update' : 'Add'}
 				</Button>
 			</div>
 		</div>

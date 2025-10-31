@@ -1,13 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { formatBillingPeriodForPrice, getCurrencySymbol } from '@/utils/common/helper_functions';
 import { billlingPeriodOptions, currencyOptions } from '@/constants/constants';
 import { InternalPrice } from './SetupChargesSection';
-import { CheckboxRadioGroup, FormHeader, Input, Spacer, Button, Select } from '@/components/atoms';
+import { PriceInternalState } from './UsagePricingForm';
+import { CheckboxRadioGroup, FormHeader, Input, Spacer, Button, Select, DatePicker } from '@/components/atoms';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import RecurringChargePreview from './RecurringChargePreview';
 import { BILLING_CADENCE, INVOICE_CADENCE } from '@/models/Invoice';
 import { BILLING_PERIOD, PRICE_ENTITY_TYPE } from '@/models/Price';
+import SelectGroup from './SelectGroup';
+import { Group } from '@/models/Group';
 
 interface Props {
 	price: Partial<InternalPrice>;
@@ -29,7 +32,17 @@ const RecurringChargesForm = ({
 	entityId,
 }: Props) => {
 	const [localPrice, setLocalPrice] = useState<Partial<InternalPrice>>(price);
+	const [startDate, setStartDate] = useState<Date | undefined>(price.start_date ? new Date(price.start_date) : undefined);
 	const [errors, setErrors] = useState<Partial<Record<keyof InternalPrice, string>>>({});
+
+	// Update startDate when price changes (e.g., when editing)
+	useEffect(() => {
+		if (price.start_date) {
+			setStartDate(new Date(price.start_date));
+		} else {
+			setStartDate(undefined);
+		}
+	}, [price.start_date]);
 
 	const validate = () => {
 		const newErrors: Partial<Record<keyof InternalPrice, string>> = {};
@@ -63,9 +76,10 @@ const RecurringChargesForm = ({
 			...localPrice,
 			entity_type: entityType,
 			entity_id: entityId || '',
+			start_date: startDate ? startDate.toISOString() : undefined,
 		};
 
-		if (price.internal_state === 'edit') {
+		if (price.internal_state === PriceInternalState.EDIT) {
 			onUpdate({
 				...priceWithEntity,
 				isEdit: false,
@@ -78,7 +92,11 @@ const RecurringChargesForm = ({
 		}
 	};
 
-	if (price.internal_state === 'saved') {
+	const handleGroupChange = (group: Group | null) => {
+		setLocalPrice({ ...localPrice, group_id: group?.id || undefined });
+	};
+
+	if (price.internal_state === PriceInternalState.SAVED) {
 		return <RecurringChargePreview charge={price} onEditClicked={onEditClicked} onDeleteClicked={onDeleteClicked} />;
 	}
 
@@ -110,6 +128,27 @@ const RecurringChargesForm = ({
 				inputPrefix={getCurrencySymbol(localPrice.currency || '')}
 				suffix={<span className='text-[#64748B]'> {`per ${formatBillingPeriodForPrice(localPrice.billing_period || '')}`}</span>}
 			/>
+			<Spacer height={'8px'} />
+			<SelectGroup
+				value={localPrice.group_id}
+				onChange={handleGroupChange}
+				label='Group'
+				placeholder='Select a group (optional)'
+				description='Assign this price to a group for better organization'
+				hiddenIfEmpty
+			/>
+			<Spacer height={'16px'} />
+			<DatePicker
+				popoverTriggerClassName='w-full'
+				className='w-full'
+				popoverClassName='w-full'
+				popoverContentClassName='w-full'
+				date={startDate}
+				setDate={setStartDate}
+				label='Start Date (Optional)'
+				placeholder='Select start date'
+				minDate={new Date()}
+			/>
 			<Spacer height={'16px'} />
 			<FormHeader title='Billing Timing' variant='form-component-title' />
 			{/* starting billing preffercences */}
@@ -120,12 +159,12 @@ const RecurringChargesForm = ({
 				checkboxItems={[
 					{
 						label: 'Advance',
-						value: 'ADVANCE',
+						value: INVOICE_CADENCE.ADVANCE,
 						description: 'Charge at the start of each billing cycle.',
 					},
 					{
 						label: 'Arrear',
-						value: 'ARREAR',
+						value: INVOICE_CADENCE.ARREAR,
 						description: 'Charge at the end of the billing cycle.',
 					},
 				]}
@@ -175,10 +214,10 @@ const RecurringChargesForm = ({
 			<Spacer height={'16px'} />
 			<div className='flex justify-end'>
 				<Button onClick={onDeleteClicked} variant='secondary' className='mr-4 text-zinc-900'>
-					{price.internal_state === 'edit' ? 'Delete' : 'Cancel'}
+					{price.internal_state === PriceInternalState.EDIT ? 'Delete' : 'Cancel'}
 				</Button>
 				<Button onClick={handleSubmit} variant='default' className='mr-4 font-normal'>
-					{price.internal_state === 'edit' ? 'Update' : 'Add'}
+					{price.internal_state === PriceInternalState.EDIT ? 'Update' : 'Add'}
 				</Button>
 			</div>
 		</div>

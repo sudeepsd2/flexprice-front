@@ -37,6 +37,7 @@ export interface ExtendedPriceOverride {
 	tier_mode?: TIER_MODE;
 	tiers?: CreatePriceTier[];
 	transform_quantity?: TransformQuantity;
+	effective_from?: string; // ISO date string for scheduling price changes
 }
 
 /**

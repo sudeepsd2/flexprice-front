@@ -77,3 +77,5 @@ export { default as DecimalUsageInput } from './DecimalUsageInput';
 
 // Error Boundary
 export { default as ErrorBoundary } from './ErrorBoundary';
+
+export { default as Tooltip } from './Tooltip';

@@ -9,6 +9,10 @@ export { ADDON_TYPE, ADDON_STATUS } from './Addon';
 // CostSheet
 export type { default as CostSheet } from './CostSheet';
 
+// Group
+export type { Group } from './Group';
+export { GROUP_ENTITY_TYPE } from './Group';
+
 // Connection
 export type { Connection } from './Connection';
 export { CONNECTION_PROVIDER_TYPE, CONNECTION_STATUS } from './Connection';
@@ -93,7 +97,7 @@ export type { Plan } from './Plan';
 
 // Price
 export type { Price, Tier, TransformQuantity, PriceUnitConfig, CreatePriceTier } from './Price';
-export { BILLING_MODEL, BILLING_PERIOD, PRICE_TYPE, PRICE_UNIT_TYPE, TIER_MODE, PRICE_ENTITY_TYPE } from './Price';
+export { BILLING_MODEL, BILLING_PERIOD, PRICE_TYPE, PRICE_UNIT_TYPE, TIER_MODE, PRICE_ENTITY_TYPE, PRICE_STATUS } from './Price';
 
 // SecretKey
 export type { SecretKey } from './SecretKey';

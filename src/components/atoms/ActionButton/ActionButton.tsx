@@ -22,6 +22,7 @@ interface ActionProps {
 	editText?: string;
 	archiveIcon?: React.ReactNode;
 	editIcon?: React.ReactNode;
+	disableToast?: boolean;
 }
 
 const ActionButton: FC<ActionProps> = ({
@@ -37,6 +38,7 @@ const ActionButton: FC<ActionProps> = ({
 	editText,
 	archiveIcon,
 	editIcon,
+	disableToast = false,
 }) => {
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
@@ -45,11 +47,15 @@ const ActionButton: FC<ActionProps> = ({
 	const { mutate: deleteEntity } = useMutation({
 		mutationFn: deleteMutationFn,
 		onSuccess: async () => {
-			toast.success(`${entityName} ${archiveText?.toLowerCase() || 'archived'} successfully`);
+			if (!disableToast) {
+				toast.success(`${entityName} ${archiveText?.toLowerCase() || 'archived'} successfully`);
+			}
 			await refetchQueries(refetchQueryKey);
 		},
 		onError: (err: ServerError) => {
-			toast.error(err.error.message || `Failed to ${archiveText?.toLowerCase() || 'archive'} ${entityName}. Please try again.`);
+			if (!disableToast) {
+				toast.error(err.error.message || `Failed to ${archiveText?.toLowerCase() || 'archive'} ${entityName}. Please try again.`);
+			}
 		},
 	});
 

@@ -50,6 +50,11 @@ export type {
 	TransformQuantity,
 	PriceFilter,
 	CreateBulkPriceRequest,
+	CreateBulkPriceResponse,
+	PriceResponse,
+	PriceUnitResponse,
+	DeletePriceRequest,
+	CostBreakup,
 } from './Price';
 
 export type {
@@ -221,3 +226,12 @@ export {
 
 // Additional DTO types
 export type { Testimonial } from './Testimonial';
+
+export type {
+	CreateGroupRequest,
+	UpdateGroupRequest,
+	GroupResponse,
+	ListGroupsResponse,
+	GroupFilter,
+	AddEntityToGroupRequest,
+} from './Group';

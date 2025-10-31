@@ -22,3 +22,6 @@ export { default as AddCharges } from './plans/AddCharges';
 export { default as PlanDetailsPage, formatInvoiceCadence } from './plans/PlanDetailsPage';
 export { default as Plans } from './plans/Plans';
 export { default as Pricing, PlanType } from './plans/Pricing';
+
+// Groups
+export { default as Groups } from './groups/Groups';

@@ -3,6 +3,15 @@ import { CREDIT_GRANT_PERIOD } from '@/models/CreditGrant';
 import { BILLING_MODEL, PRICE_TYPE, PRICE_UNIT_TYPE, TIER_MODE, PRICE_ENTITY_TYPE } from '@/models/Price';
 import { ENTITLEMENT_ENTITY_TYPE } from '@/models/Entitlement';
 import { BILLING_CADENCE, INVOICE_CADENCE } from '@/models/Invoice';
+import {
+	BILLING_CYCLE,
+	COLLECTION_METHOD,
+	PAYMENT_BEHAVIOR,
+	SUBSCRIPTION_CANCELLATION_TYPE,
+	SUBSCRIPTION_LINE_ITEM_ENTITY_TYPE,
+	SUBSCRIPTION_PRORATION_BEHAVIOR,
+	SUBSCRIPTION_STATUS,
+} from '@/models/Subscription';
 
 export enum BILLING_PERIOD {
 	DAILY = 'DAILY',
@@ -117,4 +126,48 @@ export const entitlementEntityTypeOptions = [
 export const invoiceCadenceOptions = [
 	{ label: 'Arrear', value: INVOICE_CADENCE.ARREAR },
 	{ label: 'Advance', value: INVOICE_CADENCE.ADVANCE },
+];
+
+// Subscription-related options
+export const subscriptionStatusOptions = [
+	{ label: 'Active', value: SUBSCRIPTION_STATUS.ACTIVE },
+	{ label: 'Paused', value: SUBSCRIPTION_STATUS.PAUSED },
+	{ label: 'Cancelled', value: SUBSCRIPTION_STATUS.CANCELLED },
+	{ label: 'Incomplete', value: SUBSCRIPTION_STATUS.INCOMPLETE },
+	{ label: 'Incomplete Expired', value: SUBSCRIPTION_STATUS.INCOMPLETE_EXPIRED },
+	{ label: 'Past Due', value: SUBSCRIPTION_STATUS.PAST_DUE },
+	{ label: 'Trialing', value: SUBSCRIPTION_STATUS.TRIALING },
+	{ label: 'Unpaid', value: SUBSCRIPTION_STATUS.UNPAID },
+];
+
+export const billingCycleOptions = [
+	{ label: 'Anniversary', value: BILLING_CYCLE.ANNIVERSARY },
+	{ label: 'Calendar', value: BILLING_CYCLE.CALENDAR },
+];
+
+export const paymentBehaviorOptions = [
+	{ label: 'Allow Incomplete', value: PAYMENT_BEHAVIOR.ALLOW_INCOMPLETE },
+	{ label: 'Default Incomplete', value: PAYMENT_BEHAVIOR.DEFAULT_INCOMPLETE },
+	{ label: 'Error If Incomplete', value: PAYMENT_BEHAVIOR.ERROR_IF_INCOMPLETE },
+	{ label: 'Default Active', value: PAYMENT_BEHAVIOR.DEFAULT_ACTIVE },
+];
+
+export const collectionMethodOptions = [
+	{ label: 'Charge Automatically', value: COLLECTION_METHOD.CHARGE_AUTOMATICALLY },
+	{ label: 'Send Invoice', value: COLLECTION_METHOD.SEND_INVOICE },
+];
+
+export const prorationBehaviorOptions = [
+	{ label: 'Create Prorations', value: SUBSCRIPTION_PRORATION_BEHAVIOR.CREATE_PRORATIONS },
+	{ label: 'None', value: SUBSCRIPTION_PRORATION_BEHAVIOR.NONE },
+];
+
+export const cancellationTypeOptions = [
+	{ label: 'Immediate', value: SUBSCRIPTION_CANCELLATION_TYPE.IMMEDIATE },
+	{ label: 'End of Period', value: SUBSCRIPTION_CANCELLATION_TYPE.END_OF_PERIOD },
+];
+
+export const subscriptionLineItemEntityTypeOptions = [
+	{ label: 'Plan', value: SUBSCRIPTION_LINE_ITEM_ENTITY_TYPE.PLAN },
+	{ label: 'Addon', value: SUBSCRIPTION_LINE_ITEM_ENTITY_TYPE.ADDON },
 ];

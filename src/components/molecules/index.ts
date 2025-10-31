@@ -21,6 +21,10 @@ export type { EventFilterData } from './EventFilter';
 
 export { default as PlansTable } from './PlansTable';
 
+export { default as GroupsTable } from './GroupsTable';
+
+export { default as GroupDrawer } from './GroupDrawer';
+
 export { default as CouponTable } from './CouponTable';
 
 export { default as CouponModal } from './CouponModal';
@@ -36,6 +40,8 @@ export { default as TopupCard } from './WalletTopupCard';
 export { default as RecordPaymentTopup } from './RecordPaymentTopup';
 
 export { default as RolloutChargesModal, RolloutOption } from './RolloutChargesModal';
+export { default as TerminatePriceModal, SyncOption } from './TerminatePriceModal';
+export { default as TerminateLineItemModal } from './TerminateLineItemModal';
 
 export { default as RectangleRadiogroup } from './RectangleRadiogroup';
 export type { RectangleRadiogroupOption } from './RectangleRadiogroup';
@@ -116,6 +122,7 @@ export { MetadataModal } from './MetadataModal';
 export { default as SaveCardModal } from './SaveCardModal';
 
 export { default as PriceOverrideDialog } from './PriceOverrideDialog';
+export { default as UpdatePriceDialog } from './UpdatePriceDialog';
 
 export { default as WalletAlertDialog } from './WalletAlertDialog';
 

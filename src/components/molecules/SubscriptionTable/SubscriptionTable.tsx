@@ -76,12 +76,12 @@ const SubscriptionTable: FC<Props> = ({ data, onEdit }) => {
 					refetchQueryKey='fetchSubscriptions'
 					archiveText='Cancel'
 					archiveIcon={<Trash2 />}
-					deleteMutationFn={(id) =>
-						SubscriptionApi.cancelSubscription(id, {
+					deleteMutationFn={async (id) => {
+						await SubscriptionApi.cancelSubscription(id, {
 							cancellation_type: SUBSCRIPTION_CANCELLATION_TYPE.IMMEDIATE,
-						})
-					}
-					editPath={`${RouteNames.subscriptions}/edit/${row.id}`}
+						});
+					}}
+					editPath={`${RouteNames.subscriptions}/${row.id}/edit`}
 					onEdit={() => {
 						onEdit?.(row);
 					}}
