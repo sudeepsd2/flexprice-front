@@ -39,7 +39,7 @@ const GUIDES: Record<
 		tutorials: [
 			{
 				imageUrl: 'https://res.cloudinary.com/daospvham/image/upload/v1753180993/PLAN_1_j6tdqv.svg',
-				title: 'How to create a Addon?',
+				title: 'How to create an Addon?',
 				description: 'Explore how to create a new Addons in Flexprice.',
 				onClick: () => openGuide('https://docs.flexprice.io/api-reference/addons/create-addon'),
 			},
@@ -51,7 +51,7 @@ const GUIDES: Record<
 			},
 			{
 				imageUrl: 'https://res.cloudinary.com/daospvham/image/upload/v1753180995/PLAN_3_lfh1mi.svg',
-				title: 'How to delete a Addon?',
+				title: 'How to delete an Addon?',
 				description: 'Explore how to delete a Addon.',
 				onClick: () => openGuide('https://docs.flexprice.io/api-reference/addons/delete-addon'),
 			},
@@ -72,7 +72,7 @@ const GUIDES: Record<
 				onClick: () => openGuide('https://docs.flexprice.io/api-reference/coupons/update-a-coupon'),
 			},
 			{
-				imageUrl: 'ttps://res.cloudinary.com/daospvham/image/upload/v1753180995/PLAN_3_lfh1mi.svg',
+				imageUrl: 'https://res.cloudinary.com/daospvham/image/upload/v1753180995/PLAN_3_lfh1mi.svg',
 				title: 'How to delete a coupon?',
 				description: 'Explore how to delete a Coupon.',
 				onClick: () => openGuide('https://docs.flexprice.io/api-reference/coupons/delete-a-coupon'),
