@@ -124,6 +124,7 @@ const RecurringChargesForm = ({
 				label='Group'
 				placeholder='Select a group (optional)'
 				description='Assign this price to a group for better organization'
+				hiddenIfEmpty
 			/>
 			<Spacer height={'16px'} />
 			<FormHeader title='Billing Timing' variant='form-component-title' />
