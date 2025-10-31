@@ -190,9 +190,6 @@ const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate }) => {
 		mutationFn: async ({ priceId, data }: { priceId: string; data?: DeletePriceRequest }) => {
 			return await PriceApi.DeletePrice(priceId, data);
 		},
-		onSuccess: () => {
-			toast.success('Price terminated successfully');
-		},
 		onError: (error: ServerError) => {
 			toast.error(error?.error?.message || 'Error deleting price');
 		},
@@ -242,6 +239,12 @@ const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate }) => {
 			try {
 				const deleteRequest: DeletePriceRequest | undefined = endDate ? { end_date: endDate } : undefined;
 				await deletePrice({ priceId: selectedPriceForTermination.id, data: deleteRequest });
+
+				const priceName = selectedPriceForTermination.meter?.name || selectedPriceForTermination.description || 'Price';
+				const message = endDate
+					? `${priceName} will be terminated on ${formatDateTimeWithSecondsAndTimezone(new Date(endDate))}.`
+					: `${priceName} has been terminated immediately.`;
+				toast.success(message);
 
 				if (syncOption === SyncOption.EXISTING_ALSO) {
 					await syncPlanCharges();
@@ -360,10 +363,10 @@ const PlanPriceTable: FC<PlanChargesTableProps> = ({ plan, onPriceUpdate }) => {
 				{selectedPriceForTermination && (
 					<TerminatePriceModal
 						planId={plan.id}
+						price={selectedPriceForTermination}
 						onCancel={handleTerminateCancel}
 						onConfirm={handleTerminateConfirm}
 						isLoading={isPending}
-						showSyncOption={true}
 					/>
 				)}
 			</Dialog>

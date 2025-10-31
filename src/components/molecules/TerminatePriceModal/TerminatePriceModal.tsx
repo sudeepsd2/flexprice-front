@@ -5,6 +5,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useQuery } from '@tanstack/react-query';
 import SubscriptionApi from '@/api/SubscriptionApi';
 import { cn } from '@/lib/utils';
+import { Price, PRICE_TYPE } from '@/models';
+import { formatDateTimeWithSecondsAndTimezone } from '@/utils/common/format_date';
 
 export enum SyncOption {
 	NEW_ONLY = 'NEW_ONLY',
@@ -13,6 +15,7 @@ export enum SyncOption {
 
 interface TerminatePriceModalProps {
 	planId: string;
+	price?: Price;
 	onCancel: () => void;
 	onConfirm: (endDate: string | undefined, syncOption?: SyncOption) => void;
 	isLoading?: boolean;
@@ -40,27 +43,49 @@ const RadioOption: FC<RadioOptionProps> = ({ value, selected, title, description
 	</div>
 );
 
-const TerminatePriceModal: FC<TerminatePriceModalProps> = ({ planId, onCancel, onConfirm, isLoading = false, showSyncOption = true }) => {
+const TerminatePriceModal: FC<TerminatePriceModalProps> = ({
+	planId,
+	price,
+	onCancel,
+	onConfirm,
+	isLoading = false,
+	showSyncOption = true,
+}) => {
 	const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 	const [selectedSyncOption, setSelectedSyncOption] = useState<SyncOption>(SyncOption.NEW_ONLY);
+
+	// Hide sync option if price type is FIXED
+	const isFixedPrice = price?.type === PRICE_TYPE.FIXED;
+	const effectiveShowSyncOption = showSyncOption && !isFixedPrice;
 
 	const { data: existingSubscriptions } = useQuery({
 		queryKey: ['subscriptions', planId],
 		queryFn: () => SubscriptionApi.listSubscriptions({ plan_id: planId, limit: 1 }),
-		enabled: !!planId && showSyncOption,
+		enabled: !!planId && effectiveShowSyncOption,
 	});
 
 	const shouldShowSyncOption = useMemo(
-		() => showSyncOption && (existingSubscriptions?.items?.length ?? 0) > 0,
-		[showSyncOption, existingSubscriptions],
+		() => effectiveShowSyncOption && (existingSubscriptions?.items?.length ?? 0) > 0,
+		[effectiveShowSyncOption, existingSubscriptions],
 	);
+
+	// Get termination message based on selected date
+	const terminationMessage = useMemo(() => {
+		if (!price) return '';
+
+		const priceName = price.meter?.name || price.description || 'Price';
+		if (endDate) {
+			return `${priceName} will be terminated on ${formatDateTimeWithSecondsAndTimezone(endDate)}.`;
+		}
+		return `${priceName} will be terminated immediately.`;
+	}, [price, endDate]);
 
 	useEffect(() => {
 		setEndDate(undefined);
 		if (shouldShowSyncOption) {
 			setSelectedSyncOption(SyncOption.NEW_ONLY);
 		}
-	}, [planId, shouldShowSyncOption]);
+	}, [planId, price?.id, shouldShowSyncOption]);
 
 	const handleConfirm = () => {
 		const endDateISO = endDate?.toISOString();
@@ -91,6 +116,11 @@ const TerminatePriceModal: FC<TerminatePriceModalProps> = ({ planId, onCancel, o
 						className='w-full'
 					/>
 					<p className='text-xs text-gray-500'>Leave empty to terminate immediately. Select a future date to schedule termination.</p>
+					{terminationMessage && (
+						<div className='mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg'>
+							<p className='text-sm text-blue-800'>{terminationMessage}</p>
+						</div>
+					)}
 				</div>
 
 				{shouldShowSyncOption && (

@@ -14,6 +14,7 @@ import { PriceApi } from '@/api/PriceApi';
 import { UpdatePriceRequest } from '@/types/dto';
 import { cn } from '@/lib/utils';
 import { SyncOption } from '../TerminatePriceModal';
+import { formatDateTimeWithSecondsAndTimezone } from '@/utils/common/format_date';
 
 interface UpdatePriceDialogProps {
 	isOpen: boolean;
@@ -63,14 +64,20 @@ const UpdatePriceDialog: FC<UpdatePriceDialogProps> = ({ isOpen, onOpenChange, p
 	const [effectiveFrom, setEffectiveFrom] = useState<Date | undefined>(undefined);
 	const [selectedSyncOption, setSelectedSyncOption] = useState<SyncOption>(SyncOption.NEW_ONLY);
 
-	// Check for existing subscriptions
+	// Hide sync option if price type is FIXED
+	const isFixedPrice = price.type === PRICE_TYPE.FIXED;
+
+	// Check for existing subscriptions (only if not FIXED price)
 	const { data: existingSubscriptions } = useQuery({
 		queryKey: ['subscriptions', planId],
 		queryFn: () => SubscriptionApi.listSubscriptions({ plan_id: planId, limit: 1 }),
-		enabled: !!planId && isOpen,
+		enabled: !!planId && isOpen && !isFixedPrice,
 	});
 
-	const shouldShowSyncOption = useMemo(() => (existingSubscriptions?.items?.length ?? 0) > 0, [existingSubscriptions]);
+	const shouldShowSyncOption = useMemo(
+		() => !isFixedPrice && (existingSubscriptions?.items?.length ?? 0) > 0,
+		[isFixedPrice, existingSubscriptions],
+	);
 
 	// Initialize state when price or dialog opens
 	useEffect(() => {
@@ -107,9 +114,6 @@ const UpdatePriceDialog: FC<UpdatePriceDialogProps> = ({ isOpen, onOpenChange, p
 	const { mutateAsync: updatePrice, isPending: isUpdatingPrice } = useMutation({
 		mutationFn: async ({ priceId, data }: { priceId: string; data: UpdatePriceRequest }) => {
 			return await PriceApi.UpdatePrice(priceId, data);
-		},
-		onSuccess: () => {
-			toast.success('Price updated successfully');
 		},
 		onError: (error: ServerError) => {
 			toast.error(error?.error?.message || 'Failed to update price');
@@ -173,6 +177,12 @@ const UpdatePriceDialog: FC<UpdatePriceDialogProps> = ({ isOpen, onOpenChange, p
 		try {
 			// Update the price
 			await updatePrice({ priceId: price.id, data: updateData });
+
+			const priceName = price.meter?.name || 'Price';
+			const message = effectiveFrom
+				? `${priceName} will be effective from ${formatDateTimeWithSecondsAndTimezone(effectiveFrom)}.`
+				: `${priceName} has been updated successfully.`;
+			toast.success(message);
 
 			// If user selected to sync with existing subscriptions
 			if (shouldShowSyncOption && selectedSyncOption === SyncOption.EXISTING_ALSO) {
