@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { formatBillingPeriodForPrice, getCurrencySymbol } from '@/utils/common/helper_functions';
 import { billlingPeriodOptions, currencyOptions } from '@/constants/constants';
 import { InternalPrice } from './SetupChargesSection';
+import { PriceInternalState } from './UsagePricingForm';
 import { CheckboxRadioGroup, FormHeader, Input, Spacer, Button, Select } from '@/components/atoms';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -67,7 +68,7 @@ const RecurringChargesForm = ({
 			entity_id: entityId || '',
 		};
 
-		if (price.internal_state === 'edit') {
+		if (price.internal_state === PriceInternalState.EDIT) {
 			onUpdate({
 				...priceWithEntity,
 				isEdit: false,
@@ -84,7 +85,7 @@ const RecurringChargesForm = ({
 		setLocalPrice({ ...localPrice, group_id: group?.id || undefined });
 	};
 
-	if (price.internal_state === 'saved') {
+	if (price.internal_state === PriceInternalState.SAVED) {
 		return <RecurringChargePreview charge={price} onEditClicked={onEditClicked} onDeleteClicked={onDeleteClicked} />;
 	}
 
@@ -189,10 +190,10 @@ const RecurringChargesForm = ({
 			<Spacer height={'16px'} />
 			<div className='flex justify-end'>
 				<Button onClick={onDeleteClicked} variant='secondary' className='mr-4 text-zinc-900'>
-					{price.internal_state === 'edit' ? 'Delete' : 'Cancel'}
+					{price.internal_state === PriceInternalState.EDIT ? 'Delete' : 'Cancel'}
 				</Button>
 				<Button onClick={handleSubmit} variant='default' className='mr-4 font-normal'>
-					{price.internal_state === 'edit' ? 'Update' : 'Add'}
+					{price.internal_state === PriceInternalState.EDIT ? 'Update' : 'Add'}
 				</Button>
 			</div>
 		</div>
