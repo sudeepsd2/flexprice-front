@@ -20,7 +20,6 @@ import { ADDON_TYPE } from '@/models/Addon';
 import { FEATURE_TYPE } from '@/models/Feature';
 import { getFeatureTypeChips } from '@/components/molecules/CustomerUsageTable/CustomerUsageTable';
 import { formatAmount } from '@/components/atoms/Input/Input';
-import { Entitlement } from '@/models/Entitlement';
 import { ENTITY_STATUS } from '@/models/base';
 import { ENTITLEMENT_ENTITY_TYPE } from '@/models/Entitlement';
 import { EntitlementResponse } from '@/types/dto';
@@ -134,25 +133,30 @@ const getEntitlementColumns = (_addonId: string): ColumnData<EntitlementResponse
 	},
 ];
 
-const getFeatureValue = (entitlement: Entitlement) => {
+const getFeatureValue = (entitlement: EntitlementResponse) => {
 	const value = entitlement.usage_limit?.toFixed() || '';
 
 	switch (entitlement.feature_type) {
 		case FEATURE_TYPE.STATIC:
 			return entitlement.static_value;
-		case FEATURE_TYPE.METERED:
+		case FEATURE_TYPE.METERED: {
+			// Safely access feature properties with fallbacks
+			const unitPlural = entitlement.feature?.unit_plural || 'units';
+			const unitSingular = entitlement.feature?.unit_singular || 'unit';
+
 			return (
 				<span className='flex items-end gap-1'>
 					{formatAmount(value || 'Unlimited')}
 					<span className='text-[#64748B] text-sm font-normal font-sans'>
 						{value
 							? Number(value) > 0
-								? entitlement.feature.unit_plural || 'units'
-								: entitlement.feature.unit_singular || 'unit'
-							: entitlement.feature.unit_plural || 'units'}
+								? unitPlural
+								: unitSingular
+							: unitPlural}
 					</span>
 				</span>
 			);
+		}
 		case FEATURE_TYPE.BOOLEAN:
 			return entitlement.is_enabled ? 'Yes' : 'No';
 		default:
