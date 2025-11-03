@@ -1,30 +1,35 @@
-import { Button, SelectOption } from '@/components/atoms';
-import Preview from '@/components/organisms/Subscription/Preview';
-import UsageTable from '@/components/organisms/Subscription/UsageTable';
-import { cn } from '@/lib/utils';
-import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
-import { CustomerApi, PlanApi, SubscriptionApi, AddonApi, TaxApi } from '@/api';
-import { toSentenceCase } from '@/utils/common/helper_functions';
-import { ExpandedPlan } from '@/types';
-import { useMutation, useQuery } from '@tanstack/react-query';
+// React imports
 import { useState, useEffect, useMemo } from 'react';
-import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
+
+// Third-party libraries
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { uniqueId } from 'lodash';
+import toast from 'react-hot-toast';
+
+// Internal components
+import { Button, SelectOption } from '@/components/atoms';
 import { ApiDocsContent } from '@/components/molecules';
+import { Preview, UsageTable, SubscriptionForm } from '@/components/organisms';
+
+// API imports
+import { AddonApi, CustomerApi, PlanApi, SubscriptionApi, TaxApi } from '@/api';
+
+// Core services and routes
 import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
 import { RouteNames } from '@/core/routes/Routes';
-import { SubscriptionPhase } from '@/models/Subscription';
-import { CreateSubscriptionPayload } from '@/types/dto/Subscription';
-import { BILLING_CADENCE, INVOICE_CADENCE } from '@/models/Invoice';
+
+// Models and types - consolidated from index files
+import { BILLING_CADENCE, INVOICE_CADENCE, SubscriptionPhase, Coupon, TAXRATE_ENTITY_TYPE, EXPAND } from '@/models';
+import { ExpandedPlan, CreateSubscriptionPayload, AddAddonToSubscriptionRequest, TaxRateOverride } from '@/types';
+
+// Constants and utilities
 import { BILLING_PERIOD } from '@/constants/constants';
-import { uniqueId } from 'lodash';
-import SubscriptionForm from '@/components/organisms/Subscription/SubscriptionForm';
+import { cn } from '@/lib/utils';
+import { toSentenceCase } from '@/utils/common/helper_functions';
 import { ExtendedPriceOverride, getLineItemOverrides } from '@/utils/common/price_override_helpers';
-import { Coupon } from '@/models/Coupon';
-import { AddAddonToSubscriptionRequest } from '@/types/dto/Addon';
-import { TAXRATE_ENTITY_TYPE } from '@/models/Tax';
-import { TaxRateOverride } from '@/types/dto/tax';
-import { EXPAND } from '@/models/expand';
+// Store
+import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
 
 type Params = {
 	id: string;
@@ -66,6 +71,10 @@ export type SubscriptionFormState = {
 
 	// Tax Rate Overrides
 	tax_rate_overrides: TaxRateOverride[];
+
+	// Additional Fields
+	overageFactor: string;
+	commitmentAmount: string;
 };
 
 // Data Fetching Hooks
@@ -182,6 +191,8 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 		addons: [],
 		customerId: customerId!,
 		tax_rate_overrides: [],
+		overageFactor: '',
+		commitmentAmount: '',
 	});
 
 	// Fetch data using React Query
@@ -202,13 +213,24 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 		return counts;
 	}, [subscriptionState.addons]);
 
+	// Helper function to check if price should be shown (start_date <= now or no start_date)
+	const isPriceActive = (price: { start_date?: string }) => {
+		if (!price.start_date) return true; // No start_date means it's active
+		const now = new Date();
+		const startDate = new Date(price.start_date);
+		// Check if date is valid
+		if (isNaN(startDate.getTime())) return true; // Invalid date, treat as active
+		return startDate <= now;
+	};
+
 	// Memoized function to get combined prices from subscription and addons
 	const getPrices = useMemo(() => {
 		const subscriptionPrices =
 			subscriptionState.prices?.prices?.filter(
 				(price) =>
 					price.billing_period.toLowerCase() === subscriptionState.billingPeriod.toLowerCase() &&
-					price.currency.toLowerCase() === subscriptionState.currency.toLowerCase(),
+					price.currency.toLowerCase() === subscriptionState.currency.toLowerCase() &&
+					isPriceActive(price),
 			) || [];
 
 		// Get matching addon prices and create unique instances for each count
@@ -219,7 +241,8 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 					addon.prices?.filter(
 						(price) =>
 							price.billing_period.toLowerCase() === subscriptionState.billingPeriod.toLowerCase() &&
-							price.currency.toLowerCase() === subscriptionState.currency.toLowerCase(),
+							price.currency.toLowerCase() === subscriptionState.currency.toLowerCase() &&
+							isPriceActive(price),
 					) || [];
 
 				// Create unique instances for each count with unique IDs
@@ -282,6 +305,8 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 					addons: [],
 					customerId: customerId!,
 					tax_rate_overrides: [],
+					overageFactor: subscriptionData.details.overage_factor?.toString() ?? '',
+					commitmentAmount: subscriptionData.details.commitment_amount?.toString() ?? '',
 				});
 			}
 		}
@@ -318,6 +343,8 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 			lineItemCoupons,
 			tax_rate_overrides,
 			addons,
+			overageFactor,
+			commitmentAmount,
 		} = subscriptionState;
 
 		if (!billingPeriod || !selectedPlan) {
@@ -352,7 +379,9 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 		const currentPrices =
 			prices?.prices?.filter(
 				(price) =>
-					price.billing_period.toLowerCase() === billingPeriod.toLowerCase() && price.currency.toLowerCase() === currency.toLowerCase(),
+					price.billing_period.toLowerCase() === billingPeriod.toLowerCase() &&
+					price.currency.toLowerCase() === currency.toLowerCase() &&
+					isPriceActive(price),
 			) || [];
 		const overrideLineItems = getLineItemOverrides(currentPrices, priceOverrides);
 
@@ -395,7 +424,8 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 			billing_cycle: firstPhase.billing_cycle,
 			phases: sanitizedPhases.length > 1 ? sanitizedPhases : undefined,
 			credit_grants: (firstPhase.credit_grants?.length ?? 0 > 0) ? firstPhase.credit_grants : undefined,
-			commitment_amount: firstPhase.commitment_amount,
+			commitment_amount: commitmentAmount && commitmentAmount.trim() !== '' ? parseFloat(commitmentAmount) : undefined,
+			overage_factor: overageFactor && overageFactor.trim() !== '' ? parseFloat(overageFactor) : undefined,
 			override_line_items: overrideLineItems.length > 0 ? overrideLineItems : undefined,
 			addons: (addons?.length ?? 0) > 0 ? addons : undefined,
 			coupons: linkedCoupon ? [linkedCoupon.id] : undefined,
@@ -408,9 +438,6 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 							]),
 						)
 					: undefined,
-
-			// TODO: remove this once the feature is released
-			overage_factor: firstPhase.overage_factor ?? 1,
 
 			// Tax rate overrides
 			tax_rate_overrides: tax_rate_overrides.length > 0 ? tax_rate_overrides : undefined,

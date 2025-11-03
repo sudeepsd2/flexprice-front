@@ -4,7 +4,7 @@ export { ENTITY_STATUS } from './base';
 
 // Addon
 export type { default as Addon } from './Addon';
-export { ADDON_TYPE, ADDON_STATUS } from './Addon';
+export { ADDON_TYPE } from './Addon';
 
 // CostSheet
 export type { default as CostSheet } from './CostSheet';
@@ -45,7 +45,7 @@ export type { default as CustomerUsage } from './CustomerUsage';
 
 // Entitlement
 export type { Entitlement } from './Entitlement';
-export { ENTITLEMENT_ENTITY_TYPE } from './Entitlement';
+export { ENTITLEMENT_ENTITY_TYPE, ENTITLEMENT_USAGE_RESET_PERIOD } from './Entitlement';
 
 // Environment
 export type { default as Environment } from './Environment';
@@ -97,7 +97,7 @@ export type { Plan } from './Plan';
 
 // Price
 export type { Price, Tier, TransformQuantity, PriceUnitConfig, CreatePriceTier } from './Price';
-export { BILLING_MODEL, BILLING_PERIOD, PRICE_TYPE, PRICE_UNIT_TYPE, TIER_MODE, PRICE_ENTITY_TYPE } from './Price';
+export { BILLING_MODEL, BILLING_PERIOD, PRICE_TYPE, PRICE_UNIT_TYPE, TIER_MODE, PRICE_ENTITY_TYPE, PRICE_STATUS } from './Price';
 
 // SecretKey
 export type { SecretKey } from './SecretKey';

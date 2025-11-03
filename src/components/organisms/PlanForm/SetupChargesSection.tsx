@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { BILLING_MODEL, Price, PRICE_TYPE } from '@/models/Price';
 import { currencyOptions, billlingPeriodOptions } from '@/constants/constants';
 import RecurringChargesForm from './RecurringChargesForm';
-import UsagePricingForm from './UsagePricingForm';
+import UsagePricingForm, { PriceInternalState } from './UsagePricingForm';
 import { CirclePlus } from 'lucide-react';
 import { BILLING_CADENCE, INVOICE_CADENCE } from '@/models/Invoice';
 import { PRICE_ENTITY_TYPE } from '@/models/Price';
@@ -53,7 +53,7 @@ export const AddChargesButton = ({ onClick, label }: AddChargesButtonProps) => (
 export interface InternalPrice extends Partial<Price> {
 	isEdit?: boolean;
 	isTrialPeriod?: boolean;
-	internal_state?: 'edit' | 'new' | 'saved';
+	internal_state?: PriceInternalState;
 	group_id?: string;
 }
 
@@ -74,7 +74,7 @@ const SetupChargesSection: React.FC<Props> = ({ plan, setPlanField }) => {
 		invoice_cadence: INVOICE_CADENCE.ARREAR,
 		billing_model: type === SubscriptionType.FIXED ? BILLING_MODEL.FLAT_FEE : undefined,
 		billing_cadence: BILLING_CADENCE.RECURRING,
-		internal_state: 'new',
+		internal_state: PriceInternalState.NEW,
 	});
 
 	const handleSubscriptionTypeChange = (type: (typeof subscriptionTypeOptions)[0]) => {
@@ -153,7 +153,7 @@ const SetupChargesSection: React.FC<Props> = ({ plan, setPlanField }) => {
 										if (index === i) {
 											const updatedPrice = {
 												...newPrice,
-												internal_state: 'saved' as const,
+												internal_state: PriceInternalState.SAVED,
 												amount: newPrice.amount || '', // Ensure amount is never undefined
 											};
 											return updatedPrice;
@@ -170,7 +170,7 @@ const SetupChargesSection: React.FC<Props> = ({ plan, setPlanField }) => {
 									if (index === i) {
 										const updatedPrice = {
 											...newPrice,
-											internal_state: 'saved' as const,
+											internal_state: PriceInternalState.SAVED,
 											amount: newPrice.amount || '', // Ensure amount is never undefined
 										};
 										return updatedPrice;
@@ -186,7 +186,7 @@ const SetupChargesSection: React.FC<Props> = ({ plan, setPlanField }) => {
 									if (index === i) {
 										const updatedPrice = {
 											...p,
-											internal_state: 'edit' as const,
+											internal_state: PriceInternalState.EDIT,
 										};
 										return updatedPrice;
 									}
@@ -219,7 +219,7 @@ const SetupChargesSection: React.FC<Props> = ({ plan, setPlanField }) => {
 							onAdd={(newPrice) => {
 								const newCharges = usageCharges.map((p, i) => {
 									if (index === i) {
-										return { ...newPrice, internal_state: 'saved' as const };
+										return { ...newPrice, internal_state: PriceInternalState.SAVED };
 									}
 									return p;
 								});
@@ -229,7 +229,7 @@ const SetupChargesSection: React.FC<Props> = ({ plan, setPlanField }) => {
 							onUpdate={(newPrice) => {
 								const newCharges = usageCharges.map((p, i) => {
 									if (index === i) {
-										return { ...newPrice, internal_state: 'saved' as const };
+										return { ...newPrice, internal_state: PriceInternalState.SAVED };
 									}
 									return p;
 								});
@@ -239,7 +239,7 @@ const SetupChargesSection: React.FC<Props> = ({ plan, setPlanField }) => {
 							onEditClicked={() => {
 								const newCharges = usageCharges.map((p, i) => {
 									if (index === i) {
-										return { ...p, internal_state: 'edit' as const };
+										return { ...p, internal_state: PriceInternalState.EDIT };
 									}
 									return p;
 								});

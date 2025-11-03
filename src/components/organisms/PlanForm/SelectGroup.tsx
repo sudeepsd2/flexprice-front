@@ -14,6 +14,7 @@ interface Props {
 	description?: string;
 	className?: string;
 	entityType?: GROUP_ENTITY_TYPE;
+	hiddenIfEmpty?: boolean;
 }
 
 const SelectGroup: FC<Props> = ({
@@ -25,6 +26,7 @@ const SelectGroup: FC<Props> = ({
 	description,
 	className,
 	entityType = GROUP_ENTITY_TYPE.PRICE,
+	hiddenIfEmpty = false,
 }) => {
 	// Query for fetching groups
 	const {
@@ -39,7 +41,6 @@ const SelectGroup: FC<Props> = ({
 				limit: 100,
 				offset: 0,
 			}),
-		staleTime: 1000 * 60 * 5, // 5 minutes cache
 	});
 
 	const groupOptions: SelectOption[] = useMemo(() => {
@@ -53,6 +54,11 @@ const SelectGroup: FC<Props> = ({
 			})),
 		];
 	}, [groupsData]);
+
+	// Check if component should be hidden when empty
+	const shouldHide = useMemo(() => {
+		return hiddenIfEmpty && (!groupsData?.items || groupsData.items.length === 0);
+	}, [hiddenIfEmpty, groupsData]);
 
 	const handleGroupChange = useCallback(
 		(selectedValue: string) => {
@@ -74,6 +80,11 @@ const SelectGroup: FC<Props> = ({
 
 	if (isError && !groupsData) {
 		return <div className={cn('min-w-[200px]', className)}></div>;
+	}
+
+	// Hide component if hiddenIfEmpty is true and no groups are available
+	if (shouldHide) {
+		return null;
 	}
 
 	return (

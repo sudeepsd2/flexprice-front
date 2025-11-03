@@ -1,29 +1,16 @@
-import { CREDIT_GRANT_EXPIRATION_TYPE, CreditGrant } from '@/models/CreditGrant';
+import { CreditGrant } from '@/models/CreditGrant';
 import React, { useState } from 'react';
 import { AddButton, FormHeader, ActionButton } from '@/components/atoms';
 import FlexpriceTable, { ColumnData } from '../Table';
 import CreditGrantModal from './CreditGrantModal';
 import { formatBillingPeriodForPrice } from '@/utils/common/helper_functions';
-import { formatExpirationPeriod } from '@/pages';
+import { formatExpirationPeriod } from '@/utils/common/credit_grant_helpers';
 interface Props {
 	data: CreditGrant[];
 	onChange: (data: CreditGrant[]) => void;
 	disabled?: boolean;
 	getEmptyCreditGrant: () => Partial<CreditGrant>;
 }
-
-export const formatExpirationType = (expirationType: CREDIT_GRANT_EXPIRATION_TYPE) => {
-	switch (expirationType) {
-		case CREDIT_GRANT_EXPIRATION_TYPE.DURATION:
-			return 'Days';
-		case CREDIT_GRANT_EXPIRATION_TYPE.BILLING_CYCLE:
-			return 'Subscription period';
-		case CREDIT_GRANT_EXPIRATION_TYPE.NEVER:
-			return '--';
-		default:
-			return '--';
-	}
-};
 
 const CreditGrantTable: React.FC<Props> = ({ data, onChange, disabled, getEmptyCreditGrant }) => {
 	const [isOpen, setIsOpen] = useState(false);

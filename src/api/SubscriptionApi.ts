@@ -1,77 +1,186 @@
 import { AxiosClient } from '@/core/axios/verbs';
 import { Subscription, SubscriptionPhase, SubscriptionUsage, EXPAND } from '@/models';
 import {
-	AddSubscriptionPhasePayload,
-	CancelSubscriptionPayload,
-	CreateSubscriptionPayload,
-	GetSubscriptionPreviewResponse,
 	ListSubscriptionsPayload,
 	ListSubscriptionsResponse,
 	GetSubscriptionDetailsPayload,
+	GetSubscriptionPreviewResponse,
 	PauseSubscriptionPayload,
 	ResumeSubscriptionPayload,
 	SubscriptionPauseResponse,
 	SubscriptionResumeResponse,
-} from '@/types/dto';
+	AddSubscriptionPhasePayload,
+	CancelSubscriptionPayload,
+	CreateSubscriptionPayload,
+	CreateSubscriptionRequest,
+	CancelSubscriptionRequest,
+	CancelSubscriptionResponse,
+	SubscriptionResponse,
+	GetUsageBySubscriptionRequest,
+	GetUsageBySubscriptionResponse,
+	AddSchedulePhaseRequest,
+	AddAddonRequest,
+	RemoveAddonRequest,
+	AddonAssociationResponse,
+	CreateSubscriptionLineItemRequest,
+	UpdateSubscriptionLineItemRequest,
+	DeleteSubscriptionLineItemRequest,
+	SubscriptionLineItemResponse,
+} from '@/types/dto/Subscription';
 import { generateExpandQueryParams, generateQueryParams } from '@/utils/common/api_helper';
 
 class SubscriptionApi {
 	private static baseUrl = '/subscriptions';
 
-	public static async getSubscriptionUsage(id: string): Promise<SubscriptionUsage> {
-		return await AxiosClient.post(`${this.baseUrl}/usage`, { subscription_id: id });
+	// =============================================================================
+	// CORE SUBSCRIPTION METHODS
+	// =============================================================================
+
+	/**
+	 * Get a subscription by ID
+	 */
+	public static async getSubscription(id: string): Promise<SubscriptionResponse> {
+		return await AxiosClient.get<SubscriptionResponse>(`${this.baseUrl}/${id}`);
 	}
 
-	public static async getSubscriptionInvoicesPreview({
-		subscription_id,
-		period_end,
-		period_start,
-	}: GetSubscriptionDetailsPayload): Promise<GetSubscriptionPreviewResponse> {
-		return await AxiosClient.post<GetSubscriptionPreviewResponse>('/invoices/preview', {
-			subscription_id: subscription_id,
-			period_end: period_end,
-			period_start: period_start,
-		});
+	/**
+	 * Create a new subscription
+	 */
+	public static async createSubscription(
+		payload: CreateSubscriptionPayload | CreateSubscriptionRequest,
+	): Promise<Subscription | SubscriptionResponse> {
+		return await AxiosClient.post(this.baseUrl, payload);
 	}
 
-	static async getSubscriptionById(id: string): Promise<Subscription> {
-		return await AxiosClient.get(`${this.baseUrl}/${id}`);
-	}
-
-	static async pauseSubscription(id: string, payload: PauseSubscriptionPayload): Promise<SubscriptionPauseResponse> {
-		return await AxiosClient.post(`${this.baseUrl}/${id}/pause`, payload);
-	}
-
-	static async resumeSubscription(id: string, payload: ResumeSubscriptionPayload): Promise<SubscriptionResumeResponse> {
-		return await AxiosClient.post(`${this.baseUrl}/${id}/resume`, payload);
-	}
-
-	static async cancelSubscription(id: string, payload: CancelSubscriptionPayload): Promise<void> {
-		return await AxiosClient.post(`${this.baseUrl}/${id}/cancel`, payload);
-	}
-
-	static async addSubscriptionPhase(id: string, payload: AddSubscriptionPhasePayload): Promise<SubscriptionPhase> {
-		return await AxiosClient.post(`${this.baseUrl}/${id}/phases`, {
-			phase: payload,
-		});
-	}
-
-	static async listSubscriptions(payload: ListSubscriptionsPayload) {
+	/**
+	 * List subscriptions
+	 */
+	public static async listSubscriptions(payload: ListSubscriptionsPayload) {
 		const url = generateQueryParams(this.baseUrl, payload);
 		return await AxiosClient.get<ListSubscriptionsResponse>(url);
 	}
 
-	static async createSubscription(payload: CreateSubscriptionPayload): Promise<Subscription> {
-		return await AxiosClient.post(this.baseUrl, payload);
+	/**
+	 * Search subscriptions
+	 */
+	public static async searchSubscriptions(payload: ListSubscriptionsPayload): Promise<ListSubscriptionsResponse> {
+		const expand = generateExpandQueryParams([EXPAND.CUSTOMER, EXPAND.PLAN, EXPAND.SUBSCRIPTION]);
+		return await AxiosClient.post(`${this.baseUrl}/search`, { ...payload, expand });
 	}
 
-	static async searchSubscriptions(payload: ListSubscriptionsPayload): Promise<ListSubscriptionsResponse> {
-		const expand = generateExpandQueryParams([EXPAND.CUSTOMER, EXPAND.PLAN, EXPAND.SUBSCRIPTION]);
+	/**
+	 * Cancel subscription
+	 */
+	public static async cancelSubscription(
+		id: string,
+		payload: CancelSubscriptionPayload | CancelSubscriptionRequest,
+	): Promise<void | CancelSubscriptionResponse> {
+		return await AxiosClient.post(`${this.baseUrl}/${id}/cancel`, payload);
+	}
 
-		return await AxiosClient.post(`${this.baseUrl}/search`, {
-			...payload,
-			expand,
-		});
+	// =============================================================================
+	// SUBSCRIPTION PHASE METHODS
+	// =============================================================================
+
+	/**
+	 * Add a phase to subscription schedule
+	 */
+	public static async addSubscriptionPhase(
+		id: string,
+		payload: AddSubscriptionPhasePayload | AddSchedulePhaseRequest,
+	): Promise<SubscriptionPhase | SubscriptionResponse> {
+		return await AxiosClient.post(`${this.baseUrl}/${id}/phases`, { phase: payload });
+	}
+
+	// =============================================================================
+	// SUBSCRIPTION STATUS METHODS
+	// =============================================================================
+
+	/**
+	 * Pause subscription
+	 */
+	public static async pauseSubscription(id: string, payload: PauseSubscriptionPayload): Promise<SubscriptionPauseResponse> {
+		return await AxiosClient.post(`${this.baseUrl}/${id}/pause`, payload);
+	}
+
+	/**
+	 * Resume subscription
+	 */
+	public static async resumeSubscription(id: string, payload: ResumeSubscriptionPayload): Promise<SubscriptionResumeResponse> {
+		return await AxiosClient.post(`${this.baseUrl}/${id}/resume`, payload);
+	}
+
+	// =============================================================================
+	// USAGE & ANALYTICS METHODS
+	// =============================================================================
+
+	/**
+	 * Get subscription usage (legacy)
+	 */
+	public static async getSubscriptionUsage(id: string): Promise<SubscriptionUsage> {
+		return await AxiosClient.post(`${this.baseUrl}/usage`, { subscription_id: id });
+	}
+
+	/**
+	 * Get usage by subscription
+	 */
+	public static async getUsageBySubscription(
+		payload: GetUsageBySubscriptionRequest | { subscription_id: string },
+	): Promise<GetUsageBySubscriptionResponse> {
+		return await AxiosClient.post<GetUsageBySubscriptionResponse>(`${this.baseUrl}/usage`, payload);
+	}
+
+	/**
+	 * Get subscription invoices preview
+	 */
+	public static async getSubscriptionInvoicesPreview(payload: GetSubscriptionDetailsPayload): Promise<GetSubscriptionPreviewResponse> {
+		return await AxiosClient.post('/invoices/preview', payload);
+	}
+
+	// =============================================================================
+	// ADDON MANAGEMENT METHODS
+	// =============================================================================
+
+	/**
+	 * Add addon to subscription
+	 */
+	public static async addAddonToSubscription(payload: AddAddonRequest): Promise<AddonAssociationResponse> {
+		return await AxiosClient.post<AddonAssociationResponse>(`${this.baseUrl}/addon`, payload);
+	}
+
+	/**
+	 * Remove addon from subscription
+	 */
+	public static async removeAddonFromSubscription(payload: RemoveAddonRequest): Promise<{ message: string }> {
+		return await AxiosClient.delete(`${this.baseUrl}/addon`, { data: payload });
+	}
+
+	// =============================================================================
+	// SUBSCRIPTION LINE ITEM METHODS
+	// =============================================================================
+
+	/**
+	 * Create a new subscription line item
+	 */
+	public static async createSubscriptionLineItem(payload: CreateSubscriptionLineItemRequest): Promise<SubscriptionLineItemResponse> {
+		return await AxiosClient.post<SubscriptionLineItemResponse>(`${this.baseUrl}/lineitems`, payload);
+	}
+
+	/**
+	 * Update a subscription line item
+	 */
+	public static async updateSubscriptionLineItem(
+		id: string,
+		payload: UpdateSubscriptionLineItemRequest,
+	): Promise<SubscriptionLineItemResponse> {
+		return await AxiosClient.put<SubscriptionLineItemResponse>(`${this.baseUrl}/lineitems/${id}`, payload);
+	}
+
+	/**
+	 * Delete a subscription line item
+	 */
+	public static async deleteSubscriptionLineItem(id: string, payload: DeleteSubscriptionLineItemRequest): Promise<void> {
+		return await AxiosClient.delete(`${this.baseUrl}/lineitems/${id}`, payload);
 	}
 }
 

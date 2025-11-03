@@ -21,9 +21,11 @@ export interface Price extends BaseModel {
 	readonly lookup_key: string;
 	readonly description: string;
 	readonly transform_quantity: TransformQuantity | null;
-	readonly meter: Meter;
+	readonly meter?: Meter;
 	readonly invoice_cadence: INVOICE_CADENCE;
 	readonly trial_period: number;
+	readonly start_date?: string;
+	readonly end_date?: string;
 	readonly metadata: Metadata | null;
 	readonly price_unit_config?: PriceUnitConfig;
 	readonly group_id?: string;
@@ -88,4 +90,10 @@ export enum BILLING_PERIOD {
 	DAILY = 'DAILY',
 	QUARTERLY = 'QUARTERLY',
 	HALF_YEARLY = 'HALF_YEARLY',
+}
+
+export enum PRICE_STATUS {
+	UPCOMING = 'upcoming',
+	INACTIVE = 'inactive',
+	ACTIVE = 'active',
 }

@@ -1,4 +1,4 @@
-import { Select, DatePicker, FormHeader, Label, Toggle } from '@/components/atoms';
+import { Select, DatePicker, FormHeader, Label, Toggle, DecimalUsageInput } from '@/components/atoms';
 import PriceTable from '@/components/organisms/Subscription/PriceTable';
 import { cn } from '@/lib/utils';
 import { toSentenceCase } from '@/utils/common/helper_functions';
@@ -86,12 +86,24 @@ const SubscriptionForm = ({
 		if (!value) return undefined;
 		return value instanceof Date ? value : new Date(value);
 	};
+
+	// Helper function to check if price should be shown (start_date <= now or no start_date)
+	const isPriceActive = (price: { start_date?: string }) => {
+		if (!price.start_date) return true; // No start_date means it's active
+		const now = new Date();
+		const startDate = new Date(price.start_date);
+		// Check if date is valid
+		if (isNaN(startDate.getTime())) return true; // Invalid date, treat as active
+		return startDate <= now;
+	};
+
 	// Price overrides functionality
 	const currentPrices =
 		state.prices?.prices?.filter(
 			(price) =>
 				price.billing_period.toLowerCase() === state.billingPeriod.toLowerCase() &&
-				price.currency.toLowerCase() === state.currency.toLowerCase(),
+				price.currency.toLowerCase() === state.currency.toLowerCase() &&
+				isPriceActive(price),
 		) || [];
 
 	const { overriddenPrices, overridePrice, resetOverride } = usePriceOverrides(currentPrices);
@@ -532,6 +544,30 @@ const SubscriptionForm = ({
 				/>
 			)}
 
+			{/* Additional Fields */}
+			{state.selectedPlan && (
+				<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+					<DecimalUsageInput
+						label='Commitment Amount'
+						value={state.commitmentAmount}
+						onChange={(value) => setState((prev) => ({ ...prev, commitmentAmount: value }))}
+						placeholder='e.g. $100.00'
+						disabled={isDisabled}
+						precision={2}
+						min={0}
+					/>
+					<DecimalUsageInput
+						label='Overage Factor'
+						value={state.overageFactor}
+						onChange={(value) => setState((prev) => ({ ...prev, overageFactor: value }))}
+						placeholder='e.g. 1.5'
+						disabled={isDisabled}
+						precision={2}
+						min={0}
+					/>
+				</div>
+			)}
+
 			{/* Subscription Phases Section */}
 			{state.selectedPlan && (
 				<div className='space-y-3 mt-4 pt-3 border-t border-gray-200'>
@@ -598,7 +634,7 @@ const SubscriptionForm = ({
 									{state.prices && state.selectedPlan && state.billingPeriod && state.currency && (
 										<div className='mb-2'>
 											<PriceTable
-												data={state.prices.prices || []}
+												data={currentPrices}
 												billingPeriod={state.billingPeriod}
 												currency={state.currency}
 												onPriceOverride={overridePrice}
