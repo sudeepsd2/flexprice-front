@@ -1,5 +1,5 @@
 import { Loader, Page, Spacer } from '@/components/atoms';
-import { DetailsCard } from '@/components/molecules';
+import { DetailsCard, SubscriptionEntitlementsSection } from '@/components/molecules';
 import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
 import CustomerApi from '@/api/CustomerApi';
 import SubscriptionApi from '@/api/SubscriptionApi';
@@ -238,6 +238,9 @@ const CustomerSubscriptionEditPage: React.FC = () => {
 					onEdit={handleEditLineItem}
 					onTerminate={handleTerminateLineItem}
 				/>
+
+				{/* Subscription Entitlements Section */}
+				{subscriptionId && <SubscriptionEntitlementsSection subscriptionId={subscriptionId} />}
 
 				{/* Price Override Dialog */}
 				{editingLineItem && (

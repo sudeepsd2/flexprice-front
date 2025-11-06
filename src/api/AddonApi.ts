@@ -53,6 +53,10 @@ class AddonApi {
 	public static async RemoveAddonFromSubscription(subscriptionId: string, addonId: string) {
 		return await AxiosClient.delete<void>(`/subscriptions/${subscriptionId}/addons/${addonId}`);
 	}
+
+	public static async getAddonEntitlements(addonId: string) {
+		return await AxiosClient.get<{ items: any[]; total: number; page: number; limit: number }>(`${this.baseUrl}/${addonId}/entitlements`);
+	}
 }
 
 export default AddonApi;

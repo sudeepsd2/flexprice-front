@@ -116,6 +116,7 @@ export type {
 	CancelSubscriptionPayload,
 	ListSubscriptionsPayload,
 	ListSubscriptionsResponse,
+	EntitlementOverrideRequest,
 } from './Subscription';
 
 export type { GetBillingdetailsResponse, UpdateTenantRequest } from './Tenant';
