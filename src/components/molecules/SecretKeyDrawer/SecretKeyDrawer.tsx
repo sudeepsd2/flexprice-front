@@ -152,11 +152,6 @@ const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 			// If service account is selected, add service_account_id (roles inherited from service account)
 			if (formData.accountType === 'service_account') {
 				payload.service_account_id = formData.serviceAccountId;
-				console.log('🔑 Creating API key for service account:', {
-					serviceAccountId: formData.serviceAccountId,
-					selectedAccount: serviceAccounts?.find((a: User) => a.id === formData.serviceAccountId),
-					payload,
-				});
 			}
 			// User account keys don't need roles field - they inherit full permissions
 
@@ -168,7 +163,6 @@ const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 			onOpenChange(false);
 		},
 		onError: (error: ServerError) => {
-			console.error('Failed to create API key:', error);
 			toast.error(error.error.message || 'Failed to create API key. Please try again.');
 		},
 	});

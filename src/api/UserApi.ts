@@ -37,6 +37,11 @@ export class UserApi {
 		return await AxiosClient.post<User, CreateUserRequest>(this.baseUrl, data);
 	}
 
+	// Create a new service account
+	public static async createServiceAccount(data: { type: 'service_account'; roles: string[] }): Promise<User> {
+		return await AxiosClient.post<User>(this.baseUrl, data);
+	}
+
 	// Update an existing user
 	public static async updateUser(data: UpdateTenantPayload): Promise<User> {
 		return await AxiosClient.put<User, UpdateTenantPayload>(`tenants/update`, data);

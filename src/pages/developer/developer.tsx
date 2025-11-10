@@ -1,8 +1,10 @@
-import { Button, Page, ShortPagination } from '@/components/atoms';
+import { Button, Page, ShortPagination, SectionHeader } from '@/components/atoms';
 import { ColumnData, FlexpriceTable, SecretKeyDrawer, ApiDocsContent } from '@/components/molecules';
 import SecretKeysApi from '@/api/SecretKeysApi';
+import { UserApi } from '@/api/UserApi';
 import { useQuery } from '@tanstack/react-query';
 import { SecretKey } from '@/models/SecretKey';
+import { User } from '@/models';
 import usePagination from '@/hooks/usePagination';
 import { formatDateShort } from '@/utils/common/helper_functions';
 import { Plus, Loader, TrashIcon, User2, Bot, LucideIcon, Eye, ShieldCheck, EyeOff, PencilIcon } from 'lucide-react';
@@ -11,6 +13,7 @@ import { toast } from 'react-hot-toast';
 import { EmptyPage } from '@/components/organisms';
 import GUIDES from '@/constants/guides';
 import ActionButton from '@/components/atoms/ActionButton/ActionButton';
+import ServiceAccountDrawer from '@/components/molecules/ServiceAccountDrawer/ServiceAccountDrawer';
 
 // Utility function to format permissions for display
 export const formatPermissionDisplay = (permissions: readonly string[]): string => {
@@ -145,6 +148,7 @@ const baseColumns: ColumnData<SecretKey>[] = [
 const DeveloperPage = () => {
 	const { page, limit, offset } = usePagination();
 	const [isSecretKeyDrawerOpen, setIsSecretKeyDrawerOpen] = useState(false);
+	const [isServiceAccountDrawerOpen, setIsServiceAccountDrawerOpen] = useState(false);
 
 	const {
 		data: secretKeys,
@@ -155,8 +159,35 @@ const DeveloperPage = () => {
 		queryFn: () => SecretKeysApi.getAllSecretKeys({ limit, offset }),
 	});
 
+	const {
+		data: serviceAccountsResponse,
+		isLoading: isLoadingServiceAccounts,
+		isError: isServiceAccountsError,
+	} = useQuery({
+		queryKey: ['service-accounts', page, limit, offset],
+		queryFn: async () => {
+			const response = await UserApi.getServiceAccounts();
+			// Manually paginate since the API returns all items
+			const start = offset;
+			const end = offset + limit;
+			const paginatedItems = response.slice(start, end);
+			return {
+				items: paginatedItems,
+				pagination: {
+					total: response.length,
+					limit,
+					offset,
+				},
+			};
+		},
+	});
+
 	const handleAddSecretKey = () => {
 		setIsSecretKeyDrawerOpen(true);
+	};
+
+	const handleAddServiceAccount = () => {
+		setIsServiceAccountDrawerOpen(true);
 	};
 
 	const columns: ColumnData<SecretKey>[] = [
@@ -185,7 +216,88 @@ const DeveloperPage = () => {
 		},
 	];
 
-	if (isLoading) {
+	// Service accounts table columns
+	const serviceAccountColumns: ColumnData<User>[] = [
+		{
+			title: 'ID',
+			render(rowData: User) {
+				// Display the user ID in a masked format similar to API keys
+				const displayId = rowData.id;
+				const prefix = displayId.slice(0, 8);
+				const suffix = displayId.slice(-4);
+				const masked = `${prefix}••••${suffix}`;
+
+				return (
+					<div className='flex gap-2 items-center'>
+						<code className='px-2 py-1 text-sm bg-gray-100 rounded font-mono'>{masked}</code>
+					</div>
+				);
+			},
+		},
+		{
+			title: 'Type',
+			render() {
+				return (
+					<div className='flex gap-2 items-center'>
+						<div className='flex items-center gap-1.5 text-purple-600'>
+							<Bot size={16} />
+							<span className='text-sm font-medium'>Service Account</span>
+						</div>
+					</div>
+				);
+			},
+		},
+		{
+			title: 'Roles',
+			render(rowData: User) {
+				if (!rowData.roles || rowData.roles.length === 0) {
+					return <span className='text-gray-500 text-sm'>No Roles</span>;
+				}
+
+				return (
+					<div className='flex flex-wrap gap-1'>
+						{rowData.roles.map((role) => (
+							<span key={role} className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
+								{role}
+							</span>
+						))}
+					</div>
+				);
+			},
+		},
+		{
+			title: 'Created At',
+			width: 150,
+			align: 'right',
+			render(rowData) {
+				return <span className='text-gray-600'>{formatDateShort(rowData.tenant?.created_at || rowData.tenant?.updated_at || '')}</span>;
+			},
+		},
+		{
+			width: '30px',
+			align: 'right',
+			hideOnEmpty: true,
+			render(rowData: User) {
+				return (
+					<div className='flex justify-end'>
+						<ActionButton
+							id={rowData.id}
+							deleteMutationFn={async (id: string) => {
+								await UserApi.deleteUser(id);
+							}}
+							refetchQueryKey={'service-accounts'}
+							entityName={'Service Account'}
+							archiveText={'Delete'}
+							isEditDisabled
+							archiveIcon={<TrashIcon />}
+						/>
+					</div>
+				);
+			},
+		},
+	];
+
+	if (isLoading || isLoadingServiceAccounts) {
 		return <Loader />;
 	}
 
@@ -193,11 +305,17 @@ const DeveloperPage = () => {
 		toast.error('Error fetching secret keys');
 	}
 
+	if (isServiceAccountsError) {
+		toast.error('Error fetching service accounts');
+	}
+
 	return (
 		<div>
 			<ApiDocsContent tags={['secrets']} />
 			<SecretKeyDrawer isOpen={isSecretKeyDrawerOpen} onOpenChange={setIsSecretKeyDrawerOpen} />
+			<ServiceAccountDrawer isOpen={isServiceAccountDrawerOpen} onOpenChange={setIsServiceAccountDrawerOpen} />
 
+			{/* API Keys Section */}
 			{secretKeys?.items.length === 0 && (
 				<EmptyPage
 					heading='API Keys'
@@ -213,16 +331,25 @@ const DeveloperPage = () => {
 				/>
 			)}
 			{(secretKeys?.items.length || 0) > 0 && (
-				<Page
-					heading='API Keys'
-					headingCTA={
+				<Page>
+					<SectionHeader title='API Keys' titleClassName='text-3xl font-medium'>
 						<Button prefixIcon={<Plus />} onClick={handleAddSecretKey}>
 							Add
 						</Button>
-					}>
-					<div>
+					</SectionHeader>
+					<div className='pb-12 mt-2'>
 						<FlexpriceTable showEmptyRow columns={columns} data={secretKeys?.items || []} />
 						<ShortPagination unit='Secret Keys' totalItems={secretKeys?.pagination.total || 0} />
+					</div>
+
+					<SectionHeader title='Service Accounts' titleClassName='text-3xl font-medium' className='mt-8'>
+						<Button prefixIcon={<Plus />} onClick={handleAddServiceAccount}>
+							Add
+						</Button>
+					</SectionHeader>
+					<div className='pb-12 mt-2'>
+						<FlexpriceTable showEmptyRow columns={serviceAccountColumns} data={serviceAccountsResponse?.items || []} />
+						<ShortPagination unit='Service Accounts' totalItems={serviceAccountsResponse?.pagination?.total || 0} />
 					</div>
 				</Page>
 			)}
