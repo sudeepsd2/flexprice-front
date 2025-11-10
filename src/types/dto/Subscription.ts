@@ -172,6 +172,7 @@ export interface CreateSubscriptionPayload {
 	coupons?: string[];
 	line_item_coupons?: Record<string, string[]>;
 	tax_rate_overrides?: TaxRateOverride[];
+	override_entitlements?: EntitlementOverrideRequest[];
 }
 
 export interface SubscriptionLineItemOverrideRequest {
@@ -183,6 +184,13 @@ export interface SubscriptionLineItemOverrideRequest {
 	tiers?: CreatePriceTier[];
 	transform_quantity?: TransformQuantity;
 	tax_rate_overrides?: TaxRateOverride[];
+}
+
+export interface EntitlementOverrideRequest {
+	entitlement_id: string;
+	usage_limit?: number | null;
+	static_value?: string;
+	is_enabled?: boolean;
 }
 
 export interface CancelSubscriptionPayload {
@@ -252,6 +260,9 @@ export interface CreateSubscriptionRequest {
 
 	// Addons
 	addons?: AddAddonToSubscriptionRequest[];
+
+	// Entitlement overrides
+	override_entitlements?: EntitlementOverrideRequest[];
 }
 
 export interface CreateCreditGrantRequest {

@@ -42,6 +42,10 @@ export type {
 
 export type { SignupData, LoginData, LocalUser } from './Auth';
 
+export type { GetServiceAccountsResponse } from './UserApi';
+
+export type { RbacRole, GetRolesResponse } from '@/api/RbacApi';
+
 export type {
 	GetAllPricesResponse,
 	CreatePriceRequest,
@@ -116,6 +120,7 @@ export type {
 	CancelSubscriptionPayload,
 	ListSubscriptionsPayload,
 	ListSubscriptionsResponse,
+	EntitlementOverrideRequest,
 } from './Subscription';
 
 export type { GetBillingdetailsResponse, UpdateTenantRequest } from './Tenant';

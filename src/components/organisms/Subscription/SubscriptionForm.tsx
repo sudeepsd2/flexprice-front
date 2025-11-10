@@ -24,8 +24,10 @@ import { SubscriptionFormState, SubscriptionPhaseState } from '@/pages';
 import { useQuery } from '@tanstack/react-query';
 import { PlanApi } from '@/api/PlanApi';
 import { AddAddonToSubscriptionRequest } from '@/types/dto/Addon';
-import { SubscriptionDiscountTable } from '@/components/molecules';
+import { SubscriptionDiscountTable, EntitlementOverridesTable } from '@/components/molecules';
 import SubscriptionTaxAssociationTable from '@/components/molecules/SubscriptionTaxAssociationTable';
+import AddonApi from '@/api/AddonApi';
+import { EntitlementOverrideRequest } from '@/types/dto/Subscription';
 
 // Helper components
 const BillingCycleSelector = ({
@@ -504,6 +506,97 @@ const SubscriptionForm = ({
 		return [];
 	}, [selectedPlanCreditGrants, state.selectedPlan]);
 
+	// Fetch plan entitlements
+	const { data: planEntitlements } = useQuery({
+		queryKey: ['planEntitlements', state.selectedPlan],
+		queryFn: async () => {
+			if (!state.selectedPlan) return null;
+			try {
+				return await PlanApi.getPlanEntitlements(state.selectedPlan);
+			} catch (error) {
+				console.warn('Failed to fetch plan entitlements:', error);
+				return null;
+			}
+		},
+		enabled: !!state.selectedPlan,
+		retry: false,
+		refetchOnWindowFocus: false,
+	});
+
+	// Fetch addon entitlements
+	const addonIds = useMemo(() => state.addons?.map((addon) => addon.addon_id) || [], [state.addons]);
+	const { data: addonEntitlementsData } = useQuery({
+		queryKey: ['addonEntitlements', addonIds],
+		queryFn: async () => {
+			if (addonIds.length === 0) return [];
+			try {
+				const promises = addonIds.map((addonId) => AddonApi.getAddonEntitlements(addonId));
+				const results = await Promise.all(promises);
+				return results;
+			} catch (error) {
+				console.warn('Failed to fetch addon entitlements:', error);
+				return [];
+			}
+		},
+		enabled: addonIds.length > 0,
+		retry: false,
+		refetchOnWindowFocus: false,
+	});
+
+	// Combine all entitlements
+	const allEntitlements = useMemo(() => {
+		const planEnts = planEntitlements?.items || [];
+		const addonEnts = addonEntitlementsData?.flatMap((result) => result?.items || []) || [];
+		return [...planEnts, ...addonEnts];
+	}, [planEntitlements, addonEntitlementsData]);
+
+	// Clean up entitlement overrides when addons change
+	useEffect(() => {
+		const currentEntitlementIds = new Set(allEntitlements.map((ent) => ent.id));
+
+		setState((prev) => {
+			const cleanedOverrides: Record<string, EntitlementOverrideRequest> = {};
+
+			// Only keep overrides for entitlements that still exist
+			Object.entries(prev.entitlementOverrides).forEach(([entitlementId, override]) => {
+				if (currentEntitlementIds.has(entitlementId)) {
+					cleanedOverrides[entitlementId] = override;
+				}
+			});
+
+			// Only update if something changed
+			if (Object.keys(cleanedOverrides).length !== Object.keys(prev.entitlementOverrides).length) {
+				return {
+					...prev,
+					entitlementOverrides: cleanedOverrides,
+				};
+			}
+
+			return prev;
+		});
+	}, [allEntitlements]);
+
+	const handleEntitlementOverride = (entitlementId: string, override: EntitlementOverrideRequest) => {
+		setState((prev) => ({
+			...prev,
+			entitlementOverrides: {
+				...prev.entitlementOverrides,
+				[entitlementId]: override,
+			},
+		}));
+	};
+
+	const handleEntitlementOverrideReset = (entitlementId: string) => {
+		setState((prev) => {
+			const newOverrides = { ...prev.entitlementOverrides };
+			delete newOverrides[entitlementId];
+			return {
+				...prev,
+				entitlementOverrides: newOverrides,
+			};
+		});
+	};
+
 	return (
 		<div className='p-4 rounded-lg border border-gray-300 space-y-4'>
 			<FormHeader title='Subscription Details' variant='sub-header' />
@@ -737,6 +830,21 @@ const SubscriptionForm = ({
 						}}
 						disabled={isDisabled}
 					/>
+				</div>
+			)}
+
+			{/* Entitlements Section */}
+			{state.selectedPlan && allEntitlements.length > 0 && (
+				<div className='space-y-4 mt-4 pt-3 border-t border-gray-200'>
+					<FormHeader className='mb-0' title='Entitlements' variant='sub-header' />
+					<div className='rounded-xl border border-gray-300 space-y-6 mt-2'>
+						<EntitlementOverridesTable
+							entitlements={allEntitlements}
+							overrides={state.entitlementOverrides}
+							onOverrideChange={handleEntitlementOverride}
+							onOverrideReset={handleEntitlementOverrideReset}
+						/>
+					</div>
 				</div>
 			)}
 

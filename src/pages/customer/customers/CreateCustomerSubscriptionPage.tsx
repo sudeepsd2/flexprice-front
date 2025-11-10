@@ -21,7 +21,13 @@ import { RouteNames } from '@/core/routes/Routes';
 
 // Models and types - consolidated from index files
 import { BILLING_CADENCE, INVOICE_CADENCE, SubscriptionPhase, Coupon, TAXRATE_ENTITY_TYPE, EXPAND } from '@/models';
-import { ExpandedPlan, CreateSubscriptionPayload, AddAddonToSubscriptionRequest, TaxRateOverride } from '@/types';
+import {
+	ExpandedPlan,
+	CreateSubscriptionPayload,
+	AddAddonToSubscriptionRequest,
+	TaxRateOverride,
+	EntitlementOverrideRequest,
+} from '@/types/dto';
 
 // Constants and utilities
 import { BILLING_PERIOD } from '@/constants/constants';
@@ -75,6 +81,9 @@ export type SubscriptionFormState = {
 	// Additional Fields
 	overageFactor: string;
 	commitmentAmount: string;
+
+	// Entitlement Overrides
+	entitlementOverrides: Record<string, EntitlementOverrideRequest>;
 };
 
 // Data Fetching Hooks
@@ -193,6 +202,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 		tax_rate_overrides: [],
 		overageFactor: '',
 		commitmentAmount: '',
+		entitlementOverrides: {},
 	});
 
 	// Fetch data using React Query
@@ -307,6 +317,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 					tax_rate_overrides: [],
 					overageFactor: subscriptionData.details.overage_factor?.toString() ?? '',
 					commitmentAmount: subscriptionData.details.commitment_amount?.toString() ?? '',
+					entitlementOverrides: {},
 				});
 			}
 		}
@@ -345,6 +356,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 			addons,
 			overageFactor,
 			commitmentAmount,
+			entitlementOverrides,
 		} = subscriptionState;
 
 		if (!billingPeriod || !selectedPlan) {
@@ -441,6 +453,9 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 
 			// Tax rate overrides
 			tax_rate_overrides: tax_rate_overrides.length > 0 ? tax_rate_overrides : undefined,
+
+			// Entitlement overrides
+			override_entitlements: Object.keys(entitlementOverrides).length > 0 ? Object.values(entitlementOverrides) : undefined,
 		};
 
 		createSubscription(payload);

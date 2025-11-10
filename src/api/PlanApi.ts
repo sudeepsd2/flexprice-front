@@ -119,4 +119,8 @@ export class PlanApi {
 		const url = generateQueryParams(this.baseUrl, payload);
 		return await AxiosClient.get<ListPlansResponse>(url);
 	}
+
+	public static async getPlanEntitlements(planId: string) {
+		return await AxiosClient.get<{ items: any[]; total: number; page: number; limit: number }>(`${this.baseUrl}/${planId}/entitlements`);
+	}
 }

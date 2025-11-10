@@ -1,39 +1,92 @@
 import { FC, useEffect, useState, useMemo } from 'react';
 import { Input, Sheet, Spacer, Select, Button, Modal, SelectOption } from '@/components/atoms';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import SecretKeysApi from '@/api/SecretKeysApi';
+import { UserApi } from '@/api/UserApi';
+import { User } from '@/models';
 import { toast } from 'react-hot-toast';
-import { Copy, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { Copy, AlertTriangle, Eye, EyeOff, Info } from 'lucide-react';
 import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
-import { logger } from '@/utils/common/Logger';
 
 interface Props {
 	isOpen: boolean;
 	onOpenChange: (value: boolean) => void;
 }
 
-export enum PermissionType {
-	READ = 'read',
-	WRITE = 'write',
-	READ_WRITE = 'read_write',
-}
+type AccountType = 'user' | 'service_account';
 
 const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 	// Combined state for form fields
 	const [formData, setFormData] = useState({
 		name: '',
-		permissionType: PermissionType.READ_WRITE,
+		accountType: 'user' as AccountType,
+		serviceAccountId: '',
+		selectedRoles: [] as string[],
 		expirationType: 'never',
 	});
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [showApiKey, setShowApiKey] = useState(false);
 
-	const permissionOptions: SelectOption[] = useMemo(
+	// Fetch service accounts when drawer is open
+	const {
+		data: serviceAccounts,
+		isLoading: isLoadingServiceAccounts,
+		isError: isServiceAccountsError,
+	} = useQuery<User[]>({
+		queryKey: ['service-accounts'],
+		queryFn: () => UserApi.getServiceAccounts(),
+		enabled: isOpen && formData.accountType === 'service_account',
+		retry: false, // Don't retry on failure
+	});
+
+	// Convert service accounts to select options
+	const serviceAccountOptions: SelectOption[] = useMemo(() => {
+		if (!serviceAccounts || !Array.isArray(serviceAccounts)) {
+			return [];
+		}
+
+		// Sort by created_at (newest first) if available, otherwise keep original order
+		const sortedAccounts = [...serviceAccounts].sort((a, b) => {
+			if (a.tenant?.created_at && b.tenant?.created_at) {
+				return new Date(b.tenant.created_at).getTime() - new Date(a.tenant.created_at).getTime();
+			}
+			return 0;
+		});
+
+		return sortedAccounts.map((account, index) => {
+			// Create a meaningful label
+			let label = '';
+
+			// 1. Try name first (if it's a real name, not internal ID)
+			if (account.name && account.name.trim() && !account.name.startsWith('_dup_user_')) {
+				label = account.name;
+			}
+			// 2. Show ALL roles (most common for service accounts)
+			else if (account.roles && account.roles.length > 0) {
+				// Just show the roles, clean and simple
+				label = account.roles.join(', ');
+			}
+			// 3. Try email if it's a real email (not internal ID)
+			else if (account.email && account.email.trim() && !account.email.startsWith('_dup_user_') && account.email.includes('@')) {
+				label = account.email;
+			}
+			// 4. Fallback to generic name
+			else {
+				label = `Service Account ${index + 1}`;
+			}
+
+			return {
+				label: label,
+				value: account.id,
+			};
+		});
+	}, [serviceAccounts]);
+
+	const accountTypeOptions: SelectOption[] = useMemo(
 		() => [
-			{ label: 'Read', value: PermissionType.READ, key_input: ['read'], disabled: true },
-			{ label: 'Write', value: PermissionType.WRITE, key_input: ['read', 'write'], disabled: true },
-			{ label: 'Read & Write', value: PermissionType.READ_WRITE, key_input: ['read', 'write'], disabled: false },
+			{ label: 'User Account', value: 'user' },
+			{ label: 'Service Account', value: 'service_account' },
 		],
 		[],
 	);
@@ -49,16 +102,6 @@ const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 		[],
 	);
 
-	// Use memoized mapper functions to derive values from formData
-	const getPermissions = useMemo(
-		() => ({
-			[PermissionType.READ]: ['read'],
-			[PermissionType.WRITE]: ['write'],
-			[PermissionType.READ_WRITE]: ['read', 'write'],
-		}),
-		[],
-	);
-
 	const getExpirationDate = useMemo(
 		() => ({
 			never: undefined,
@@ -71,7 +114,7 @@ const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 	);
 
 	// Handle form field changes
-	const handleChange = (field: keyof typeof formData, value: string) => {
+	const handleChange = (field: keyof typeof formData, value: string | string[]) => {
 		setFormData((prev) => ({ ...prev, [field]: value }));
 	};
 
@@ -80,7 +123,9 @@ const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 		if (isOpen) {
 			setFormData({
 				name: '',
-				permissionType: PermissionType.READ_WRITE,
+				accountType: 'user',
+				serviceAccountId: '',
+				selectedRoles: [],
 				expirationType: 'never',
 			});
 		}
@@ -93,16 +138,27 @@ const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 		data,
 	} = useMutation({
 		mutationFn: async () => {
-			const permissions = getPermissions[formData.permissionType as keyof typeof getPermissions];
 			const expirationFn = getExpirationDate[formData.expirationType as keyof typeof getExpirationDate];
 			const expires_at = typeof expirationFn === 'function' ? expirationFn() : expirationFn;
 
-			return SecretKeysApi.createSecretKey({
+			const payload: { name: string; expires_at?: string; type: string; service_account_id?: string; roles?: string[] } = {
 				name: formData.name,
-				permissions,
 				expires_at,
 				type: 'private_key',
-			});
+			};
+
+			// If service account is selected, add service_account_id (roles inherited from service account)
+			if (formData.accountType === 'service_account') {
+				payload.service_account_id = formData.serviceAccountId;
+				console.log('🔑 Creating API key for service account:', {
+					serviceAccountId: formData.serviceAccountId,
+					selectedAccount: serviceAccounts?.find((a: User) => a.id === formData.serviceAccountId),
+					payload,
+				});
+			}
+			// User account keys don't need roles field - they inherit full permissions
+
+			return SecretKeysApi.createSecretKey(payload);
 		},
 		onSuccess: () => {
 			refetchQueries(['secret-keys']);
@@ -110,13 +166,27 @@ const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 			onOpenChange(false);
 		},
 		onError: (error: ServerError) => {
-			logger.error(error);
+			console.error('Failed to create API key:', error);
 			toast.error(error.error.message || 'Failed to create API key. Please try again.');
 		},
 	});
 
 	// Check if form is valid
-	const isFormValid = formData.name && formData.permissionType && formData.expirationType;
+	const isFormValid = useMemo(() => {
+		if (!formData.name || !formData.accountType || !formData.expirationType) {
+			return false;
+		}
+		// If service account is selected but there's an error or no accounts, disable form
+		if (formData.accountType === 'service_account') {
+			if (isServiceAccountsError || serviceAccountOptions.length === 0) {
+				return false;
+			}
+			if (!formData.serviceAccountId) {
+				return false;
+			}
+		}
+		return true;
+	}, [formData, isServiceAccountsError, serviceAccountOptions.length]);
 
 	// Copy API key to clipboard
 	const copyApiKey = () => {
@@ -133,6 +203,12 @@ const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 		return '•'.repeat(key.length);
 	};
 
+	// Get the selected service account for displaying roles
+	const selectedServiceAccount = useMemo(() => {
+		if (!serviceAccounts || !formData.serviceAccountId) return null;
+		return serviceAccounts.find((account: User) => account.id === formData.serviceAccountId);
+	}, [serviceAccounts, formData.serviceAccountId]);
+
 	return (
 		<div>
 			<Sheet
@@ -143,12 +219,91 @@ const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 				<div className='space-y-4'>
 					<Spacer className='!h-4' />
 					<Input placeholder='Secret Key' value={formData.name} label='Name' onChange={(value) => handleChange('name', value)} />
+
 					<Select
-						label='Permissions'
-						options={permissionOptions}
-						onChange={(value) => handleChange('permissionType', value)}
-						value={formData.permissionType}
+						label='Account Type'
+						options={accountTypeOptions}
+						onChange={(value) => handleChange('accountType', value as AccountType)}
+						value={formData.accountType}
 					/>
+
+					{formData.accountType === 'user' && (
+						<>
+							<div className='bg-blue-50 border border-blue-200 rounded-md p-3'>
+								<div className='flex items-start gap-2'>
+									<Info className='w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5' />
+									<div className='text-sm text-blue-800'>
+										<p className='font-medium mb-1'>Full Access</p>
+										<p>This API key will have full access with all permissions inherited from your user account.</p>
+									</div>
+								</div>
+							</div>
+						</>
+					)}
+
+					{formData.accountType === 'service_account' && (
+						<>
+							{isServiceAccountsError ? (
+								<div className='bg-amber-50 border border-amber-200 rounded-md p-3'>
+									<div className='flex items-start gap-2'>
+										<AlertTriangle className='w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5' />
+										<div className='text-sm text-amber-800'>
+											<p className='font-medium mb-1'>Service Accounts Not Available</p>
+											<p>
+												The backend endpoint for service accounts is not yet implemented. Please create a user account API key instead, or
+												contact your administrator.
+											</p>
+										</div>
+									</div>
+								</div>
+							) : serviceAccountOptions.length === 0 && !isLoadingServiceAccounts ? (
+								<div className='bg-blue-50 border border-blue-200 rounded-md p-3'>
+									<div className='flex items-start gap-2'>
+										<Info className='w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5' />
+										<div className='text-sm text-blue-800'>
+											<p className='font-medium mb-1'>No Service Accounts Found</p>
+											<p>Create a service account first to generate API keys for automated services.</p>
+										</div>
+									</div>
+								</div>
+							) : (
+								<>
+									<Select
+										label='Mapped to Identity'
+										options={serviceAccountOptions}
+										onChange={(value) => handleChange('serviceAccountId', value)}
+										value={formData.serviceAccountId}
+										placeholder='Select a service account'
+										disabled={isLoadingServiceAccounts}
+									/>
+
+									{selectedServiceAccount && selectedServiceAccount.roles && selectedServiceAccount.roles.length > 0 && (
+										<div className='space-y-2'>
+											<label className='block text-sm font-medium text-gray-700'>Account Roles and Permissions</label>
+											<div className='bg-blue-50 border border-blue-200 rounded-md p-3'>
+												<div className='flex items-start gap-2'>
+													<Info className='w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5' />
+													<div className='text-sm text-blue-800'>
+														<p className='font-medium mb-1'>Inherited from service account:</p>
+														<div className='flex flex-wrap gap-1'>
+															{selectedServiceAccount.roles.map((role: string) => (
+																<span
+																	key={role}
+																	className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
+																	{role}
+																</span>
+															))}
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									)}
+								</>
+							)}
+						</>
+					)}
+
 					<Select
 						label='Expiration'
 						options={expirationOptions}

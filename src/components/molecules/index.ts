@@ -160,3 +160,7 @@ export { default as CustomerUsageTable } from './CustomerUsageTable';
 export { CostDataTable } from './CostDataTable';
 
 export { default as HubSpotConnectionDrawer } from './HubSpotConnectionDrawer';
+
+export { EntitlementOverridesTable, EditEntitlementDrawer } from './EntitlementOverrides';
+
+export { SubscriptionEntitlementsSection } from './SubscriptionEntitlementsSection';

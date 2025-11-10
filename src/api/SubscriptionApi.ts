@@ -182,6 +182,19 @@ class SubscriptionApi {
 	public static async deleteSubscriptionLineItem(id: string, payload: DeleteSubscriptionLineItemRequest): Promise<void> {
 		return await AxiosClient.delete(`${this.baseUrl}/lineitems/${id}`, payload);
 	}
+
+	// =============================================================================
+	// SUBSCRIPTION ENTITLEMENT METHODS
+	// =============================================================================
+
+	/**
+	 * Get subscription entitlements
+	 */
+	public static async getSubscriptionEntitlements(subscriptionId: string) {
+		return await AxiosClient.get<{ features: any[]; subscription_id: string; plan_id: string }>(
+			`${this.baseUrl}/${subscriptionId}/entitlements`,
+		);
+	}
 }
 
 export default SubscriptionApi;

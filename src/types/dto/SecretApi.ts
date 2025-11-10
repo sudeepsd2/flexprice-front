@@ -7,9 +7,10 @@ export interface GetAllSecretKeysResponse {
 
 export interface CreateSecretKeyPayload {
 	name: string;
-	permissions: string[];
 	expires_at?: string;
 	type: string;
+	service_account_id?: string; // For service account API keys
+	roles?: string[]; // Optional: for user account API keys with specific roles
 }
 
 export interface CreateSecretKeyResponse {
