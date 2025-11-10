@@ -11,6 +11,7 @@ export interface CreateSecretKeyPayload {
 	type: string;
 	service_account_id?: string; // For service account API keys
 	roles?: string[]; // Optional: for user account API keys with specific roles
+	user_id?: string; // Optional: for service account API keys
 }
 
 export interface CreateSecretKeyResponse {

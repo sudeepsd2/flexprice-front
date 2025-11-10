@@ -7,6 +7,7 @@ import { User } from '@/models';
 import { toast } from 'react-hot-toast';
 import { Copy, AlertTriangle, Eye, EyeOff, Info } from 'lucide-react';
 import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
+import { ServerError } from '@/core/axios/types';
 
 interface Props {
 	isOpen: boolean;
@@ -79,6 +80,7 @@ const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 			return {
 				label: label,
 				value: account.id,
+				key_input: [account.email || account.id],
 			};
 		});
 	}, [serviceAccounts]);
@@ -315,8 +317,8 @@ const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 					<Button isLoading={isPending} disabled={!isFormValid} onClick={() => createApiKey()}>
 						Create
 					</Button>
-				</div>
-			</Sheet>
+				</div >
+			</Sheet >
 
 			<Modal isOpen={isModalOpen} onOpenChange={setIsModalOpen}>
 				<div className='space-y-4 bg-white card p-5 max-w-md mx-auto'>
@@ -351,7 +353,7 @@ const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 					</div>
 				</div>
 			</Modal>
-		</div>
+		</div >
 	);
 };
 

@@ -32,7 +32,7 @@ export const formatPermissionDisplay = (permissions: readonly string[]): string 
 	}
 };
 
-// Utility function to get permission icon based on permission level
+
 export const getPermissionIcon = (permissions: readonly string[]): LucideIcon => {
 	if (!permissions || permissions.length === 0) {
 		return EyeOff;
@@ -69,7 +69,6 @@ export const getPermissionColor = (permissions: readonly string[]): string => {
 		return 'text-gray-500'; // No access color
 	}
 };
-
 const baseColumns: ColumnData<SecretKey>[] = [
 	{
 		title: 'Name',

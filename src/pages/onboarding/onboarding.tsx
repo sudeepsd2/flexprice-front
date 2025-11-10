@@ -26,7 +26,7 @@ const tutorials: TutorialItem[] = [
 	{
 		title: 'Define Usage Metering',
 		description: 'Set up billable metrics to track customer usage',
-		onClick: () => window.open('https://docs.flexprice.io/guides/billable-metric/billable-metrics-create', '_blank'),
+		onClick: () => window.open('https://docs.flexprice.io/docs/wallet/create#creating-a-wallet', '_blank'),
 	},
 	{
 		title: 'Configure Credits & Wallets',
@@ -36,7 +36,7 @@ const tutorials: TutorialItem[] = [
 	{
 		title: 'Billing',
 		description: 'Create customers, assign plans, and manage subscriptions',
-		onClick: () => window.open('https://docs.flexprice.io/guides/subscription/customers-create-subscription', '_blank'),
+		onClick: () => window.open('https://docs.flexprice.io/docs/product-catalogue/features/create', '_blank'),
 	},
 	{
 		title: 'Self-Hosting & Configuration',
@@ -71,9 +71,9 @@ const OnboardingPage = () => {
 	return (
 		<>
 			{showVideoModal && (
-				<div className='fixed inset-0 z-50 flex items-center justify-center bg-black/70'>
+				<div className='flex fixed inset-0 z-50 justify-center items-center bg-black/70'>
 					<div className='relative w-full max-w-4xl aspect-video'>
-						<button onClick={handleCloseModal} className='absolute -top-10 right-0 text-white hover:text-gray-300 z-60'>
+						<button onClick={handleCloseModal} className='absolute right-0 -top-10 text-white hover:text-gray-300 z-60'>
 							<X className='w-6 h-6' />
 						</button>
 						<iframe
@@ -87,13 +87,13 @@ const OnboardingPage = () => {
 			<Page>
 				{/* Top Containers */}
 				<ApiDocsContent tags={['Events']} />
-				<div className='w-full flex gap-6 mb-16'>
+				<div className='flex gap-6 mb-16 w-full'>
 					{/* Welcome Container */}
 					<div className='flex-1 w-[70%] flex-grow rounded-[20px] bg-[#dde1eb] p-8'>
-						<div className='flex w-full items-start justify-between'>
+						<div className='flex justify-between items-start w-full'>
 							<div className='w-[60%]'>
-								<h1 className='text-xl font-semibold tracking-tight mb-2'>Welcome to Flexprice!</h1>
-								<p className='text-slate-800 text-sm mb-6'>Let's get your pricing and billing started!</p>
+								<h1 className='mb-2 text-xl font-semibold tracking-tight'>Welcome to Flexprice!</h1>
+								<p className='mb-6 text-sm text-slate-800'>Let's get your pricing and billing started!</p>
 								<div className='flex gap-4'>
 									<Button
 										onClick={() => {
@@ -118,27 +118,27 @@ const OnboardingPage = () => {
 				</div>
 				{/* Quick Start Section */}
 				<div className='w-full'>
-					<h2 className='text-2xl font-semibold text-slate-900 mb-6'>Quick Start</h2>
-					<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5'>
+					<h2 className='mb-6 text-2xl font-semibold text-slate-900'>Quick Start</h2>
+					<div className='grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3'>
 						{tutorials.map((tutorial, index) => (
 							<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} key={index}>
 								<Card
-									className='h-full group bg-white border border-slate-100 rounded-lg p-6 shadow-sm hover:border-blue-100 hover:bg-slate-50 transition-all duration-200 cursor-pointer hover:shadow-lg hover:shadow-blue-500/5'
+									className='p-6 h-full bg-white rounded-lg border shadow-sm transition-all duration-200 cursor-pointer group border-slate-100 hover:border-blue-100 hover:bg-slate-50 hover:shadow-lg hover:shadow-blue-500/5'
 									onClick={tutorial.onClick}>
 									<div className='flex gap-4'>
 										<div className='flex-shrink-0 mt-1'>
-											<AlignJustify className='w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors duration-200' />
+											<AlignJustify className='w-5 h-5 transition-colors duration-200 text-slate-400 group-hover:text-blue-500' />
 										</div>
 
 										<div className='flex-1 min-w-0'>
-											<h3 className='text-slate-800 text-base font-medium mb-2 group-hover:text-blue-600 transition-colors duration-200'>
+											<h3 className='mb-2 text-base font-medium transition-colors duration-200 text-slate-800 group-hover:text-blue-600'>
 												{tutorial.title}
 											</h3>
-											<p className='text-slate-500 text-sm leading-relaxed'>{tutorial.description}</p>
+											<p className='text-sm leading-relaxed text-slate-500'>{tutorial.description}</p>
 
-											<div className='flex items-center gap-1 mt-4 text-slate-400 group-hover:text-blue-500 transition-all duration-200'>
+											<div className='flex gap-1 items-center mt-4 transition-all duration-200 text-slate-400 group-hover:text-blue-500'>
 												<span className='text-xs font-medium'>Learn more</span>
-												<ArrowRight className='w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200' />
+												<ArrowRight className='w-4 h-4 transition-transform duration-200 transform group-hover:translate-x-1' />
 											</div>
 										</div>
 									</div>
