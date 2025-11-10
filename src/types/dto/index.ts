@@ -130,6 +130,7 @@ export type { CreateUserRequest, UpdateTenantPayload } from './User';
 export type {
 	CreateWalletPayload,
 	TopupWalletPayload,
+	DebitWalletPayload,
 	WalletTransactionResponse,
 	WalletTransactionPayload,
 	UpdateWalletRequest,
