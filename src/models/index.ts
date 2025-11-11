@@ -41,7 +41,8 @@ export type { default as Customer } from './Customer';
 export type { CustomerEntitlement } from './CustomerEntitlement';
 
 // CustomerUsage
-export type { default as CustomerUsage } from './CustomerUsage';
+export type { default as CustomerUsage, EntitlementSource } from './CustomerUsage';
+export { ENTITLEMENT_SOURCE_ENTITY_TYPE } from './CustomerUsage';
 
 // Entitlement
 export type { Entitlement } from './Entitlement';
