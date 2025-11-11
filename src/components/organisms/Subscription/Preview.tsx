@@ -240,7 +240,7 @@ const Preview = ({
 
 	const timelineItems = useMemo(() => {
 		const items: PreviewTimelineItem[] = phases.map((phase, index) => ({
-			icon: <Calendar className='h-[22px] w-[22px] text-gray-500 shrink-0' />,
+			icon: <Calendar className='h-5 w-5 text-gray-500 shrink-0' />,
 			subtitle: index === 0 ? 'Subscription Start' : 'Subscription Updates',
 			label: formatDate(phase.start_date),
 		}));
@@ -251,7 +251,7 @@ const Preview = ({
 
 		// Insert first invoice preview after the first item
 		const invoicePreview: PreviewTimelineItem = {
-			icon: <Receipt className='h-[22px] w-[22px] text-gray-500 shrink-0' />,
+			icon: <Receipt className='h-5 w-5 text-gray-500 shrink-0' />,
 			subtitle: (
 				<div>
 					<div className='space-y-1'>
@@ -333,7 +333,7 @@ const Preview = ({
 		const lastPhase = phases[phases.length - 1];
 		if (lastPhase.end_date) {
 			updatedItems.push({
-				icon: <Calendar className='h-[22px] w-[22px] text-gray-500 shrink-0' />,
+				icon: <Calendar className='h-5 w-5 text-gray-500 shrink-0' />,
 				subtitle: 'Subscription ends',
 				label: formatDate(lastPhase.end_date),
 			});

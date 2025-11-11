@@ -9,6 +9,7 @@ import {
 	Collapsible,
 	CollapsibleContent,
 	CollapsibleTrigger,
+	useSidebar,
 } from '@/components/ui';
 // import { ChevronRight } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -22,7 +23,9 @@ interface SidebarItemProps extends NavItem {
 const SidebarItem: FC<SidebarItemProps> = (item) => {
 	const navigate = useNavigate();
 	const location = useLocation();
+	const { state } = useSidebar();
 	const isOpen = item.isOpen ?? false;
+	const isCollapsed = state === 'collapsed';
 
 	const hasChildren = item.items && item.items.length > 0;
 	const Icon = item.icon;
@@ -61,8 +64,8 @@ const SidebarItem: FC<SidebarItemProps> = (item) => {
 	};
 
 	return (
-		<Collapsible key={item.title} open={isOpen} onOpenChange={handleOpenChange} asChild className='group/collapsible'>
-			<SidebarMenuItem>
+		<Collapsible key={item.title} open={isOpen && !isCollapsed} onOpenChange={handleOpenChange} asChild className='group/collapsible'>
+			<SidebarMenuItem className={cn(isCollapsed && 'mb-2')}>
 				<CollapsibleTrigger asChild>
 					<SidebarMenuButton
 						disabled={item.disabled}
@@ -74,7 +77,7 @@ const SidebarItem: FC<SidebarItemProps> = (item) => {
 							item.disabled && 'cursor-not-allowed opacity-50',
 						)}>
 						{Icon && (
-							<Icon absoluteStrokeWidth className={cn('!size-5 !stroke-[1.5px] mr-1', iconActive ? 'text-[#3C87D2]' : 'text-[#3F3F46]')} />
+							<Icon absoluteStrokeWidth className={cn('!size-5 !stroke-[1.5px] mr-1', iconActive ? 'text-blue-600' : 'text-[#3F3F46]')} />
 						)}
 						<span className='text-[14px] select-none font-normal'>{item.title}</span>
 						{/* {hasChildren && (
@@ -83,7 +86,12 @@ const SidebarItem: FC<SidebarItemProps> = (item) => {
 					</SidebarMenuButton>
 				</CollapsibleTrigger>
 				{hasChildren && (
-					<CollapsibleContent className='my-3 overflow-hidden transition-all duration-300 ease-in-out'>
+					<CollapsibleContent
+						className={cn(
+							'overflow-hidden transition-all duration-300 ease-in-out',
+							!isCollapsed && 'my-3',
+							isCollapsed && '!hidden !my-0',
+						)}>
 						<SidebarMenuSub className='gap-0 transition-opacity duration-200'>
 							{item.items?.map((subItem) => {
 								const subActive = location.pathname.startsWith(subItem.url);
