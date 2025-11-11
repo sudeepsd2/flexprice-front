@@ -12,7 +12,7 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 	const navMain: NavItem[] = [
 		{
 			title: 'Product Catalog',
-			url: '#',
+			url: RouteNames.features,
 			icon: Layers2,
 			items: [
 				{
@@ -43,7 +43,7 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 		},
 		{
 			title: 'Billing',
-			url: '#',
+			url: RouteNames.customers,
 			icon: Landmark,
 			items: [
 				{
@@ -74,7 +74,7 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 		},
 		{
 			title: 'Usage Tracking',
-			url: '#',
+			url: RouteNames.events,
 			icon: Gauge,
 			items: [
 				{
@@ -89,7 +89,7 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 		},
 		{
 			title: 'Developers',
-			url: '#',
+			url: RouteNames.webhooks,
 			icon: CodeXml,
 			items: [
 				{
@@ -104,7 +104,7 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 		},
 		{
 			title: 'Tools',
-			url: '#',
+			url: RouteNames.integrations,
 			icon: Settings,
 			items: [
 				{

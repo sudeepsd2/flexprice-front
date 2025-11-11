@@ -1,4 +1,4 @@
-import { FC, useState, useEffect, useCallback } from 'react';
+import { FC, useCallback } from 'react';
 import { NavItem } from './SidebarMenu';
 import {
 	SidebarMenuButton,
@@ -10,20 +10,19 @@ import {
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from '@/components/ui';
-import { debounce } from 'lodash';
 // import { ChevronRight } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 interface SidebarItemProps extends NavItem {
 	isOpen?: boolean;
-	defaultOpen?: boolean;
+	onToggle?: (isOpen: boolean) => void;
 }
 
 const SidebarItem: FC<SidebarItemProps> = (item) => {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const [isOpen, setIsOpen] = useState(item.defaultOpen || false);
+	const isOpen = item.isOpen ?? false;
 
 	const hasChildren = item.items && item.items.length > 0;
 	const Icon = item.icon;
@@ -31,34 +30,38 @@ const SidebarItem: FC<SidebarItemProps> = (item) => {
 	const isMainItemActive = item.isActive;
 	const iconActive = isMainItemActive;
 
-	// Update open state when route changes
-	useEffect(() => {
-		setIsOpen(item.defaultOpen || false);
-	}, [item.defaultOpen, location.pathname]);
-
 	const handleNavigation = useCallback(
-		debounce((url: string, hasChildren: boolean) => {
-			if (url && !hasChildren) {
+		(url: string) => {
+			if (url && url !== '#') {
 				navigate(url);
 			}
-			if (hasChildren) {
-				navigate(item.items?.[0].url || '#');
-			}
-		}, 300),
-		[navigate, item.items],
+		},
+		[navigate],
 	);
 
 	const handleClick = () => {
 		if (hasChildren) {
-			// Just toggle the open/close state without automatic navigation
-			setIsOpen(!isOpen);
+			const willOpen = !isOpen;
+			// Toggle the open/close state via parent handler
+			item.onToggle?.(willOpen);
+			// If opening and URL is not '#', navigate to it (which will be the first child's URL)
+			// Small delay to let the accordion animation start smoothly
+			if (willOpen && item.url && item.url !== '#') {
+				setTimeout(() => {
+					handleNavigation(item.url);
+				}, 100);
+			}
 		} else {
-			handleNavigation(item.url, !!hasChildren);
+			handleNavigation(item.url);
 		}
 	};
 
+	const handleOpenChange = (open: boolean) => {
+		item.onToggle?.(open);
+	};
+
 	return (
-		<Collapsible key={item.title} open={isOpen} onOpenChange={setIsOpen} asChild className='group/collapsible'>
+		<Collapsible key={item.title} open={isOpen} onOpenChange={handleOpenChange} asChild className='group/collapsible'>
 			<SidebarMenuItem>
 				<CollapsibleTrigger asChild>
 					<SidebarMenuButton
@@ -66,7 +69,7 @@ const SidebarItem: FC<SidebarItemProps> = (item) => {
 						onClick={handleClick}
 						tooltip={item.title}
 						className={cn(
-							'flex items-center gap-2 h-10 px-2  py-[10px] rounded-[10px] text-[14px] cursor-pointer font-normal',
+							'flex items-center gap-2 h-10 px-2  py-[10px] rounded-[10px] text-[14px] cursor-pointer font-normal transition-all duration-200 ease-in-out',
 							isMainItemActive ? 'bg-white shadow-sm font-medium' : 'font-thin',
 							item.disabled && 'cursor-not-allowed opacity-50',
 						)}>
@@ -80,8 +83,8 @@ const SidebarItem: FC<SidebarItemProps> = (item) => {
 					</SidebarMenuButton>
 				</CollapsibleTrigger>
 				{hasChildren && (
-					<CollapsibleContent className='my-3'>
-						<SidebarMenuSub className='gap-0'>
+					<CollapsibleContent className='my-3 overflow-hidden transition-all duration-300 ease-in-out'>
+						<SidebarMenuSub className='gap-0 transition-opacity duration-200'>
 							{item.items?.map((subItem) => {
 								const subActive = location.pathname.startsWith(subItem.url);
 								return (
@@ -89,8 +92,8 @@ const SidebarItem: FC<SidebarItemProps> = (item) => {
 										<SidebarMenuSubButton
 											asChild={false}
 											isActive={subActive}
-											className={cn('w-full font-light text-black')}
-											onClick={() => handleNavigation(subItem.url, false)}>
+											className={cn('w-full font-light text-black transition-colors duration-200')}
+											onClick={() => handleNavigation(subItem.url)}>
 											{subItem.title}
 										</SidebarMenuSubButton>
 									</SidebarMenuSubItem>
