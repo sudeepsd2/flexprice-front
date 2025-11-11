@@ -35,7 +35,7 @@ const SidebarFooter = () => {
 			label: 'Billing',
 			icon: CreditCard,
 			onClick: () => {
-				navigate(RouteNames.billing);
+				navigate(RouteNames.customerBilling);
 			},
 		},
 		{

@@ -1,10 +1,10 @@
-import { Chip, Progress } from '@/components/atoms';
+import { Chip, Progress, Tooltip } from '@/components/atoms';
 import { ColumnData, FlexpriceTable, RedirectCell } from '@/components/molecules';
 import { RouteNames } from '@/core/routes/Routes';
 import { FEATURE_TYPE } from '@/models/Feature';
 import { FC } from 'react';
 import { getFeatureIcon } from '@/components/atoms/SelectFeature/SelectFeature';
-import CustomerUsage from '@/models/CustomerUsage';
+import CustomerUsage, { EntitlementSource, ENTITLEMENT_SOURCE_ENTITY_TYPE } from '@/models/CustomerUsage';
 import { formatAmount } from '@/components/atoms/Input/Input';
 
 interface Props {
@@ -38,11 +38,11 @@ export const getFeatureTypeChips = ({
 const getFeatureValue = (data: CustomerUsage) => {
 	switch (data.feature.type) {
 		case FEATURE_TYPE.STATIC:
-			return data.sources?.[0]?.static_value || '--';
+			return data.sources?.[0]?.static_value ?? '--';
 		case FEATURE_TYPE.METERED:
 			return (
 				<span className='flex items-end gap-1'>
-					{data.total_limit ? formatAmount(data.total_limit?.toString()) : 'Unlimited'}
+					{data.is_unlimited ? 'Unlimited' : data.total_limit ? formatAmount(data.total_limit?.toString()) : 'Unlimited'}
 					<span className='text-[#64748B] text-sm font-normal font-sans'>units</span>
 				</span>
 			);
@@ -51,6 +51,34 @@ const getFeatureValue = (data: CustomerUsage) => {
 		default:
 			return '--';
 	}
+};
+
+const getRedirectUrl = (source: EntitlementSource | undefined): string | undefined => {
+	if (!source) {
+		return undefined;
+	}
+
+	// Prefer entity_type and entity_id if available
+	if (source.entity_type && source.entity_id) {
+		if (source.entity_type === ENTITLEMENT_SOURCE_ENTITY_TYPE.PLAN) {
+			return `${RouteNames.plan}/${source.entity_id}`;
+		} else if (source.entity_type === ENTITLEMENT_SOURCE_ENTITY_TYPE.ADDON) {
+			return `${RouteNames.addonDetails}/${source.entity_id}`;
+		}
+		// subscription type doesn't have a direct redirect URL
+	}
+
+	// Fallback to old plan_id if entity fields are not available
+	if (source.plan_id) {
+		return `${RouteNames.plan}/${source.plan_id}`;
+	}
+
+	return undefined;
+};
+
+const getEntityName = (source: EntitlementSource | undefined): string => {
+	// Prefer entity_name if available, otherwise fallback to plan_name
+	return source?.entity_name || source?.plan_name || '--';
 };
 
 const CustomerUsageTable: FC<Props> = ({ data, allowRedirect = true }) => {
@@ -73,10 +101,69 @@ const CustomerUsageTable: FC<Props> = ({ data, allowRedirect = true }) => {
 		{
 			title: 'Plan',
 			render(row) {
+				const sources = row?.sources || [];
+
+				if (sources.length === 0) {
+					return '--';
+				}
+
+				// Single source - always show with redirect if URL is available
+				if (sources.length === 1) {
+					const source = sources[0];
+					const redirectUrl = getRedirectUrl(source);
+					const entityName = getEntityName(source);
+
+					// Always use RedirectCell for single source if we have a URL
+					if (redirectUrl) {
+						return (
+							<RedirectCell allowRedirect={allowRedirect} redirectUrl={redirectUrl}>
+								{entityName}
+							</RedirectCell>
+						);
+					}
+
+					// Fallback: show without redirect if no URL available
+					return <span>{entityName}</span>;
+				}
+
+				// Multiple sources - show primary (0th index) with tooltip containing all sources
+				const primarySource = sources[0];
+				const entityName = getEntityName(primarySource);
+				const additionalCount = sources.length - 1;
+
+				const displayContent = (
+					<span>
+						{entityName}
+						{additionalCount > 0 && <span className='text-[#64748B] text-sm ml-1'>+{additionalCount}</span>}
+					</span>
+				);
+
+				// Tooltip content with all sources and their redirect links
+				const tooltipContent = (
+					<div className='flex flex-col gap-2 max-w-xs'>
+						{sources.map((source, index) => {
+							const sourceName = getEntityName(source);
+							const sourceRedirectUrl = getRedirectUrl(source);
+
+							return (
+								<div key={source.entitlement_id || index} className='flex items-center gap-2'>
+									{sourceRedirectUrl && allowRedirect ? (
+										<RedirectCell allowRedirect={allowRedirect} redirectUrl={sourceRedirectUrl}>
+											<span className='text-sm'>{sourceName}</span>
+										</RedirectCell>
+									) : (
+										<span className='text-sm'>{sourceName}</span>
+									)}
+								</div>
+							);
+						})}
+					</div>
+				);
+
 				return (
-					<RedirectCell allowRedirect={allowRedirect} redirectUrl={`${RouteNames.plan}/${row?.sources[0]?.plan_id}`}>
-						{row?.sources[0]?.plan_name}
-					</RedirectCell>
+					<Tooltip delayDuration={0} sideOffset={15} content={tooltipContent}>
+						<span className='cursor-pointer'>{displayContent}</span>
+					</Tooltip>
 				);
 			},
 		},
@@ -93,10 +180,10 @@ const CustomerUsageTable: FC<Props> = ({ data, allowRedirect = true }) => {
 					return '--';
 				}
 				const usage = Number(row?.current_usage);
-				const limit = Number(row?.total_limit);
+				const limit = row?.is_unlimited ? null : row?.total_limit ? Number(row.total_limit) : null;
 
-				// Handle unlimited case (limit is 0 or null)
-				if (!limit) {
+				// Handle unlimited case
+				if (row?.is_unlimited || !limit) {
 					return (
 						<Progress
 							label={`${formatAmount(usage.toString())} / Unlimited`}

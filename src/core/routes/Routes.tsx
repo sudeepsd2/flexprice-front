@@ -92,7 +92,7 @@ export const RouteNames = {
 	queryPage: '/usage-tracking/query',
 
 	// billing routes
-	customerManagement: '/billing',
+	billing: '/billing',
 	customers: '/billing/customers',
 	subscriptions: '/billing/subscriptions',
 	createSubscription: '/billing/subscriptions/create',
@@ -145,7 +145,7 @@ export const RouteNames = {
 	// footer
 	developers: '/developers',
 	onboarding: '/onboarding',
-	billing: '/billing',
+	customerBilling: '/settings/billing',
 	webhooks: '/webhooks',
 };
 
@@ -301,7 +301,7 @@ export const MainRouter = createBrowserRouter([
 				],
 			},
 			{
-				path: RouteNames.customerManagement,
+				path: RouteNames.billing,
 				children: [
 					{
 						path: RouteNames.customers,
@@ -441,7 +441,7 @@ export const MainRouter = createBrowserRouter([
 				element: <OnboardingTenant />,
 			},
 			{
-				path: RouteNames.billing,
+				path: RouteNames.customerBilling,
 				element: <BillingPage />,
 			},
 		],

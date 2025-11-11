@@ -1,4 +1,4 @@
-import { AddButton, Page, ShortPagination, Spacer } from '@/components/atoms';
+import { AddButton, Loader, Page, ShortPagination, Spacer } from '@/components/atoms';
 import { ApiDocsContent, FeatureTable } from '@/components/molecules';
 import EmptyPage from '@/components/organisms/EmptyPage/EmptyPage';
 import { RouteNames } from '@/core/routes/Routes';
@@ -158,6 +158,10 @@ const FeaturesPage = () => {
 		return !isLoading && probeData?.items.length === 0 && featureData?.items.length === 0;
 	}, [isLoading, probeData, featureData]);
 
+	if (isLoading) {
+		return <Loader />;
+	}
+
 	// Handle error state
 	if (isError) {
 		toast.error('Error fetching features');
@@ -168,7 +172,7 @@ const FeaturesPage = () => {
 	if (showEmptyPage) {
 		return (
 			<EmptyPage
-				heading='Feature'
+				heading='Features'
 				tags={['Features']}
 				tutorials={GUIDES.features.tutorials}
 				emptyStateCard={{
@@ -188,7 +192,7 @@ const FeaturesPage = () => {
 			headingCTA={
 				<div className='flex justify-between items-center gap-2'>
 					<Link to={RouteNames.createFeature}>
-						<AddButton label='Add Feature' />
+						<AddButton />
 					</Link>
 				</div>
 			}>

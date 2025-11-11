@@ -174,11 +174,15 @@ const SubscriptionsPage = () => {
 		return null;
 	}
 
+	if (isLoading) {
+		return <Loader />;
+	}
+
 	// Render empty state when no subscriptions and no search query
 	if (showEmptyPage) {
 		return (
 			<EmptyPage
-				heading='Subscription'
+				heading='Subscriptions'
 				tags={['Subscriptions']}
 				tutorials={GUIDES.customers.tutorials}
 				emptyStateCard={{

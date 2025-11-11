@@ -9,6 +9,7 @@ import { ApiDocsContent } from '@/components/molecules';
 import { AlertCircle } from 'lucide-react';
 import { ENTITY_STATUS } from '@/models';
 import CustomerHeader from '@/components/molecules/Customer/CustomerHeader';
+import { RouteNames } from '@/core/routes/Routes';
 
 const tabs = [
 	{ id: '', label: 'Overview' },
@@ -69,7 +70,7 @@ const CustomerProfilePage = () => {
 	}, [activeTab, updateBreadcrumb, setSegmentLoading, customer, location.pathname]);
 
 	const onTabChange = (tabId: TabId) => {
-		navigate(`/billing/customers/${customerId}/${tabId}`);
+		navigate(`${RouteNames.customers}/${customerId}/${tabId}`);
 	};
 
 	if (isLoading) {

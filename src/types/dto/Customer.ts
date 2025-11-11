@@ -21,15 +21,17 @@ export interface GetCustomerEntitlementPayload {
 	feature_id?: string;
 }
 
+export interface BillingPeriodInfo {
+	start_time: string;
+	end_time: string;
+	period: string;
+}
+
 export interface GetUsageSummaryResponse {
 	customer_id: string;
 	features: CustomerUsage[];
-	pagination: Pagination;
-	period: {
-		end_time: string;
-		period: string;
-		start_time: string;
-	};
+	pagination?: Pagination;
+	period?: BillingPeriodInfo;
 }
 
 // Subscription

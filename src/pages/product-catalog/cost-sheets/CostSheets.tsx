@@ -160,6 +160,10 @@ const CostSheetsPage = () => {
 		return null;
 	}
 
+	if (isLoading) {
+		return <Loader />;
+	}
+
 	if (showEmptyPage) {
 		return (
 			<div className='space-y-6'>
@@ -186,7 +190,7 @@ const CostSheetsPage = () => {
 	}
 
 	return (
-		<Page heading='Cost Sheets' headingCTA={<AddButton label='Add Cost Sheet' onClick={handleOnAdd} />}>
+		<Page heading='Cost Sheets' headingCTA={<AddButton onClick={handleOnAdd} />}>
 			<CostSheetDrawer
 				data={activeCostSheet}
 				open={costSheetDrawerOpen}

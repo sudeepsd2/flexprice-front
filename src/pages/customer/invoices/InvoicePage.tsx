@@ -205,10 +205,14 @@ const InvoicesPage = () => {
 		return <div>Error fetching invoices</div>;
 	}
 
+	if (isLoading) {
+		return <Loader />;
+	}
+
 	if (showEmptyPage) {
 		return (
 			<EmptyPage
-				heading='Invoice'
+				heading='Invoices'
 				tags={['Invoices']}
 				emptyStateCard={{
 					heading: 'Create your first invoice',

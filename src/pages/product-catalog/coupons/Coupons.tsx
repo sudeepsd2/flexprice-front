@@ -1,4 +1,4 @@
-import { AddButton, Page, ShortPagination, Spacer } from '@/components/atoms';
+import { AddButton, Loader, Page, ShortPagination, Spacer } from '@/components/atoms';
 import { ApiDocsContent, CouponTable, CouponDrawer } from '@/components/molecules';
 import EmptyPage from '@/components/organisms/EmptyPage/EmptyPage';
 import GUIDES from '@/constants/guides';
@@ -166,11 +166,15 @@ const CouponsPage = () => {
 		return null;
 	}
 
+	if (isLoading) {
+		return <Loader />;
+	}
+
 	// Render empty state when no coupons and no search query
 	if (showEmptyPage) {
 		return (
 			<EmptyPage
-				heading='Coupon'
+				heading='Coupons'
 				tags={['Coupons']}
 				tutorials={GUIDES.coupons.tutorials}
 				emptyStateCard={{
@@ -191,7 +195,7 @@ const CouponsPage = () => {
 				heading='Coupons'
 				headingCTA={
 					<div className='flex justify-between items-center gap-2'>
-						<AddButton label='Add Coupon' onClick={handleCreateCoupon} />
+						<AddButton onClick={handleCreateCoupon} />
 					</div>
 				}>
 				<ApiDocsContent tags={['Coupons']} />
