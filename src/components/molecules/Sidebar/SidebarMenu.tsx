@@ -1,10 +1,11 @@
 'use client';
 
 import { FC, useState, useEffect } from 'react';
-import { SidebarGroup, SidebarMenu } from '@/components/ui/sidebar';
+import { SidebarGroup, SidebarMenu, useSidebar } from '@/components/ui/sidebar';
 import SidebarItem from './SidebarItem';
 import { useLocation } from 'react-router-dom';
 import { LucideIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export type NavItem = {
 	title: string;
@@ -22,6 +23,8 @@ export type NavItem = {
 
 const SidebarNav: FC<{ items: NavItem[] }> = ({ items }) => {
 	const location = useLocation();
+	const { state } = useSidebar();
+	const isCollapsed = state === 'collapsed';
 	const [openItemTitle, setOpenItemTitle] = useState<string | null>(null);
 
 	// Determine which item should be open based on current route
@@ -60,7 +63,7 @@ const SidebarNav: FC<{ items: NavItem[] }> = ({ items }) => {
 
 	return (
 		<SidebarGroup className='mb-0'>
-			<SidebarMenu className='gap-3'>
+			<SidebarMenu className={cn('gap-0', isCollapsed && 'gap-2')}>
 				{items.map((item) => {
 					// Check if current path matches the main item URL or any of its sub-items
 					const isMainItemActive = location.pathname.startsWith(item.url) && item.url !== '#';
