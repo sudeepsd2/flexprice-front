@@ -317,8 +317,8 @@ const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 					<Button isLoading={isPending} disabled={!isFormValid} onClick={() => createApiKey()}>
 						Create
 					</Button>
-				</div >
-			</Sheet >
+				</div>
+			</Sheet>
 
 			<Modal isOpen={isModalOpen} onOpenChange={setIsModalOpen}>
 				<div className='space-y-4 bg-white card p-5 max-w-md mx-auto'>
@@ -353,7 +353,7 @@ const SecretKeyDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 					</div>
 				</div>
 			</Modal>
-		</div >
+		</div>
 	);
 };
 
