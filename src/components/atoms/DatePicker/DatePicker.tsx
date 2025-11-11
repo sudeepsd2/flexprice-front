@@ -51,7 +51,7 @@ const DatePicker = ({
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger className={popoverTriggerClassName} disabled={disabled}>
-				{label && <div className={cn('mb-1 w-full text-start text-sm text-muted-foreground', labelClassName)}>{label}</div>}
+				{label && <div className={cn('mb-1 w-full text-start text-sm ', labelClassName)}>{label}</div>}
 				<Button
 					variant='outline'
 					className={cn('min-w-[240px] h-10 justify-start text-left font-normal py-1', !date && 'text-muted-foreground', className)}
