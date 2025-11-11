@@ -4,7 +4,7 @@ import SidebarNav, { NavItem } from './SidebarMenu';
 import FlexpriceSidebarFooter from './SidebarFooter';
 import { RouteNames } from '@/core/routes/Routes';
 import { EnvironmentSelector } from '@/components/molecules';
-import { Settings, Landmark, Layers2, Gauge } from 'lucide-react';
+import { Settings, Landmark, Layers2, Gauge, LayoutPanelLeft, CodeXml } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }) => {
@@ -22,10 +22,6 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 				{
 					title: 'Plans',
 					url: RouteNames.plan,
-				},
-				{
-					title: 'Pricing Widget',
-					url: RouteNames.pricing,
 				},
 				{
 					title: 'Coupons',
@@ -74,10 +70,6 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 					title: 'Payments',
 					url: RouteNames.payments,
 				},
-				// {
-				// 	title: 'Analytics',
-				// 	url: RouteNames.analytics,
-				// },
 			],
 		},
 		{
@@ -92,6 +84,21 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 				{
 					title: 'Query',
 					url: RouteNames.queryPage,
+				},
+			],
+		},
+		{
+			title: 'Developers',
+			url: '#',
+			icon: CodeXml,
+			items: [
+				{
+					title: 'Webhooks',
+					url: RouteNames.webhooks,
+				},
+				{
+					title: 'API Keys',
+					url: RouteNames.apiKeys,
 				},
 			],
 		},
@@ -113,6 +120,11 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 					url: RouteNames.exports,
 				},
 			],
+		},
+		{
+			title: 'Pricing Widget',
+			url: RouteNames.pricing,
+			icon: LayoutPanelLeft,
 		},
 	];
 
