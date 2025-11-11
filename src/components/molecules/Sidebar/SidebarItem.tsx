@@ -9,6 +9,7 @@ import {
 	Collapsible,
 	CollapsibleContent,
 	CollapsibleTrigger,
+	useSidebar,
 } from '@/components/ui';
 // import { ChevronRight } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -22,7 +23,9 @@ interface SidebarItemProps extends NavItem {
 const SidebarItem: FC<SidebarItemProps> = (item) => {
 	const location = useLocation();
 	const navigate = useNavigate();
+	const { state } = useSidebar();
 	const isOpen = item.isOpen ?? false;
+	const isCollapsed = state === 'collapsed';
 
 	const hasChildren = item.items && item.items.length > 0;
 	const Icon = item.icon;
@@ -93,8 +96,8 @@ const SidebarItem: FC<SidebarItemProps> = (item) => {
 
 	// For items with children, use Collapsible with Link
 	return (
-		<Collapsible key={item.title} open={isOpen} onOpenChange={handleOpenChange} className='group/collapsible'>
-			<SidebarMenuItem>
+		<Collapsible key={item.title} open={isOpen && !isCollapsed} onOpenChange={handleOpenChange} className='group/collapsible'>
+			<SidebarMenuItem className={cn(isCollapsed && 'mb-2')}>
 				<CollapsibleTrigger asChild>
 					<SidebarMenuButton
 						asChild
@@ -111,23 +114,30 @@ const SidebarItem: FC<SidebarItemProps> = (item) => {
 						</Link>
 					</SidebarMenuButton>
 				</CollapsibleTrigger>
-				<CollapsibleContent className='my-3 overflow-hidden transition-all duration-300 ease-in-out'>
-					<SidebarMenuSub className='gap-0 transition-opacity duration-200'>
-						{item.items?.map((subItem) => {
-							const subActive = location.pathname.startsWith(subItem.url);
-							return (
-								<SidebarMenuSubItem key={subItem.title}>
-									<SidebarMenuSubButton
-										asChild
-										isActive={subActive}
-										className={cn('w-full font-light text-black transition-colors duration-200')}>
-										<Link to={subItem.url}>{subItem.title}</Link>
-									</SidebarMenuSubButton>
-								</SidebarMenuSubItem>
-							);
-						})}
-					</SidebarMenuSub>
-				</CollapsibleContent>
+				{hasChildren && (
+					<CollapsibleContent
+						className={cn(
+							'overflow-hidden transition-all duration-300 ease-in-out',
+							!isCollapsed && 'my-3',
+							isCollapsed && '!hidden !my-0',
+						)}>
+						<SidebarMenuSub className='gap-0 transition-opacity duration-200'>
+							{item.items?.map((subItem) => {
+								const subActive = location.pathname.startsWith(subItem.url);
+								return (
+									<SidebarMenuSubItem key={subItem.title}>
+										<SidebarMenuSubButton
+											asChild
+											isActive={subActive}
+											className={cn('w-full font-light text-black transition-colors duration-200')}>
+											<Link to={subItem.url}>{subItem.title}</Link>
+										</SidebarMenuSubButton>
+									</SidebarMenuSubItem>
+								);
+							})}
+						</SidebarMenuSub>
+					</CollapsibleContent>
+				)}
 			</SidebarMenuItem>
 		</Collapsible>
 	);
