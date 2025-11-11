@@ -229,6 +229,8 @@ export {
 	getInvoiceWebhookEvents,
 } from '../enums/StripeWebhookEvents';
 
+export { RazorpayWebhookEvents, getDefaultRazorpayWebhookEvents } from '../enums/RazorpayWebhookEvents';
+
 // Additional DTO types
 export type { Testimonial } from './Testimonial';
 
