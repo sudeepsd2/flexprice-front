@@ -588,7 +588,7 @@ const SubscriptionForm = ({
 
 			{/* Addons Section */}
 			{state.selectedPlan && (
-				<div className='mt-6 pt-6 border-t border-gray-200'>
+				<div className='space-y-3 mt-8 pt-6 border-t border-gray-200'>
 					<SubscriptionAddonTable
 						getEmptyAddon={getEmptyAddon}
 						data={state.addons || []}
