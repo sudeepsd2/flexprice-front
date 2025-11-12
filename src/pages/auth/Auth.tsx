@@ -82,7 +82,7 @@ const AuthPage: React.FC = () => {
 
 					{currentTab === AuthTab.SIGNUP && (
 						<>
-							<h2 className='text-3xl font-medium text-center text-gray-800 mb-2'>Create an account</h2>
+							<h2 className='text-3xl font-medium text-center text-gray-800 mb-2'>Create your account</h2>
 							<p className='text-center text-gray-600 mb-8'>Sign up to start using Flexprice.</p>
 						</>
 					)}
