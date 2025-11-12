@@ -12,21 +12,23 @@ interface TimelineItemProps {
 	isLast: boolean;
 }
 
-const TimelineItem: FC<TimelineItemProps> = ({ icon, label, subtitle, isLast, className, isFirst }) => (
-	<div className={cn('flex gap-3 items-start relative min-h-[64px]', className)}>
-		{/* Vertical line behind the icon */}
-		<div className='absolute left-[11px] top-0 bottom-0 flex items-center justify-center'>
-			{!isFirst && <div className='absolute top-0 w-[1px] h-full bg-gray-300' />}
-			{!isLast && <div className='absolute bottom-0 w-[1px] h-full bg-gray-300' />}
-		</div>
+const TimelineItem: FC<TimelineItemProps> = ({ icon, label, subtitle, isLast, className }) => (
+	<div className={cn('flex gap-3 items-start relative', className)}>
+		{/* Icon circle container with line */}
+		<div className='flex flex-col items-center min-w-[32px] z-10 relative h-full'>
+			{/* Icon circle */}
+			<div className='flex items-center justify-center h-8 w-8 bg-white rounded-full border border-gray-300 z-10 relative'>
+				<div className='flex items-center justify-center w-full h-full'>{icon}</div>
+			</div>
 
-		{/* Icon circle */}
-		<div className='flex flex-col items-center min-w-[24px] z-10'>
-			<div className='flex items-center justify-center h-6 w-6 bg-white rounded-full border border-gray-300 z-10'>{icon}</div>
+			{/* Vertical line - starts from bottom of circle and extends to top of next circle, only if not last item */}
+			{!isLast && (
+				<div className='absolute left-1/2 top-8 -translate-x-1/2 w-[1px] bg-gray-500' style={{ height: 'calc(100% - 2rem + 1.5rem)' }} />
+			)}
 		</div>
 
 		{/* Label & Subtitle */}
-		<div className='space-y-1.5 pt-0.5'>
+		<div className='space-y-1.5 pt-0.5 flex-1'>
 			<p className='text-base font-medium text-gray-900'>{label}</p>
 			{subtitle && <div className='text-sm text-gray-600'>{subtitle}</div>}
 		</div>
