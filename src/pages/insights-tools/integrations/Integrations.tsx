@@ -60,7 +60,7 @@ const Integrations = () => {
 					))}
 				</div>
 			</div>
-			<div className='mt-10'>
+			<div className='mt-16'>
 				<p className='mb-4 font-medium text-xl'>Premium add-ons</p>
 				<div className='grid grid-cols-2 gap-4 '>
 					{availablePremium.map((integration, index) => (

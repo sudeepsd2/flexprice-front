@@ -663,7 +663,7 @@ const SubscriptionForm = ({
 
 			{/* Subscription Phases Section */}
 			{state.selectedPlan && (
-				<div className='space-y-3 mt-4 pt-3 border-t border-gray-200'>
+				<div className='space-y-3 mt-10 pt-6 border-t border-gray-200'>
 					{/* Map through phases and conditionally render edit or preview */}
 					{state.phases.map((phase, index) => {
 						const isSelected = index === state.selectedPhase;
@@ -725,7 +725,7 @@ const SubscriptionForm = ({
 
 									{/* charges */}
 									{state.prices && state.selectedPlan && state.billingPeriod && state.currency && (
-										<div className='mb-2'>
+										<div className='!mb-10'>
 											<PriceTable
 												data={currentPrices}
 												billingPeriod={state.billingPeriod}
@@ -755,14 +755,16 @@ const SubscriptionForm = ({
 									)}
 
 									{/* credit grants */}
-									<CreditGrantTable
-										getEmptyCreditGrant={getEmptyCreditGrant}
-										data={relevantCreditGrants.length > 0 ? relevantCreditGrants : phase.credit_grants || []}
-										onChange={(data) => {
-											updatePhase(index, { credit_grants: data });
-										}}
-										disabled={isDisabled || isCreditGrantDisabled}
-									/>
+									<div className='!mb-10'>
+										<CreditGrantTable
+											getEmptyCreditGrant={getEmptyCreditGrant}
+											data={relevantCreditGrants.length > 0 ? relevantCreditGrants : phase.credit_grants || []}
+											onChange={(data) => {
+												updatePhase(index, { credit_grants: data });
+											}}
+											disabled={isDisabled || isCreditGrantDisabled}
+										/>
+									</div>
 								</div>
 							);
 						}
@@ -811,17 +813,19 @@ const SubscriptionForm = ({
 					)} */}
 
 					{/* Tax Rate Overrides */}
-					<SubscriptionTaxAssociationTable
-						data={state.tax_rate_overrides || []}
-						onChange={(data) => setState((prev) => ({ ...prev, tax_rate_overrides: data }))}
-						disabled={isDisabled}
-					/>
+					<div className='!mb-10'>
+						<SubscriptionTaxAssociationTable
+							data={state.tax_rate_overrides || []}
+							onChange={(data) => setState((prev) => ({ ...prev, tax_rate_overrides: data }))}
+							disabled={isDisabled}
+						/>
+					</div>
 				</div>
 			)}
 
 			{/* Addons Section */}
 			{state.selectedPlan && (
-				<div className='space-y-3 mt-4 pt-3 border-t border-gray-200'>
+				<div className='space-y-3 mt-8 pt-6 border-t border-gray-200'>
 					<SubscriptionAddonTable
 						getEmptyAddon={getEmptyAddon}
 						data={state.addons || []}
@@ -835,7 +839,7 @@ const SubscriptionForm = ({
 
 			{/* Entitlements Section */}
 			{state.selectedPlan && allEntitlements.length > 0 && (
-				<div className='space-y-4 mt-4 pt-3 border-t border-gray-200'>
+				<div className='space-y-4 mt-8 pt-6 border-t border-gray-200'>
 					<FormHeader className='mb-0' title='Entitlements' variant='sub-header' />
 					<div className='rounded-xl border border-gray-300 space-y-6 mt-2'>
 						<EntitlementOverridesTable
