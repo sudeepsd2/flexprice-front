@@ -9,6 +9,8 @@ import toast from 'react-hot-toast';
 import { Coupon } from '@/models/Coupon';
 import { ExtendedPriceOverride } from '@/utils/common/price_override_helpers';
 import { BILLING_MODEL, TIER_MODE } from '@/models/Price';
+import { convertSubscriptionToPhaseData } from '@/utils/subscription/phaseConversion';
+import { formatDateShort } from '@/utils/common/helper_functions';
 
 interface PhaseListProps {
 	phases: SubscriptionPhaseCreateRequest[];
@@ -20,6 +22,24 @@ interface PhaseListProps {
 	subscriptionStartDate: Date;
 	subscriptionEndDate?: Date;
 	allCoupons?: Coupon[];
+	// Subscription-level data for conversion to first phase
+	subscriptionData?: {
+		startDate: string;
+		endDate?: string;
+		linkedCoupon: Coupon | null;
+		lineItemCoupons: Record<string, Coupon>;
+		priceOverrides: Record<string, ExtendedPriceOverride>;
+	};
+	// Callback when converting to phases (first add)
+	onConvertToPhases?: () => void;
+	// Callback when converting back to subscription (last phase deleted)
+	onConvertBackToSubscription?: (subscriptionData: {
+		startDate: string;
+		endDate?: string;
+		linkedCoupon: Coupon | null;
+		lineItemCoupons: Record<string, Coupon>;
+		priceOverrides: Record<string, ExtendedPriceOverride>;
+	}) => void;
 }
 
 const PhaseList: React.FC<PhaseListProps> = ({
@@ -32,6 +52,9 @@ const PhaseList: React.FC<PhaseListProps> = ({
 	subscriptionStartDate,
 	subscriptionEndDate,
 	allCoupons = [],
+	subscriptionData,
+	onConvertToPhases,
+	onConvertBackToSubscription,
 }) => {
 	const [editingIndex, setEditingIndex] = useState<number | null>(null);
 	const [isCreating, setIsCreating] = useState(false);
@@ -39,7 +62,37 @@ const PhaseList: React.FC<PhaseListProps> = ({
 	const handleAddPhase = () => {
 		if (disabled || editingIndex !== null || isCreating) return;
 
-		// Check if adding a phase after index 0 - previous phase must have end_date
+		// First phase: Convert subscription data to phases
+		if (phases.length === 0) {
+			// Validate that subscription end date is set
+			if (!subscriptionEndDate) {
+				toast.error('Please set a subscription end date before adding phases.');
+				return;
+			}
+
+			if (!subscriptionData) {
+				toast.error('Subscription data is not available.');
+				return;
+			}
+
+			// Convert subscription data to first phase
+			const firstPhaseData = convertSubscriptionToPhaseData(subscriptionData);
+			const firstPhaseDTO = convertPhaseFormToDTO(firstPhaseData);
+
+			// Add first phase to the array
+			onChange([firstPhaseDTO]);
+
+			// Notify parent that we've converted to phases
+			if (onConvertToPhases) {
+				onConvertToPhases();
+			}
+
+			// Set creating mode for second phase
+			setIsCreating(true);
+			return;
+		}
+
+		// Subsequent phases: Check if previous phase has end_date
 		if (phases.length > 0) {
 			const lastPhase = phases[phases.length - 1];
 			if (!lastPhase.end_date) {
@@ -58,7 +111,48 @@ const PhaseList: React.FC<PhaseListProps> = ({
 
 	const handleDeletePhase = (index: number) => {
 		if (disabled || editingIndex !== null || isCreating) return;
+
+		// Create a copy of phases without the deleted phase
 		const newPhases = phases.filter((_, i) => i !== index);
+
+		// If this is the last remaining phase, convert it back to subscription-level data
+		if (newPhases.length === 1) {
+			const lastPhase = newPhases[0];
+
+			// Convert the last phase back to subscription data
+			const phaseFormData = convertDTOToPhaseForm(lastPhase, allCoupons);
+
+			const subscriptionDataToRestore = {
+				startDate: phaseFormData.start_date.toISOString(),
+				endDate: phaseFormData.end_date ? phaseFormData.end_date.toISOString() : undefined,
+				linkedCoupon: phaseFormData.coupons.length > 0 ? phaseFormData.coupons[0] : null,
+				lineItemCoupons: phaseFormData.line_item_coupons,
+				priceOverrides: phaseFormData.priceOverrides,
+			};
+
+			// Clear all phases and restore subscription data
+			onChange([]);
+
+			// Notify parent to restore subscription-level fields
+			if (onConvertBackToSubscription) {
+				onConvertBackToSubscription(subscriptionDataToRestore);
+			}
+
+			return;
+		}
+
+		// If there's a previous phase (index > 0), update its end_date to the deleted phase's end_date
+		if (index > 0 && phases[index]) {
+			const deletedPhase = phases[index];
+			const previousPhaseIndex = index - 1;
+
+			// Update the previous phase's end_date to the deleted phase's end_date
+			newPhases[previousPhaseIndex] = {
+				...newPhases[previousPhaseIndex],
+				end_date: deletedPhase.end_date,
+			};
+		}
+
 		onChange(newPhases);
 	};
 
@@ -159,7 +253,60 @@ const PhaseList: React.FC<PhaseListProps> = ({
 		} else if (editingIndex !== null) {
 			// Updating existing phase
 			const newPhases = [...phases];
-			newPhases[editingIndex] = phaseDTO;
+			const oldPhase = newPhases[editingIndex];
+
+			// Check if start_date or end_date was updated
+			const hasPreviousPhase = editingIndex > 0;
+			const hasNextPhase = editingIndex < phases.length - 1;
+			const startDateChanged = oldPhase.start_date !== phaseDTO.start_date;
+			const endDateChanged = oldPhase.end_date !== phaseDTO.end_date;
+
+			// Handle start_date change
+			if (hasPreviousPhase && startDateChanged) {
+				const previousPhase = newPhases[editingIndex - 1];
+				const newStartDate = new Date(phaseDTO.start_date);
+
+				// Validate: new start_date must be after previous phase's start_date
+				const previousPhaseStartDate = new Date(previousPhase.start_date);
+				if (newStartDate <= previousPhaseStartDate) {
+					toast.error("Phase start date must be after the previous phase's start date.");
+					return;
+				}
+
+				// Update current phase
+				newPhases[editingIndex] = phaseDTO;
+
+				// Update previous phase's end_date to match current phase's start_date
+				newPhases[editingIndex - 1] = {
+					...previousPhase,
+					end_date: phaseDTO.start_date,
+				};
+			} else {
+				// Update current phase
+				newPhases[editingIndex] = phaseDTO;
+			}
+
+			// Handle end_date change (only if start_date wasn't changed to avoid double updates)
+			if (hasNextPhase && endDateChanged && phaseDTO.end_date && !startDateChanged) {
+				const nextPhase = newPhases[editingIndex + 1];
+				const newEndDate = new Date(phaseDTO.end_date);
+
+				// Validate: new end_date must be before next phase's end_date (if it exists)
+				if (nextPhase.end_date) {
+					const nextPhaseEndDate = new Date(nextPhase.end_date);
+					if (newEndDate >= nextPhaseEndDate) {
+						toast.error("Phase end date must be before the next phase's end date.");
+						return;
+					}
+				}
+
+				// Update next phase's start_date to match current phase's end_date
+				newPhases[editingIndex + 1] = {
+					...nextPhase,
+					start_date: phaseDTO.end_date,
+				};
+			}
+
 			onChange(newPhases);
 			setEditingIndex(null);
 		}
@@ -170,43 +317,27 @@ const PhaseList: React.FC<PhaseListProps> = ({
 		setIsCreating(false);
 	};
 
-	const getPhaseStartDate = (index: number): Date => {
-		if (index === 0) {
-			return subscriptionStartDate;
-		}
-		const prevPhase = phases[index - 1];
-		return prevPhase.end_date ? new Date(prevPhase.end_date) : subscriptionStartDate;
-	};
-
-	const getNextPhaseStartDate = (index: number): Date | undefined => {
-		if (index < phases.length - 1) {
-			const nextPhase = phases[index + 1];
-			return new Date(nextPhase.start_date);
-		}
-		return subscriptionEndDate;
-	};
-
 	return (
 		<div className='space-y-4'>
-			<div className='flex items-center justify-between'>
-				<Label label='Subscription Phases' />
-				{!disabled && !editingIndex && !isCreating && (
-					<Button variant='outline' size='sm' onClick={handleAddPhase} className='text-sm'>
-						Add Phase
-					</Button>
-				)}
-			</div>
+			{phases.length > 0 && (
+				<div className='flex items-center justify-between'>
+					<Label label='Subscription Phases' />
+				</div>
+			)}
 
 			{/* Existing Phases */}
 			{phases.map((phase, index) => {
 				const isEditing = editingIndex === index;
-				const startDate = new Date(phase.start_date).toLocaleDateString();
-				const endDate = phase.end_date ? new Date(phase.end_date).toLocaleDateString() : 'Forever';
+				const startDate = formatDateShort(phase.start_date);
+				const endDate = phase.end_date ? formatDateShort(phase.end_date) : 'Forever';
 
 				if (isEditing) {
 					const isAfterFirstPhase = index > 0;
 					const previousPhase = isAfterFirstPhase ? phases[index - 1] : null;
-					const previousPhaseEndDate = previousPhase?.end_date ? new Date(previousPhase.end_date) : null;
+					const previousPhaseStartDate = previousPhase ? new Date(previousPhase.start_date) : subscriptionStartDate;
+					const hasNextPhase = index < phases.length - 1;
+					const nextPhase = hasNextPhase ? phases[index + 1] : null;
+					const nextPhaseEndDate = nextPhase?.end_date ? new Date(nextPhase.end_date) : subscriptionEndDate;
 
 					// Convert DTO to PhaseFormData
 					const phaseFormData = convertDTOToPhaseForm(phase, allCoupons);
@@ -222,9 +353,8 @@ const PhaseList: React.FC<PhaseListProps> = ({
 							onSave={handleSavePhase}
 							onCancel={handleCancelEdit}
 							isEditing={true}
-							minStartDate={getPhaseStartDate(index)}
-							maxEndDate={getNextPhaseStartDate(index)}
-							disableStartDate={isAfterFirstPhase && previousPhaseEndDate !== null}
+							minStartDate={previousPhaseStartDate}
+							maxEndDate={nextPhaseEndDate}
 						/>
 					);
 				}
@@ -275,8 +405,9 @@ const PhaseList: React.FC<PhaseListProps> = ({
 			{isCreating &&
 				(() => {
 					const isAfterFirstPhase = phases.length > 0;
-					const previousPhaseEndDate =
-						isAfterFirstPhase && phases[phases.length - 1].end_date ? new Date(phases[phases.length - 1].end_date!) : null;
+					const previousPhase = isAfterFirstPhase ? phases[phases.length - 1] : null;
+					const previousPhaseStartDate = previousPhase ? new Date(previousPhase.start_date) : subscriptionStartDate;
+					const previousPhaseEndDate = previousPhase?.end_date ? new Date(previousPhase.end_date) : null;
 					const newPhaseStartDate = previousPhaseEndDate || subscriptionStartDate;
 
 					return (
@@ -296,19 +427,17 @@ const PhaseList: React.FC<PhaseListProps> = ({
 							onSave={handleSavePhase}
 							onCancel={handleCancelEdit}
 							isEditing={false}
-							minStartDate={newPhaseStartDate}
+							minStartDate={previousPhaseStartDate}
 							maxEndDate={subscriptionEndDate}
-							disableStartDate={isAfterFirstPhase && previousPhaseEndDate !== null}
 						/>
 					);
 				})()}
 
-			{phases.length === 0 && !isCreating && (
-				<div className='text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg'>
-					<Calendar className='h-8 w-8 mx-auto mb-2 text-gray-400' />
-					<p className='text-sm'>No phases configured</p>
-					<p className='text-xs'>Add phases to customize subscription behavior over time</p>
-				</div>
+			{/* Add Phase Button - Stripe Style */}
+			{!disabled && !editingIndex && !isCreating && (
+				<Button onClick={handleAddPhase} variant='outline' className='w-full'>
+					Add phase
+				</Button>
 			)}
 		</div>
 	);

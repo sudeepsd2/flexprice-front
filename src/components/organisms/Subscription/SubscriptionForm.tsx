@@ -401,16 +401,18 @@ const SubscriptionForm = ({
 				/>
 			)}
 
-			{/* Subscription Level Fields */}
+			{/* Subscription Cycle */}
 			{state.selectedPlan && (
-				<>
-					{/* Billing Cycle */}
-					<BillingCycleSelector
-						value={state.billingCycle}
-						onChange={(value) => setState((prev) => ({ ...prev, billingCycle: value }))}
-						disabled={isDisabled}
-					/>
+				<BillingCycleSelector
+					value={state.billingCycle}
+					onChange={(value) => setState((prev) => ({ ...prev, billingCycle: value }))}
+					disabled={isDisabled}
+				/>
+			)}
 
+			{/* Conditional: Show Subscription Fields OR Phases */}
+			{state.selectedPlan && phases.length === 0 && (
+				<>
 					{/* Subscription Dates */}
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
 						<div>
@@ -439,57 +441,119 @@ const SubscriptionForm = ({
 						</div>
 					</div>
 
-					{/* Commitment and Overage */}
-					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-						<DecimalUsageInput
-							label='Commitment Amount'
-							value={state.commitmentAmount}
-							onChange={(value) => setState((prev) => ({ ...prev, commitmentAmount: value }))}
-							placeholder='e.g. $100.00'
-							disabled={isDisabled}
-							precision={2}
-							min={0}
-						/>
-						<DecimalUsageInput
-							label='Overage Factor'
-							value={state.overageFactor}
-							onChange={(value) => setState((prev) => ({ ...prev, overageFactor: value }))}
-							placeholder='e.g. 1.5'
-							disabled={isDisabled}
-							precision={2}
-							min={0}
-						/>
-					</div>
+					{/* Subscription Level Price Table */}
+					{currentPrices.length > 0 && (
+						<div className='space-y-3 mt-4 pt-3 border-t border-gray-200'>
+							<PriceTable
+								data={currentPrices}
+								billingPeriod={state.billingPeriod}
+								currency={state.currency}
+								onPriceOverride={overridePrice}
+								onResetOverride={resetOverride}
+								overriddenPrices={overriddenPrices}
+								lineItemCoupons={state.lineItemCoupons}
+								onLineItemCouponsChange={(priceId, coupon) => {
+									setState((prev) => {
+										const newLineItemCoupons = { ...prev.lineItemCoupons };
+										if (coupon) {
+											newLineItemCoupons[priceId] = coupon;
+										} else {
+											delete newLineItemCoupons[priceId];
+										}
+										return {
+											...prev,
+											lineItemCoupons: newLineItemCoupons,
+										};
+									});
+								}}
+								disabled={isDisabled}
+								subscriptionLevelCoupon={state.linkedCoupon}
+							/>
+						</div>
+					)}
+
+					{/* Subscription Level Discounts */}
+					<SubscriptionDiscountTable
+						coupon={state.linkedCoupon}
+						onChange={(coupon) => setState((prev) => ({ ...prev, linkedCoupon: coupon }))}
+						disabled={isDisabled}
+						currency={state.currency}
+						allLineItemCoupons={state.lineItemCoupons}
+					/>
 				</>
 			)}
 
-			{/* Subscription Level Price Table */}
-			{state.selectedPlan && currentPrices.length > 0 && (
-				<div className='space-y-3 mt-4 pt-3 border-t border-gray-200'>
-					<PriceTable
-						data={currentPrices}
+			{/* Subscription Phases Section - Show when phases exist OR as add phase button */}
+			{state.selectedPlan && phases !== undefined && onPhasesChange && (
+				<div className='space-y-3 mt-6 pt-4 border-t border-gray-200'>
+					<PhaseList
+						phases={phases}
+						onChange={onPhasesChange}
+						prices={currentPrices}
 						billingPeriod={state.billingPeriod}
 						currency={state.currency}
-						onPriceOverride={overridePrice}
-						onResetOverride={resetOverride}
-						overriddenPrices={overriddenPrices}
-						lineItemCoupons={state.lineItemCoupons}
-						onLineItemCouponsChange={(priceId, coupon) => {
-							setState((prev) => {
-								const newLineItemCoupons = { ...prev.lineItemCoupons };
-								if (coupon) {
-									newLineItemCoupons[priceId] = coupon;
-								} else {
-									delete newLineItemCoupons[priceId];
-								}
-								return {
-									...prev,
-									lineItemCoupons: newLineItemCoupons,
-								};
+						disabled={isDisabled}
+						subscriptionStartDate={new Date(state.startDate)}
+						subscriptionEndDate={state.endDate ? new Date(state.endDate) : undefined}
+						allCoupons={allCoupons}
+						subscriptionData={{
+							startDate: state.startDate,
+							endDate: state.endDate,
+							linkedCoupon: state.linkedCoupon,
+							lineItemCoupons: state.lineItemCoupons,
+							priceOverrides: state.priceOverrides,
+						}}
+						onConvertToPhases={() => {
+							// Clear subscription-level data after conversion
+							// IMPORTANT: Clear endDate to avoid deadlock when adding more phases
+							setState((prev) => ({
+								...prev,
+								endDate: undefined,
+								linkedCoupon: null,
+								lineItemCoupons: {},
+								priceOverrides: {},
+							}));
+						}}
+						onConvertBackToSubscription={(subscriptionData) => {
+							// Restore subscription-level data when converting back from phases
+							setState((prev) => ({
+								...prev,
+								startDate: subscriptionData.startDate,
+								endDate: subscriptionData.endDate,
+								linkedCoupon: subscriptionData.linkedCoupon,
+								lineItemCoupons: subscriptionData.lineItemCoupons,
+								priceOverrides: subscriptionData.priceOverrides,
+							}));
+
+							// Re-initialize price overrides hook with restored data
+							Object.entries(subscriptionData.priceOverrides).forEach(([priceId, override]) => {
+								overridePrice(priceId, override);
 							});
 						}}
+					/>
+				</div>
+			)}
+
+			{/* Commitment and Overage - Always visible */}
+			{state.selectedPlan && (
+				<div className='grid grid-cols-1 md:grid-cols-2 gap-4 mt-6'>
+					<DecimalUsageInput
+						label='Commitment Amount'
+						value={state.commitmentAmount}
+						onChange={(value) => setState((prev) => ({ ...prev, commitmentAmount: value }))}
+						placeholder='e.g. $100.00'
 						disabled={isDisabled}
-						subscriptionLevelCoupon={state.linkedCoupon}
+						precision={2}
+						min={0}
+					/>
+					<DecimalUsageInput
+						label='Overage Factor'
+						value={state.overageFactor}
+						onChange={(value) => setState((prev) => ({ ...prev, overageFactor: value }))}
+						placeholder='e.g. 1.5'
+						disabled={isDisabled}
+						precision={2}
+						min={0}
 					/>
 				</div>
 			)}
@@ -546,34 +610,6 @@ const SubscriptionForm = ({
 							onOverrideReset={handleEntitlementOverrideReset}
 						/>
 					</div>
-				</div>
-			)}
-
-			{/* Subscription Level Discounts */}
-			{state.selectedPlan && (
-				<SubscriptionDiscountTable
-					coupon={state.linkedCoupon}
-					onChange={(coupon) => setState((prev) => ({ ...prev, linkedCoupon: coupon }))}
-					disabled={isDisabled}
-					currency={state.currency}
-					allLineItemCoupons={state.lineItemCoupons}
-				/>
-			)}
-
-			{/* Subscription Phases Section */}
-			{state.selectedPlan && phases && onPhasesChange && (
-				<div className='space-y-3 mt-4 pt-3 border-t border-gray-200'>
-					<PhaseList
-						phases={phases}
-						onChange={onPhasesChange}
-						prices={currentPrices}
-						billingPeriod={state.billingPeriod}
-						currency={state.currency}
-						disabled={isDisabled}
-						subscriptionStartDate={new Date(state.startDate)}
-						subscriptionEndDate={state.endDate ? new Date(state.endDate) : undefined}
-						allCoupons={allCoupons}
-					/>
 				</div>
 			)}
 		</div>
