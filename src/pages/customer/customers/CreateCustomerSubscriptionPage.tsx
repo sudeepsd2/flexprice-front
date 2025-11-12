@@ -425,7 +425,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 
 			// Optional properties
 			lookup_key: '',
-			phases: sanitizedPhases?.slice(1),
+			phases: sanitizedPhases,
 			override_line_items: finalOverrideLineItems && finalOverrideLineItems.length > 0 ? finalOverrideLineItems : undefined,
 			addons: (addons?.length ?? 0) > 0 ? addons : undefined,
 			coupons: finalCoupons,
