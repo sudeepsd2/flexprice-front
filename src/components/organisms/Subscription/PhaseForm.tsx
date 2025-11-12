@@ -94,40 +94,43 @@ const PhaseForm: React.FC<PhaseFormProps> = ({
 	};
 
 	return (
-		<div className='space-y-6 p-4 border border-gray-200 rounded-lg bg-white'>
+		<div className='space-y-6 p-6 border border-gray-200 rounded-lg bg-white shadow-sm'>
 			{/* Phase Dates */}
-			<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-				<div>
-					<Label label='Start Date*' />
-					<DatePicker
-						date={formState.start_date}
-						setDate={(date) => {
-							if (date) {
-								updateFormState({ start_date: date });
-							}
-						}}
-						disabled={disabled}
-						minDate={minStartDate}
-						maxDate={formState.end_date || maxEndDate}
-					/>
-				</div>
-				<div>
-					<Label label='End Date' />
-					<DatePicker
-						date={formState.end_date || undefined}
-						setDate={(date) => {
-							updateFormState({ end_date: date });
-						}}
-						placeholder='Forever'
-						disabled={disabled}
-						minDate={formState.start_date}
-						maxDate={maxEndDate}
-					/>
+			<div>
+				<h4 className='text-sm font-semibold text-gray-900 mb-4'>Phase Duration</h4>
+				<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+					<div>
+						<Label label='Start Date*' />
+						<DatePicker
+							date={formState.start_date}
+							setDate={(date) => {
+								if (date) {
+									updateFormState({ start_date: date });
+								}
+							}}
+							disabled={disabled}
+							minDate={minStartDate}
+							maxDate={formState.end_date || maxEndDate}
+						/>
+					</div>
+					<div>
+						<Label label='End Date' />
+						<DatePicker
+							date={formState.end_date || undefined}
+							setDate={(date) => {
+								updateFormState({ end_date: date });
+							}}
+							placeholder='Forever'
+							disabled={disabled}
+							minDate={formState.start_date}
+							maxDate={maxEndDate}
+						/>
+					</div>
 				</div>
 			</div>
 
 			{/* Phase-level Coupons */}
-			<div className='space-y-4'>
+			<div className='pt-6 border-t border-gray-200'>
 				<SubscriptionDiscountTable
 					coupon={formState.coupons.length > 0 ? formState.coupons[0] : null}
 					onChange={(coupon) => {
@@ -143,7 +146,7 @@ const PhaseForm: React.FC<PhaseFormProps> = ({
 
 			{/* Price Table with Line Item Coupons */}
 			{prices.length > 0 && (
-				<div className='space-y-2'>
+				<div className='pt-6 border-t border-gray-200'>
 					<PriceTable
 						data={prices}
 						billingPeriod={billingPeriod}
@@ -173,11 +176,11 @@ const PhaseForm: React.FC<PhaseFormProps> = ({
 			)}
 
 			{/* Action Buttons */}
-			<div className='flex justify-end gap-2 pt-4 border-t border-gray-200'>
-				<Button variant='outline' size='sm' onClick={onCancel} disabled={disabled}>
+			<div className='flex justify-end gap-3 pt-6 border-t border-gray-200'>
+				<Button variant='outline' onClick={onCancel} disabled={disabled}>
 					Cancel
 				</Button>
-				<Button size='sm' onClick={handleSave} disabled={disabled}>
+				<Button onClick={handleSave} disabled={disabled}>
 					{isEditing ? 'Update Phase' : 'Save Phase'}
 				</Button>
 			</div>

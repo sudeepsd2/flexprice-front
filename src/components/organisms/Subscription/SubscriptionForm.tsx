@@ -359,7 +359,7 @@ const SubscriptionForm = ({
 	};
 
 	return (
-		<div className='p-4 rounded-lg border border-gray-300 space-y-4'>
+		<div className='p-6 rounded-lg border border-gray-300 space-y-6 bg-white'>
 			<FormHeader title='Subscription Details' variant='sub-header' />
 
 			{/* Plan Selection */}
@@ -395,9 +395,9 @@ const SubscriptionForm = ({
 					value={state.currency}
 					options={availableCurrencies}
 					onChange={(value) => setState((prev) => ({ ...prev, currency: value }))}
-					label='Select Currency*'
-					placeholder='Select currency'
+					label='Currency*'
 					disabled={isDisabled}
+					placeholder='Select currency'
 				/>
 			)}
 
@@ -414,7 +414,7 @@ const SubscriptionForm = ({
 			{state.selectedPlan && phases.length === 0 && (
 				<>
 					{/* Subscription Dates */}
-					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+					<div className='grid grid-cols-1 md:grid-cols-2 gap-4 mt-6'>
 						<div>
 							<Label label='Subscription Start Date*' />
 							<DatePicker
@@ -443,7 +443,7 @@ const SubscriptionForm = ({
 
 					{/* Subscription Level Price Table */}
 					{currentPrices.length > 0 && (
-						<div className='space-y-3 mt-4 pt-3 border-t border-gray-200'>
+						<div className='mt-6 pt-6 border-t border-gray-200'>
 							<PriceTable
 								data={currentPrices}
 								billingPeriod={state.billingPeriod}
@@ -473,19 +473,21 @@ const SubscriptionForm = ({
 					)}
 
 					{/* Subscription Level Discounts */}
-					<SubscriptionDiscountTable
-						coupon={state.linkedCoupon}
-						onChange={(coupon) => setState((prev) => ({ ...prev, linkedCoupon: coupon }))}
-						disabled={isDisabled}
-						currency={state.currency}
-						allLineItemCoupons={state.lineItemCoupons}
-					/>
+					<div className='mt-6'>
+						<SubscriptionDiscountTable
+							coupon={state.linkedCoupon}
+							onChange={(coupon) => setState((prev) => ({ ...prev, linkedCoupon: coupon }))}
+							disabled={isDisabled}
+							currency={state.currency}
+							allLineItemCoupons={state.lineItemCoupons}
+						/>
+					</div>
 				</>
 			)}
 
 			{/* Subscription Phases Section - Show when phases exist OR as add phase button */}
 			{state.selectedPlan && phases !== undefined && onPhasesChange && (
-				<div className='space-y-3 mt-6 pt-4 border-t border-gray-200'>
+				<div className='mt-6 pt-6 border-t border-gray-200'>
 					<PhaseList
 						phases={phases}
 						onChange={onPhasesChange}
@@ -536,7 +538,7 @@ const SubscriptionForm = ({
 
 			{/* Commitment and Overage - Always visible */}
 			{state.selectedPlan && (
-				<div className='grid grid-cols-1 md:grid-cols-2 gap-4 mt-6'>
+				<div className='grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-6 border-t border-gray-200'>
 					<DecimalUsageInput
 						label='Commitment Amount'
 						value={state.commitmentAmount}
@@ -560,7 +562,7 @@ const SubscriptionForm = ({
 
 			{/* Credit Grants (Subscription Level) */}
 			{state.selectedPlan && (
-				<div className='space-y-3 mt-4 pt-3 border-t border-gray-200'>
+				<div className='mt-6 pt-6 border-t border-gray-200'>
 					<CreditGrantTable
 						getEmptyCreditGrant={() => getEmptyCreditGrant() as unknown as Partial<CreditGrant>}
 						data={relevantCreditGrants}
@@ -575,7 +577,7 @@ const SubscriptionForm = ({
 
 			{/* Tax Rate Overrides */}
 			{state.selectedPlan && (
-				<div className='space-y-3 mt-4 pt-3 border-t border-gray-200'>
+				<div className='mt-6 pt-6 border-t border-gray-200'>
 					<SubscriptionTaxAssociationTable
 						data={state.tax_rate_overrides || []}
 						onChange={(data) => setState((prev) => ({ ...prev, tax_rate_overrides: data }))}
@@ -586,7 +588,7 @@ const SubscriptionForm = ({
 
 			{/* Addons Section */}
 			{state.selectedPlan && (
-				<div className='space-y-3 mt-4 pt-3 border-t border-gray-200'>
+				<div className='mt-6 pt-6 border-t border-gray-200'>
 					<SubscriptionAddonTable
 						getEmptyAddon={getEmptyAddon}
 						data={state.addons || []}

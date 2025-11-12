@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Label } from '@/components/atoms';
+import { Button } from '@/components/atoms';
 import PhaseForm, { PhaseFormData } from './PhaseForm';
 import { SubscriptionPhaseCreateRequest } from '@/types/dto/Subscription';
 import { Price } from '@/models/Price';
@@ -318,10 +318,10 @@ const PhaseList: React.FC<PhaseListProps> = ({
 	};
 
 	return (
-		<div className='space-y-4'>
+		<div className='space-y-6'>
 			{phases.length > 0 && (
-				<div className='flex items-center justify-between'>
-					<Label label='Subscription Phases' />
+				<div className='flex items-center justify-between mb-4'>
+					<h3 className='text-base font-semibold text-gray-900'>Subscription Phases</h3>
 				</div>
 			)}
 
@@ -362,14 +362,14 @@ const PhaseList: React.FC<PhaseListProps> = ({
 				return (
 					<div
 						key={index}
-						className='group flex items-center justify-between p-3 border border-gray-200 rounded-md bg-white hover:bg-gray-50'>
+						className='group flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors'>
 						<div className='flex items-center space-x-3'>
-							<Calendar className='h-4 w-4 text-gray-500' />
+							<Calendar className='h-5 w-5 text-gray-400' />
 							<div>
-								<div className='text-sm font-medium'>
+								<div className='text-sm font-medium text-gray-900'>
 									{startDate} → {endDate}
 								</div>
-								<div className='text-xs text-gray-500'>
+								<div className='text-xs text-gray-500 mt-1'>
 									Phase {index + 1}
 									{phase.coupons && phase.coupons.length > 0 && (
 										<span className='ml-2 text-blue-600'>
@@ -388,12 +388,18 @@ const PhaseList: React.FC<PhaseListProps> = ({
 
 						{!disabled && editingIndex === null && !isCreating && (
 							<div className='flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-								<button onClick={() => handleEditPhase(index)} className='p-1 hover:bg-gray-100 rounded-md'>
-									<Pencil size={16} />
+								<button
+									onClick={() => handleEditPhase(index)}
+									className='p-2 hover:bg-gray-100 rounded-md transition-colors'
+									title='Edit phase'>
+									<Pencil size={16} className='text-gray-600' />
 								</button>
 								<div className='border-r h-4 border-gray-300' />
-								<button onClick={() => handleDeletePhase(index)} className='p-1 hover:bg-gray-100 rounded-md text-red-500'>
-									<Trash2 size={16} />
+								<button
+									onClick={() => handleDeletePhase(index)}
+									className='p-2 hover:bg-red-50 rounded-md transition-colors'
+									title='Delete phase'>
+									<Trash2 size={16} className='text-red-500' />
 								</button>
 							</div>
 						)}
@@ -434,9 +440,13 @@ const PhaseList: React.FC<PhaseListProps> = ({
 				})()}
 
 			{/* Add Phase Button - Stripe Style */}
-			{!disabled && !editingIndex && !isCreating && (
-				<Button onClick={handleAddPhase} variant='outline' className='w-full'>
-					Add phase
+			{!disabled && (
+				<Button
+					onClick={handleAddPhase}
+					variant='outline'
+					className='w-full !mt-4'
+					disabled={disabled || editingIndex !== null || isCreating}>
+					+ Add phase
 				</Button>
 			)}
 		</div>
