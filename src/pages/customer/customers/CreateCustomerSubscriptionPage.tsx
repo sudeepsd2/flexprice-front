@@ -33,9 +33,10 @@ import { BILLING_PERIOD } from '@/constants/constants';
 import { cn } from '@/lib/utils';
 import { toSentenceCase } from '@/utils/common/helper_functions';
 import { ExtendedPriceOverride, getLineItemOverrides } from '@/utils/common/price_override_helpers';
+import { extractSubscriptionBoundaries, extractFirstPhaseData } from '@/utils/subscription/phaseConversion';
 // Store
 import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
-import { SubscriptionPhaseCreateRequest } from '@/types/dto/Subscription';
+import { OverrideLineItemRequest, SubscriptionPhaseCreateRequest } from '@/types/dto/Subscription';
 
 type Params = {
 	id: string;
@@ -406,26 +407,59 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 			return;
 		}
 
-		// Get price overrides for backend
-		const currentPrices =
-			prices?.prices?.filter(
-				(price) =>
-					price.billing_period.toLowerCase() === billingPeriod.toLowerCase() &&
-					price.currency.toLowerCase() === currency.toLowerCase() &&
-					isPriceActive(price),
-			) || [];
-		const overrideLineItems = getLineItemOverrides(currentPrices, priceOverrides);
+		// Determine subscription dates and phase data based on whether phases exist
+		let finalStartDate: string;
+		let finalEndDate: string | undefined;
+		let finalCoupons: string[] | undefined;
+		let finalLineItemCoupons: Record<string, string[]> | undefined;
+		let finalOverrideLineItems: OverrideLineItemRequest[] | undefined;
+		let sanitizedPhases: SubscriptionPhaseCreateRequest[] | undefined;
 
-		// Phases are already in the correct format (SubscriptionPhaseCreateRequest)
-		// Just ensure proper formatting
-		const sanitizedPhases = phases.map((phase) => ({
-			start_date: phase.start_date,
-			end_date: phase.end_date || undefined,
-			coupons: phase.coupons || undefined,
-			line_item_coupons: phase.line_item_coupons || undefined,
-			override_line_items: phase.override_line_items || undefined,
-			metadata: phase.metadata || undefined,
-		}));
+		if (phases.length > 0) {
+			// Use phase boundaries for subscription dates
+			const boundaries = extractSubscriptionBoundaries(phases);
+			finalStartDate = boundaries.startDate;
+			finalEndDate = boundaries.endDate;
+
+			// Copy first phase data to subscription level
+			const firstPhaseData = extractFirstPhaseData(phases);
+			finalCoupons = firstPhaseData.coupons;
+			finalLineItemCoupons = firstPhaseData.line_item_coupons;
+			finalOverrideLineItems = firstPhaseData.override_line_items;
+
+			// Include phases array in payload
+			sanitizedPhases = phases.map((phase) => ({
+				start_date: phase.start_date,
+				end_date: phase.end_date || undefined,
+				coupons: phase.coupons || undefined,
+				line_item_coupons: phase.line_item_coupons || undefined,
+				override_line_items: phase.override_line_items || undefined,
+				metadata: phase.metadata || undefined,
+			}));
+		} else {
+			// Use subscription-level data
+			finalStartDate = new Date(startDate).toISOString();
+			finalEndDate = endDate ? new Date(endDate).toISOString() : undefined;
+
+			// Get price overrides for backend
+			const currentPrices =
+				prices?.prices?.filter(
+					(price) =>
+						price.billing_period.toLowerCase() === billingPeriod.toLowerCase() &&
+						price.currency.toLowerCase() === currency.toLowerCase() &&
+						isPriceActive(price),
+				) || [];
+			finalOverrideLineItems = getLineItemOverrides(currentPrices, priceOverrides);
+
+			// Convert subscription-level coupons
+			finalCoupons = linkedCoupon ? [linkedCoupon.id] : undefined;
+			finalLineItemCoupons =
+				Object.keys(lineItemCoupons).length > 0
+					? Object.fromEntries(Object.entries(lineItemCoupons).map(([priceId, coupon]) => [priceId, [coupon.id]]))
+					: undefined;
+
+			sanitizedPhases = undefined;
+		}
 
 		const payload: CreateSubscriptionRequest = {
 			billing_cadence: BILLING_CADENCE.RECURRING,
@@ -438,9 +472,9 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 			customer_id: customerId!,
 			plan_id: selectedPlan,
 
-			// Use subscription-level dates
-			start_date: new Date(startDate).toISOString(),
-			end_date: endDate ? new Date(endDate).toISOString() : undefined,
+			// Use determined dates (from phases or subscription level)
+			start_date: finalStartDate,
+			end_date: finalEndDate,
 
 			// Subscription-level properties
 			commitment_amount: commitmentAmount && commitmentAmount.trim() !== '' ? parseFloat(commitmentAmount) : undefined,
@@ -448,19 +482,11 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 
 			// Optional properties
 			lookup_key: '',
-			phases: sanitizedPhases.length > 0 ? sanitizedPhases : undefined,
-			override_line_items: overrideLineItems.length > 0 ? overrideLineItems : undefined,
+			phases: sanitizedPhases,
+			override_line_items: finalOverrideLineItems && finalOverrideLineItems.length > 0 ? finalOverrideLineItems : undefined,
 			addons: (addons?.length ?? 0) > 0 ? addons : undefined,
-			coupons: linkedCoupon ? [linkedCoupon.id] : undefined,
-			line_item_coupons:
-				Object.keys(lineItemCoupons).length > 0
-					? Object.fromEntries(
-						Object.entries(lineItemCoupons).map(([priceId, coupon]) => [
-							priceId,
-							[coupon.id], // Convert single coupon to array format for API
-						]),
-					)
-					: undefined,
+			coupons: finalCoupons,
+			line_item_coupons: finalLineItemCoupons,
 
 			// Tax rate overrides
 			tax_rate_overrides: tax_rate_overrides.length > 0 ? tax_rate_overrides : undefined,
