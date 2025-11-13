@@ -28,6 +28,7 @@ interface Props {
 	noOptionsText?: string;
 	hideSelectedTick?: boolean;
 	trigger?: React.ReactNode;
+	contentClassName?: string;
 }
 
 const RadioSelectItem = React.forwardRef<
@@ -69,6 +70,7 @@ const FlexPriceSelect: React.FC<Props> = ({
 	defaultOpen,
 	hideSelectedTick = true,
 	trigger,
+	contentClassName,
 }) => {
 	return (
 		<div className={cn('space-y-1 ', className)}>
@@ -98,7 +100,7 @@ const FlexPriceSelect: React.FC<Props> = ({
 						</span>
 					)}
 				</SelectTrigger>
-				<SelectContent className='w-[var(--radix-select-trigger-width)]'>
+				<SelectContent className={cn('w-[var(--radix-select-trigger-width)]', contentClassName)}>
 					<SelectGroup>
 						{options.length > 0 &&
 							options.map((option) => {
