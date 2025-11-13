@@ -193,17 +193,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 	const { data: plans, isLoading: plansLoading, isError: plansError } = usePlans();
 	const { data: customerData } = useCustomerData(customerId);
 	const { data: subscriptionData } = useSubscriptionData(subscription_id);
-	// Helper function to check if price should be shown (start_date <= now or no start_date)
-	const isPriceActive = (price: { start_date?: string }) => {
-		if (!price.start_date) return true; // No start_date means it's active
-		const now = new Date();
-		const startDate = new Date(price.start_date);
-		// Check if date is valid
-		if (isNaN(startDate.getTime())) return true; // Invalid date, treat as active
-		return startDate <= now;
-	};
 
-	// Coupons are handled in SubscriptionForm
 
 	// Update breadcrumb when customer data changes
 	useEffect(() => {
@@ -322,6 +312,16 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 			return;
 		}
 
+		// Helper function to check if price should be shown (start_date <= now or no start_date)
+		const isPriceActive = (price: { start_date?: string }) => {
+			if (!price.start_date) return true; // No start_date means it's active
+			const now = new Date();
+			const startDate = new Date(price.start_date);
+			// Check if date is valid
+			if (isNaN(startDate.getTime())) return true; // Invalid date, treat as active
+			return startDate <= now;
+		};
+
 		// Get price overrides for backend
 		const currentPrices =
 			prices?.prices?.filter(
@@ -379,11 +379,11 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 			line_item_coupons:
 				Object.keys(lineItemCoupons).length > 0
 					? Object.fromEntries(
-							Object.entries(lineItemCoupons).map(([priceId, coupon]) => [
-								priceId,
-								[coupon.id], // Convert single coupon to array format for API
-							]),
-						)
+						Object.entries(lineItemCoupons).map(([priceId, coupon]) => [
+							priceId,
+							[coupon.id], // Convert single coupon to array format for API
+						]),
+					)
 					: undefined,
 
 			// Tax rate overrides
@@ -430,7 +430,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 					</div>
 				)}
 			</div>
-			<div className='flex-[4]'></div>
+			<div className='flex-[3]'></div>
 		</div>
 	);
 };
