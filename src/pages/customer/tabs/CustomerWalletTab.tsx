@@ -199,16 +199,16 @@ const CustomerWalletTab = () => {
 			</Dialog>
 
 			{/* Debit Modal */}
-			<Dialog open={showDebitModal} onOpenChange={() => setShowDebitModal(false)}>
-				<DebitCard
-					onSuccess={() => {
-						setShowDebitModal(false);
-					}}
-					walletId={activeWallet?.id}
-					conversion_rate={activeWallet?.conversion_rate}
-					currency={activeWallet?.currency ?? ''}
-				/>
-			</Dialog>
+			<DebitCard
+				isOpen={showDebitModal}
+				onOpenChange={setShowDebitModal}
+				onSuccess={() => {
+					setShowDebitModal(false);
+				}}
+				walletId={activeWallet?.id}
+				conversion_rate={activeWallet?.conversion_rate}
+				currency={activeWallet?.currency ?? ''}
+			/>
 
 			{/* Terminate Wallet Modal */}
 			{activeWallet && (

@@ -9,7 +9,7 @@ import { WALLET_TRANSACTION_REASON } from '@/models';
 import { v4 as uuidv4 } from 'uuid';
 import { getCurrencyAmountFromCredits } from '@/utils';
 import { DebitWalletPayload } from '@/types';
-import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui';
 
 interface DebitPayload extends Partial<DebitWalletPayload> {
 	credits?: number;
@@ -21,9 +21,11 @@ interface DebitCardProps {
 	currency?: string;
 	conversion_rate?: number;
 	onSuccess?: () => void;
+	isOpen: boolean;
+	onOpenChange: (open: boolean) => void;
 }
 
-const DebitCard: FC<DebitCardProps> = ({ walletId, currency, conversion_rate = 1, onSuccess }) => {
+const DebitCard: FC<DebitCardProps> = ({ walletId, currency, conversion_rate = 1, onSuccess, isOpen, onOpenChange }) => {
 	// State management
 	const [debitPayload, setDebitPayload] = useState<DebitPayload>({
 		credits: undefined,
@@ -39,37 +41,11 @@ const DebitCard: FC<DebitCardProps> = ({ walletId, currency, conversion_rate = 1
 		]);
 	}, []);
 
-	// Validate debit payload
-	const validateDebit = useCallback((): boolean => {
-		const { credits } = debitPayload;
-
-		if (!credits || credits <= 0) {
-			toast.error('Please enter a valid credits amount');
-			return false;
-		}
-
-		return true;
-	}, [debitPayload]);
-
-	// Wallet debit mutation with improved error handling
+	// Wallet debit mutation
 	const { isPending, mutate: debitWallet } = useMutation({
 		mutationKey: ['debitWallet', walletId],
-		mutationFn: () => {
-			// Comprehensive validation before debit
-			if (!walletId) {
-				throw new Error('Wallet ID is required');
-			}
-
-			if (!debitPayload.credits || debitPayload.credits <= 0) {
-				throw new Error('Invalid credits amount');
-			}
-
-			return WalletApi.debitWallet({
-				walletId,
-				credits: debitPayload.credits,
-				idempotency_key: debitPayload.reference_id || uuidv4(),
-				transaction_reason: WALLET_TRANSACTION_REASON.MANUAL_BALANCE_DEBIT,
-			});
+		mutationFn: (payload: DebitWalletPayload) => {
+			return WalletApi.debitWallet(payload);
 		},
 		onSuccess: async () => {
 			toast.success('Wallet debited successfully');
@@ -85,12 +61,27 @@ const DebitCard: FC<DebitCardProps> = ({ walletId, currency, conversion_rate = 1
 		},
 	});
 
-	// Handle debit submission
+	// Handle debit submission with validation
 	const handleDebit = useCallback(() => {
-		if (validateDebit() && walletId) {
-			debitWallet();
+		// Comprehensive validation before debit
+		if (!walletId) {
+			toast.error('Wallet ID is required');
+			return;
 		}
-	}, [validateDebit, walletId, debitWallet]);
+
+		if (!debitPayload.credits || debitPayload.credits <= 0) {
+			toast.error('Please enter a valid credits amount');
+			return;
+		}
+
+		// Call mutation only after validation passes
+		debitWallet({
+			walletId,
+			credits: debitPayload.credits,
+			idempotency_key: debitPayload.reference_id || uuidv4(),
+			transaction_reason: WALLET_TRANSACTION_REASON.MANUAL_BALANCE_DEBIT,
+		});
+	}, [walletId, debitPayload, debitWallet]);
 
 	// Update payload with type-safe setter
 	const updateDebitPayload = useCallback((updates: Partial<DebitPayload>) => {
@@ -100,52 +91,51 @@ const DebitCard: FC<DebitCardProps> = ({ walletId, currency, conversion_rate = 1
 		}));
 	}, []);
 
+	// Calculate description text
+	const getDescriptionText = (): string => {
+		if (debitPayload.credits && debitPayload.credits > 0) {
+			return `${getCurrencySymbol(currency || '')}${getCurrencyAmountFromCredits(conversion_rate, debitPayload.credits)} will be debited from the wallet`;
+		}
+		return '';
+	};
+
 	return (
-		<DialogContent className='bg-white sm:max-w-[600px]'>
-			<DialogHeader>
-				<DialogTitle>Manual Debit</DialogTitle>
-			</DialogHeader>
-			<div className='grid gap-4 py-4'>
-				<p className='text-sm text-gray-500'>Manually debit the credits from your wallet. This action will reduce the wallet balance.</p>
+		<Dialog open={isOpen} onOpenChange={onOpenChange}>
+			<DialogContent className='bg-white sm:max-w-[600px]'>
+				<DialogHeader>
+					<DialogTitle>Manual Debit</DialogTitle>
+					<DialogDescription>Manually debit the credits from your wallet. This action will reduce the wallet balance.</DialogDescription>
+				</DialogHeader>
+				<div className='grid gap-4 py-4'>
+					<Input
+						variant='formatted-number'
+						onChange={(e) => updateDebitPayload({ credits: e as unknown as number })}
+						value={debitPayload.credits ?? ''}
+						suffix='credits'
+						label='Credits to Deduct'
+						placeholder='Enter credits amount'
+						description={getDescriptionText()}
+					/>
 
-				<Input
-					variant='formatted-number'
-					onChange={(e) => updateDebitPayload({ credits: e as unknown as number })}
-					value={debitPayload.credits ?? ''}
-					suffix='credits'
-					label='Credits to Deduct'
-					placeholder='Enter credits amount'
-					description={
-						<>
-							{debitPayload.credits && debitPayload.credits > 0 && (
-								<span>
-									{getCurrencySymbol(currency!)}
-									{getCurrencyAmountFromCredits(conversion_rate, debitPayload.credits ?? 0)}
-									{` will be debited from the wallet`}
-								</span>
-							)}
-						</>
-					}
-				/>
+					<Input
+						label='Reference ID (Optional)'
+						className='w-full'
+						placeholder='Enter reference ID'
+						value={debitPayload.reference_id || ''}
+						onChange={(e) => updateDebitPayload({ reference_id: e as string })}
+						description='This reference ID will be used as the idempotency key for the transaction.'
+					/>
+				</div>
 
-				<Input
-					label='Reference ID (Optional)'
-					className='w-full'
-					placeholder='Enter reference ID'
-					value={debitPayload.reference_id || ''}
-					onChange={(e) => updateDebitPayload({ reference_id: e as string })}
-					description='This reference ID will be used as the idempotency key for the transaction.'
-				/>
-			</div>
+				<Spacer className='!mt-4' />
 
-			<Spacer className='!mt-4' />
-
-			<div className='w-full justify-end flex'>
-				<Button isLoading={isPending} onClick={handleDebit} disabled={isPending || !debitPayload.credits}>
-					Submit
-				</Button>
-			</div>
-		</DialogContent>
+				<div className='w-full justify-end flex'>
+					<Button isLoading={isPending} onClick={handleDebit} disabled={isPending || !debitPayload.credits}>
+						Submit
+					</Button>
+				</div>
+			</DialogContent>
+		</Dialog>
 	);
 };
 
