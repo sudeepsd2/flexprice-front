@@ -98,12 +98,16 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 			icon: CodeXml,
 			items: [
 				{
-					title: 'Webhooks',
-					url: RouteNames.webhooks,
-				},
-				{
 					title: 'API Keys',
 					url: RouteNames.apiKeys,
+				},
+				{
+					title: 'Service Accounts',
+					url: RouteNames.serviceAccounts,
+				},
+				{
+					title: 'Webhooks',
+					url: RouteNames.webhooks,
 				},
 				{
 					title: 'Events Debugger',

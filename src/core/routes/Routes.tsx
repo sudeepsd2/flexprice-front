@@ -56,6 +56,7 @@ import {
 	Query as QueryPage,
 	// Developer pages
 	DeveloperPage,
+	ServiceAccountsPage,
 	// Onboarding pages
 	OnboardingTenant,
 	// Webhooks pages
@@ -135,6 +136,7 @@ export const RouteNames = {
 	developers: '/developers',
 	webhooks: '/developers/webhooks',
 	apiKeys: '/developers/api-keys',
+	serviceAccounts: '/developers/service-accounts',
 
 	// tools routes
 	tools: '/tools',
@@ -402,6 +404,10 @@ export const MainRouter = createBrowserRouter([
 					{
 						path: RouteNames.apiKeys,
 						element: <DeveloperPage />,
+					},
+					{
+						path: RouteNames.serviceAccounts,
+						element: <ServiceAccountsPage />,
 					},
 				],
 			},
