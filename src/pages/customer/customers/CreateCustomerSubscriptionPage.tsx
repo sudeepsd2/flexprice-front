@@ -200,13 +200,16 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 	const addonIds = useMemo(() => subscriptionState.addons?.map((addon) => addon.addon_id) || [], [subscriptionState.addons]);
 	useAddons(addonIds);
 
-const isPriceActive = (price: { start_date?: string }) => {
-	if (!price.start_date) return true;
-	const now = new Date();
-	const startDate = new Date(price.start_date);
-	if (isNaN(startDate.getTime())) return true;
-	return startDate <= now;
-};
+	// Helper function to check if price should be shown (start_date <= now or no start_date)
+	const isPriceActive = (price: { start_date?: string }) => {
+		if (!price.start_date) return true;
+		const now = new Date();
+		const startDate = new Date(price.start_date);
+		if (isNaN(startDate.getTime())) return true;
+		return startDate <= now;
+	};
+
+	// Update breadcrumb when customer data changes
 	useEffect(() => {
 		if (customerData?.external_id) {
 			updateBreadcrumb(2, customerData.external_id);
