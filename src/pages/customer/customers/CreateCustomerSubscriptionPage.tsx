@@ -195,7 +195,6 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 		return startDate <= now;
 	};
 
-	// Coupons are handled in SubscriptionForm
 
 	// Update breadcrumb when customer data changes
 	useEffect(() => {
@@ -412,7 +411,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 					</div>
 				)}
 			</div>
-			<div className='flex-[4]'></div>
+			<div className='flex-[3]'></div>
 		</div>
 	);
 };
