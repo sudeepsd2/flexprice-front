@@ -1,3 +1,4 @@
+// React imports
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -7,7 +8,10 @@ import { Button, SelectOption } from '@/components/atoms';
 import { ApiDocsContent } from '@/components/molecules';
 import { UsageTable, SubscriptionForm } from '@/components/organisms';
 
-import { AddonApi, CustomerApi, PlanApi, SubscriptionApi, TaxApi, CouponApi } from '@/api';
+// API imports
+import { CustomerApi, PlanApi, SubscriptionApi, TaxApi, CouponApi } from '@/api';
+
+// Core services and routes
 import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
 import { RouteNames } from '@/core/routes/Routes';
 import { ServerError } from '@/core/axios/types';
@@ -110,21 +114,6 @@ const useSubscriptionData = (subscription_id: string | undefined) => {
 	});
 };
 
-const useAddons = (addonIds: string[]) => {
-	return useQuery({
-		queryKey: ['addons', addonIds],
-		queryFn: async () => {
-			if (addonIds.length === 0) return { items: [] };
-			const response = await AddonApi.ListAddon({ limit: 1000, offset: 0 });
-			const filteredItems = response.items.filter((addon) => addonIds.includes(addon.id));
-			return { ...response, items: filteredItems };
-		},
-		enabled: addonIds.length > 0,
-		staleTime: 5 * 60 * 1000,
-		refetchOnWindowFocus: false,
-	});
-};
-
 const CreateCustomerSubscriptionPage: React.FC = () => {
 	const { id: customerId, subscription_id } = useParams<Params>();
 	const navigate = useNavigate();
@@ -197,9 +186,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 	});
 	const allCouponsData = couponsResponse?.items || [];
 
-	const addonIds = useMemo(() => subscriptionState.addons?.map((addon) => addon.addon_id) || [], [subscriptionState.addons]);
-	useAddons(addonIds);
-
+	// Helper function to check if price should be shown (start_date <= now or no start_date)
 	const isPriceActive = (price: { start_date?: string }) => {
 		if (!price.start_date) return true;
 		const now = new Date();
@@ -208,6 +195,9 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 		return startDate <= now;
 	};
 
+	// Coupons are handled in SubscriptionForm
+
+	// Update breadcrumb when customer data changes
 	useEffect(() => {
 		if (customerData?.external_id) {
 			updateBreadcrumb(2, customerData.external_id);
@@ -422,7 +412,6 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 					</div>
 				)}
 			</div>
-
 			<div className='flex-[4]'></div>
 		</div>
 	);
