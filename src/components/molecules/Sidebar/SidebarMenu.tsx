@@ -29,6 +29,17 @@ const SidebarNav: FC<{ items: NavItem[] }> = ({ items }) => {
 
 	// Determine which item should be open based on current route
 	useEffect(() => {
+		// First, check if we're on a standalone item (items without children)
+		// If so, close any open accordions
+		const standaloneItems = items.filter((item) => !item.items || item.items.length === 0);
+		const isOnStandaloneItem = standaloneItems.some((item) => location.pathname.startsWith(item.url) && item.url !== '#');
+
+		if (isOnStandaloneItem) {
+			setOpenItemTitle(null);
+			return;
+		}
+
+		// Then, check items with children (accordion items)
 		for (const item of items) {
 			if (item.items && item.items.length > 0) {
 				const isMainItemActive = location.pathname.startsWith(item.url) && item.url !== '#';
@@ -36,9 +47,11 @@ const SidebarNav: FC<{ items: NavItem[] }> = ({ items }) => {
 				const isActive = isMainItemActive || isSubItemActive;
 
 				// Special case: If we're on any product catalog route, open Product Catalog section
+				// But exclude standalone items that might share the same prefix
 				const isProductCatalogRoute = location.pathname.startsWith('/product-catalog');
 				const isProductCatalog = item.title === 'Product Catalog';
-				const shouldOpen = isActive || (isProductCatalogRoute && isProductCatalog);
+				// Only apply special case if we're not on a standalone item
+				const shouldOpen = isActive || (isProductCatalogRoute && isProductCatalog && !isOnStandaloneItem);
 
 				if (shouldOpen) {
 					setOpenItemTitle(item.title);

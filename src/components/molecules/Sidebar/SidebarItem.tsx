@@ -65,9 +65,7 @@ const SidebarItem: FC<SidebarItemProps> = (item) => {
 
 	const mainButtonContent = (
 		<>
-			{Icon && (
-				<Icon absoluteStrokeWidth className={cn('!size-5 !stroke-[1.5px] mr-1', iconActive ? 'text-[#3C87D2]' : 'text-[#3F3F46]')} />
-			)}
+			{Icon && <Icon absoluteStrokeWidth className={cn('!size-5 !stroke-[1.5px] mr-1', iconActive ? 'text-blue-600' : 'text-[#3F3F46]')} />}
 			<span className='text-[14px] select-none font-normal'>{item.title}</span>
 		</>
 	);
