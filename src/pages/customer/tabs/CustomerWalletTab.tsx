@@ -124,7 +124,7 @@ const CustomerWalletTab = () => {
 						},
 						{
 							icon: <Minus />,
-							label: 'Debit',
+							label: 'Manual Debit',
 							onSelect: () => setShowDebitModal(true),
 						},
 						{

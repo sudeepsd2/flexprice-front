@@ -103,17 +103,17 @@ const DebitCard: FC<DebitCardProps> = ({ walletId, currency, conversion_rate = 1
 	return (
 		<DialogContent className='bg-white sm:max-w-[600px]'>
 			<DialogHeader>
-				<DialogTitle>Debit Credits</DialogTitle>
+				<DialogTitle>Manual Debit</DialogTitle>
 			</DialogHeader>
 			<div className='grid gap-4 py-4'>
-				<p className='text-sm text-gray-500'>Manually debit credits from this wallet. This action will reduce the wallet balance.</p>
+				<p className='text-sm text-gray-500'>Manually debit the credits from your wallet. This action will reduce the wallet balance.</p>
 
 				<Input
 					variant='formatted-number'
 					onChange={(e) => updateDebitPayload({ credits: e as unknown as number })}
 					value={debitPayload.credits ?? ''}
 					suffix='credits'
-					label='Credits to Debit'
+					label='Credits to Deduct'
 					placeholder='Enter credits amount'
 					description={
 						<>
@@ -142,7 +142,7 @@ const DebitCard: FC<DebitCardProps> = ({ walletId, currency, conversion_rate = 1
 
 			<div className='w-full justify-end flex'>
 				<Button isLoading={isPending} onClick={handleDebit} disabled={isPending || !debitPayload.credits}>
-					Debit Credits
+					Submit
 				</Button>
 			</div>
 		</DialogContent>
