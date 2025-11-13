@@ -1,4 +1,4 @@
-import { Button, Input, Spacer } from '@/components/atoms';
+import { Button, Input, Spacer, Dialog } from '@/components/atoms';
 import { FC, useState, useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import WalletApi from '@/api/WalletApi';
@@ -9,7 +9,6 @@ import { WALLET_TRANSACTION_REASON } from '@/models';
 import { v4 as uuidv4 } from 'uuid';
 import { getCurrencyAmountFromCredits } from '@/utils';
 import { DebitWalletPayload } from '@/types';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui';
 
 interface DebitPayload extends Partial<DebitWalletPayload> {
 	credits?: number;
@@ -100,32 +99,31 @@ const DebitCard: FC<DebitCardProps> = ({ walletId, currency, conversion_rate = 1
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={onOpenChange}>
-			<DialogContent className='bg-white sm:max-w-[600px]'>
-				<DialogHeader>
-					<DialogTitle>Manual Debit</DialogTitle>
-					<DialogDescription>Manually debit the credits from your wallet. This action will reduce the wallet balance.</DialogDescription>
-				</DialogHeader>
-				<div className='grid gap-4 py-4'>
-					<Input
-						variant='formatted-number'
-						onChange={(e) => updateDebitPayload({ credits: e as unknown as number })}
-						value={debitPayload.credits ?? ''}
-						suffix='credits'
-						label='Credits to Deduct'
-						placeholder='Enter credits amount'
-						description={getDescriptionText()}
-					/>
+		<Dialog
+			isOpen={isOpen}
+			onOpenChange={onOpenChange}
+			title='Manual Debit'
+			description='Manually debit the credits from your wallet. This action will reduce the wallet balance.'
+			className='sm:max-w-[600px]'>
+			<div className='grid gap-4'>
+				<Input
+					variant='formatted-number'
+					onChange={(e) => updateDebitPayload({ credits: e as unknown as number })}
+					value={debitPayload.credits ?? ''}
+					suffix='credits'
+					label='Credits to Deduct'
+					placeholder='Enter credits amount'
+					description={getDescriptionText()}
+				/>
 
-					<Input
-						label='Reference ID (Optional)'
-						className='w-full'
-						placeholder='Enter reference ID'
-						value={debitPayload.reference_id || ''}
-						onChange={(e) => updateDebitPayload({ reference_id: e as string })}
-						description='This reference ID will be used as the idempotency key for the transaction.'
-					/>
-				</div>
+				<Input
+					label='Reference ID (Optional)'
+					className='w-full'
+					placeholder='Enter reference ID'
+					value={debitPayload.reference_id || ''}
+					onChange={(e) => updateDebitPayload({ reference_id: e as string })}
+					description='This reference ID will be used as the idempotency key for the transaction.'
+				/>
 
 				<Spacer className='!mt-4' />
 
@@ -134,7 +132,7 @@ const DebitCard: FC<DebitCardProps> = ({ walletId, currency, conversion_rate = 1
 						Submit
 					</Button>
 				</div>
-			</DialogContent>
+			</div>
 		</Dialog>
 	);
 };
