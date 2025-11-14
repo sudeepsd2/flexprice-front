@@ -73,7 +73,7 @@ const SidebarItem: FC<SidebarItemProps> = (item) => {
 	// For items without children, use Link directly
 	if (!hasChildren) {
 		return (
-			<SidebarMenuItem>
+			<SidebarMenuItem className={cn(isCollapsed && 'mb-3')}>
 				<SidebarMenuButton
 					asChild
 					disabled={item.disabled}
@@ -95,7 +95,7 @@ const SidebarItem: FC<SidebarItemProps> = (item) => {
 	// For items with children, use Collapsible with Link
 	return (
 		<Collapsible key={item.title} open={isOpen && !isCollapsed} onOpenChange={handleOpenChange} className='group/collapsible'>
-			<SidebarMenuItem className={cn(isCollapsed && 'mb-2')}>
+			<SidebarMenuItem className={cn(isCollapsed && 'mb-3')}>
 				<CollapsibleTrigger asChild>
 					<SidebarMenuButton
 						asChild

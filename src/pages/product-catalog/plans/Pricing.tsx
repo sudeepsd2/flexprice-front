@@ -338,7 +338,21 @@ const PricingPage = () => {
 						{/* 3 Skeleton Placeholder Boxes */}
 						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full mb-16'>
 							{[1, 2, 3].map((index) => (
-								<div key={index} className='w-full rounded-3xl border border-gray-200 bg-white p-7 min-h-[280px] shadow-md flex flex-col'>
+								<div key={index} className='w-full rounded-3xl bg-white p-7 min-h-[280px] flex flex-col relative'>
+									<svg className='absolute inset-0 w-full h-full pointer-events-none' style={{ borderRadius: '1.5rem' }}>
+										<rect
+											x='1'
+											y='1'
+											width='calc(100% - 1.5px)'
+											height='calc(100% - 1.5px)'
+											rx='24'
+											ry='24'
+											fill='none'
+											stroke='#e3e3e3'
+											strokeWidth='1.5'
+											strokeDasharray='12 5'
+										/>
+									</svg>
 									{/* Top: Small pill-shaped rectangle */}
 									<div className='h-6 w-24 bg-gray-100 rounded-full' />
 									{/* Middle: Larger rectangle */}
