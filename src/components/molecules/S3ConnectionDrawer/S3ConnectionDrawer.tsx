@@ -200,7 +200,7 @@ const S3ConnectionDrawer: FC<S3ConnectionDrawerProps> = ({ isOpen, onOpenChange,
 				</div>
 
 				<Spacer className='!h-1' />
-				<div className='flex gap-1 pb-'>
+				<div className='flex gap-1'>
 					<Button variant='outline' onClick={() => onOpenChange(false)} className='flex-1'>
 						Cancel
 					</Button>

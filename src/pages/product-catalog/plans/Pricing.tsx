@@ -353,7 +353,6 @@ const PricingPage = () => {
 											strokeDasharray='12 5'
 										/>
 									</svg>
-									<div className='text-gray-400 text-sm'></div>
 								</div>
 							))}
 						</div>
