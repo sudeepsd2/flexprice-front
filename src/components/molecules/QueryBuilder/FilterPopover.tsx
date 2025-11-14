@@ -127,6 +127,7 @@ const FilterPopover: React.FC<Props> = ({ fields, value = [], onChange, classNam
 						onChange={(value) => handleFilterUpdate(filter.id, { valueString: value })}
 						className={cn(inputProps.className, 'h-9 text-sm')}
 						placeholder={commonProps.placeholder}
+						contentClassName='!z-[110]'
 					/>
 				),
 				[FilterFieldType.CHECKBOX]: (
@@ -154,6 +155,7 @@ const FilterPopover: React.FC<Props> = ({ fields, value = [], onChange, classNam
 						isRadio
 						className={cn(inputProps.className, 'h-9 text-sm')}
 						placeholder={commonProps.placeholder}
+						contentClassName='!z-[110]'
 					/>
 				),
 				[FilterFieldType.COMBOBOX]: (
@@ -164,6 +166,7 @@ const FilterPopover: React.FC<Props> = ({ fields, value = [], onChange, classNam
 						width='100%'
 						triggerClassName={cn(inputProps.className, 'h-9 text-sm')}
 						placeholder={commonProps.placeholder}
+						contentClassName='!z-[110]'
 					/>
 				),
 				[FilterFieldType.SWITCH]: (
@@ -247,7 +250,7 @@ const FilterPopover: React.FC<Props> = ({ fields, value = [], onChange, classNam
 							</div>
 						</div>
 					) : (
-						<div className='flex flex-col gap-1.5'>
+						<div className='flex flex-col gap-1.5 !z-50'>
 							<div className='flex justify-between items-center'>
 								<h4 className='text-sm font-medium leading-none'>Filter by</h4>
 								<Button variant='ghost' size='icon' className='h-7 w-7 -mr-1' onClick={() => setIsOpen(false)}>
@@ -280,6 +283,7 @@ const FilterPopover: React.FC<Props> = ({ fields, value = [], onChange, classNam
 														width='100%'
 														triggerClassName='h-9 text-sm'
 														searchPlaceholder='Search fields...'
+														contentClassName='!z-[110]'
 													/>
 
 													<Select
@@ -294,6 +298,7 @@ const FilterPopover: React.FC<Props> = ({ fields, value = [], onChange, classNam
 														onChange={(value) => handleFilterUpdate(filter.id, { operator: value as FilterOperator })}
 														placeholder='Select operator'
 														className='h-9 text-sm'
+														contentClassName='!z-[110]'
 													/>
 
 													<div className='min-w-0'>{renderValueInput(filter)}</div>
