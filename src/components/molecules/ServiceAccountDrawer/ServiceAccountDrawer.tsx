@@ -1,5 +1,5 @@
 import { FC, useEffect, useState, useMemo } from 'react';
-import { Input, Sheet, Spacer, Button, Checkbox } from '@/components/atoms';
+import { Sheet, Spacer, Button, Checkbox } from '@/components/atoms';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UserApi } from '@/api/UserApi';
 import RbacApi, { RbacRole } from '@/api/RbacApi';
@@ -105,14 +105,6 @@ const ServiceAccountDrawer: FC<Props> = ({ isOpen, onOpenChange }) => {
 						</div>
 					</div>
 				</div>
-
-				<Input
-					placeholder='Service Account'
-					value='Service Account'
-					label='Type'
-					disabled
-					description='Account type is fixed as Service Account'
-				/>
 
 				{isRolesError ? (
 					<div className='bg-amber-50 border border-amber-200 rounded-md p-3'>
