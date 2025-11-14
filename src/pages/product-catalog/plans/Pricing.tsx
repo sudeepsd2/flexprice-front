@@ -335,24 +335,16 @@ const PricingPage = () => {
 					}>
 					<ApiDocsContent tags={['Plans', 'Pricing']} />
 					<div className='flex flex-col items-center mt-6'>
-						{/* 3 Dotted Placeholder Boxes */}
+						{/* 3 Skeleton Placeholder Boxes */}
 						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full mb-16'>
 							{[1, 2, 3].map((index) => (
-								<div key={index} className='w-full rounded-3xl bg-white p-6 min-h-[280px] flex items-center justify-center relative'>
-									<svg className='absolute inset-0 w-full h-full pointer-events-none' style={{ borderRadius: '1.5rem' }}>
-										<rect
-											x='1'
-											y='1'
-											width='calc(100% - 1.5px)'
-											height='calc(100% - 1.5px)'
-											rx='24'
-											ry='24'
-											fill='none'
-											stroke='#e3e3e3'
-											strokeWidth='1.5'
-											strokeDasharray='12 5'
-										/>
-									</svg>
+								<div key={index} className='w-full rounded-3xl border border-gray-200 bg-white p-7 min-h-[280px] shadow-md flex flex-col'>
+									{/* Top: Small pill-shaped rectangle */}
+									<div className='h-6 w-24 bg-gray-100 rounded-full' />
+									{/* Middle: Larger rectangle */}
+									<div className='h-14 w-32 bg-gray-100 rounded-lg mt-6' />
+									{/* Bottom: Long pill-shaped rectangle */}
+									<div className='h-10 w-full max-w-[100%] bg-gray-100 rounded-full mt-8' />
 								</div>
 							))}
 						</div>
