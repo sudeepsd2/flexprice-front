@@ -61,6 +61,7 @@ const TopupCard: FC<TopupCardProps> = ({ walletId, currency, conversion_rate = 1
 		expiry_date: undefined,
 		priority: undefined,
 		reference_id: undefined,
+		description: undefined,
 	});
 
 	// Determine transaction reason based on credits type and invoice generation
@@ -144,6 +145,7 @@ const TopupCard: FC<TopupCardProps> = ({ walletId, currency, conversion_rate = 1
 				transaction_reason: getTransactionReason(),
 				expiry_date_utc: topupPayload.expiry_date_utc,
 				priority: topupPayload.priority,
+				description: topupPayload.description,
 			});
 		},
 		onSuccess: async () => {
@@ -162,6 +164,7 @@ const TopupCard: FC<TopupCardProps> = ({ walletId, currency, conversion_rate = 1
 				expiry_date: undefined,
 				priority: undefined,
 				reference_id: undefined,
+				description: undefined,
 			});
 			await refetchWalletData();
 		},
@@ -207,6 +210,7 @@ const TopupCard: FC<TopupCardProps> = ({ walletId, currency, conversion_rate = 1
 							generate_invoice: value === CreditsType.PurchasedCredits ? true : undefined,
 							expiry_date: undefined,
 							reference_id: undefined,
+							description: undefined,
 						});
 					}}
 				/>
@@ -272,14 +276,25 @@ const TopupCard: FC<TopupCardProps> = ({ walletId, currency, conversion_rate = 1
 
 			{/* Reference ID Input for Purchased Credits with Invoice */}
 			{topupPayload.credits_type === CreditsType.PurchasedCredits && topupPayload.generate_invoice && (
-				<Input
-					label='Reference ID'
-					className='w-full'
-					placeholder='Enter reference ID'
-					value={topupPayload.reference_id || ''}
-					onChange={(e) => updateTopupPayload({ reference_id: e as string })}
-					description='This reference ID will be used as the idempotency key for the transaction.'
-				/>
+				<>
+					<Input
+						label='Reference ID'
+						className='w-full'
+						placeholder='Enter reference ID'
+						value={topupPayload.reference_id || ''}
+						onChange={(e) => updateTopupPayload({ reference_id: e as string })}
+						description='This reference ID will be used as the idempotency key for the transaction.'
+					/>
+
+					<Input
+						label='Description (Optional)'
+						className='w-full'
+						placeholder='Enter description'
+						value={topupPayload.description || ''}
+						onChange={(e) => updateTopupPayload({ description: e as string })}
+						description='Add any specific details about this transaction.'
+					/>
+				</>
 			)}
 
 			{topupPayload.credits_type === CreditsType.PurchasedCredits && (
