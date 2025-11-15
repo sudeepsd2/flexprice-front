@@ -1,4 +1,4 @@
-import { Loader, Page, Spacer } from '@/components/atoms';
+import { Loader, Page, Spacer, Card } from '@/components/atoms';
 import { DetailsCard, SubscriptionEntitlementsSection } from '@/components/molecules';
 import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
 import CustomerApi from '@/api/CustomerApi';
@@ -274,7 +274,7 @@ const CustomerSubscriptionEditPage: React.FC = () => {
 				{groupedLineItems.withoutPhase.length > 0 && (
 					<div className='space-y-4'>
 						<div className='flex items-center gap-2'>
-							<h3 className='text-lg font-semibold text-gray-900'>Subscription Line Items</h3>
+							<h3 className='text-lg font-semibold text-gray-900'>Charges</h3>
 							<span className='text-sm text-gray-500'>({groupedLineItems.withoutPhase.length} items)</span>
 						</div>
 						<SubscriptionLineItemTable
@@ -308,25 +308,21 @@ const CustomerSubscriptionEditPage: React.FC = () => {
 								const endDate = phase?.endDate ? formatDate(phase.endDate) : 'Forever';
 
 								return (
-									<div key={phaseId} className='space-y-4'>
-										<div className='flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200'>
-											<div>
-												<h3 className='text-base font-semibold text-gray-900'>Phase {phaseNumber}</h3>
-												<p className='text-sm text-gray-600 mt-1'>
-													{startDate} → {endDate}
-													<span className='ml-2 text-gray-500'>
-														• {lineItems.length} line item{lineItems.length > 1 ? 's' : ''}
-													</span>
-												</p>
-											</div>
+									<Card key={phaseId} variant='notched'>
+										<div className='mb-4 pb-4 border-b border-gray-200'>
+											<h3 className='text-base font-semibold text-gray-900'>Phase {phaseNumber}</h3>
+											<p className='text-sm text-gray-600 mt-1'>
+												{startDate} → {endDate}
+											</p>
 										</div>
 										<SubscriptionLineItemTable
 											data={lineItems}
 											isLoading={isSubscriptionDetailsLoading}
 											onEdit={handleEditLineItem}
 											onTerminate={handleTerminateLineItem}
+											hideCardWrapper={true}
 										/>
-									</div>
+									</Card>
 								);
 							})}
 					</div>

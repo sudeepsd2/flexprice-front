@@ -13,6 +13,7 @@ interface Props {
 	onEdit?: (lineItem: LineItem) => void;
 	onTerminate?: (lineItemId: string, endDate?: string) => void;
 	isLoading?: boolean;
+	hideCardWrapper?: boolean;
 }
 
 interface LineItemWithStatus extends LineItem {
@@ -153,7 +154,7 @@ const formatLineItemDateTooltip = (lineItem: LineItem): React.ReactNode => {
 	return <div className='flex flex-col gap-2'>{dateItems}</div>;
 };
 
-const SubscriptionLineItemTable: FC<Props> = ({ data, onEdit, onTerminate, isLoading }) => {
+const SubscriptionLineItemTable: FC<Props> = ({ data, onEdit, onTerminate, isLoading, hideCardWrapper = false }) => {
 	const [showTerminateModal, setShowTerminateModal] = useState(false);
 	const [selectedLineItem, setSelectedLineItem] = useState<LineItem | null>(null);
 
@@ -281,6 +282,17 @@ const SubscriptionLineItemTable: FC<Props> = ({ data, onEdit, onTerminate, isLoa
 	];
 
 	if (isLoading) {
+		if (hideCardWrapper) {
+			return (
+				<div className='p-4'>
+					<div className='animate-pulse space-y-4'>
+						<div className='h-4 bg-gray-200 rounded w-3/4'></div>
+						<div className='h-4 bg-gray-200 rounded w-1/2'></div>
+						<div className='h-4 bg-gray-200 rounded w-5/6'></div>
+					</div>
+				</div>
+			);
+		}
 		return (
 			<Card variant='notched'>
 				<CardHeader title='Subscription Line Items' />
@@ -296,7 +308,10 @@ const SubscriptionLineItemTable: FC<Props> = ({ data, onEdit, onTerminate, isLoa
 	}
 
 	if (!processedLineItems || processedLineItems.length === 0) {
-		return <NoDataCard title='Subscription Line Items' subtitle='No line items found for this subscription' />;
+		if (hideCardWrapper) {
+			return <NoDataCard title='Charges' subtitle='No charges found for this subscription' />;
+		}
+		return <NoDataCard title='Charges' subtitle='No charges found for this subscription' />;
 	}
 
 	return (
@@ -312,10 +327,14 @@ const SubscriptionLineItemTable: FC<Props> = ({ data, onEdit, onTerminate, isLoa
 				/>
 			)}
 
-			<Card variant='notched'>
-				<CardHeader title='Subscription Line Items' />
+			{hideCardWrapper ? (
 				<FlexpriceTable showEmptyRow={false} data={processedLineItems} columns={columns} />
-			</Card>
+			) : (
+				<Card variant='notched'>
+					<CardHeader title='Charges' />
+					<FlexpriceTable showEmptyRow={false} data={processedLineItems} columns={columns} />
+				</Card>
+			)}
 		</>
 	);
 };
