@@ -30,7 +30,7 @@ const ExportDetails = () => {
 	// Fetch connection details
 	const { data: connection, isLoading: isLoadingConnection } = useQuery({
 		queryKey: ['connection', connectionId],
-		queryFn: () => ConnectionApi.getConnectionById(connectionId!),
+		queryFn: () => ConnectionApi.Get(connectionId!),
 		enabled: !!connectionId,
 	});
 

@@ -118,7 +118,7 @@ const AddonsPage = () => {
 	});
 
 	const fetchAddons = async () => {
-		return await AddonApi.GetAddonsByFilter({
+		return await AddonApi.ListByFilter({
 			limit: limit,
 			offset: offset,
 			filters: sanitizedFilters,
@@ -144,7 +144,7 @@ const AddonsPage = () => {
 		probe: {
 			queryKey: ['fetchAddons', 'probe', page, JSON.stringify(sanitizedFilters), JSON.stringify(sanitizedSorts)],
 			queryFn: async () => {
-				return await AddonApi.GetAddonsByFilter({
+				return await AddonApi.ListByFilter({
 					limit: 1,
 					offset: 0,
 					filters: [],

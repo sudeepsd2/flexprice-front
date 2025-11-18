@@ -173,7 +173,7 @@ const PlanDetailsPage = () => {
 			} as CreditGrant;
 
 			setNewCreditGrants((prev) => [...prev, newGrant]);
-			return await CreditGrantApi.createCreditGrant(grantWithPlanId);
+			return await CreditGrantApi.Create(grantWithPlanId);
 		},
 		onSuccess: () => {
 			toast.success('Credit grant added successfully');

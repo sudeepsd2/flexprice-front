@@ -221,6 +221,13 @@ export type {
 	ProcessScheduledCreditGrantApplicationsResponse,
 } from './CreditGrant';
 
+export type {
+	CreditGrantApplicationResponse,
+	ListCreditGrantApplicationsResponse,
+	GetCreditGrantApplicationsRequest,
+	GetUpcomingCreditGrantApplicationsRequest,
+} from './CreditGrantApplication';
+
 export {
 	StripeWebhookEvents,
 	getDefaultWebhookEvents,

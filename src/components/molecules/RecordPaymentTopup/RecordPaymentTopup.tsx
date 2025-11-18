@@ -72,7 +72,7 @@ const RecordPaymentTopup: FC<Props> = ({
 
 	const { data: connectionsResponse } = useQuery({
 		queryKey: ['connections', 'published'],
-		queryFn: () => ConnectionApi.getPublishedConnections(),
+		queryFn: () => ConnectionApi.ListPublished(),
 		enabled: isOpen,
 	});
 

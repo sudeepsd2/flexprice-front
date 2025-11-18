@@ -25,7 +25,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ switchTab }) => {
 
 	const { mutate: localLogin } = useMutation({
 		mutationFn: async () => {
-			return await AuthApi.login(email, password);
+			return await AuthApi.Login(email, password);
 		},
 		onSuccess: (data) => {
 			// Store token in a consistent format

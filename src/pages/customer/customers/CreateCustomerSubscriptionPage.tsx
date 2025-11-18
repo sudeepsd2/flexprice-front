@@ -117,7 +117,7 @@ const useAddons = (addonIds: string[]) => {
 		queryKey: ['addons', addonIds],
 		queryFn: async () => {
 			if (addonIds.length === 0) return { items: [] };
-			const response = await AddonApi.ListAddon({ limit: 1000, offset: 0 });
+			const response = await AddonApi.List({ limit: 1000, offset: 0 });
 			const filteredItems = response.items.filter((addon) => addonIds.includes(addon.id));
 			return { ...response, items: filteredItems };
 		},

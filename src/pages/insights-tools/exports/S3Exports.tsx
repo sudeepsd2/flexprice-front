@@ -20,7 +20,7 @@ const S3Exports = () => {
 		isLoading,
 	} = useQuery({
 		queryKey: ['connections', 's3'],
-		queryFn: () => ConnectionApi.getAllConnections({ provider_type: CONNECTION_PROVIDER_TYPE.S3 }),
+		queryFn: () => ConnectionApi.List({ provider_type: CONNECTION_PROVIDER_TYPE.S3 }),
 	});
 
 	const connections = connectionsResponse?.connections || [];
@@ -51,7 +51,7 @@ const S3Exports = () => {
 
 	// Delete connection mutation
 	const { mutate: deleteConnection, isPending: isDeletingConnection } = useMutation({
-		mutationFn: (id: string) => ConnectionApi.deleteConnection(id),
+		mutationFn: (id: string) => ConnectionApi.Delete(id),
 		onSuccess: () => {
 			toast.success('Connection deleted successfully');
 			refetchConnections();

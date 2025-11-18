@@ -173,14 +173,14 @@ const AddonDetails = () => {
 	} = useQuery({
 		queryKey: ['fetchAddon', id],
 		queryFn: async () => {
-			return await AddonApi.GetAddonById(id!);
+			return await AddonApi.Get(id!);
 		},
 		enabled: !!id,
 	});
 
 	const { mutate: archiveAddon } = useMutation({
 		mutationFn: async () => {
-			return await AddonApi.DeleteAddon(id!);
+			return await AddonApi.Delete(id!);
 		},
 		onSuccess: () => {
 			toast.success('Addon archived successfully');

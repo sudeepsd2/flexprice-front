@@ -176,7 +176,7 @@ const EntityChargesPage: React.FC<EntityChargesPageProps> = ({ entityType, entit
 			if (entityType === ENTITY_TYPE.PLAN) {
 				return await PlanApi.getPlanById(entityId);
 			} else if (entityType === ENTITY_TYPE.ADDON) {
-				return await AddonApi.GetAddonById(entityId);
+				return await AddonApi.Get(entityId);
 			} else {
 				return await CostSheetApi.GetCostSheetById(entityId);
 			}

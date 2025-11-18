@@ -35,7 +35,7 @@ const SignupConfirmation = () => {
 				return;
 			}
 
-			const signupResponse = await AuthApi.signup({
+			const signupResponse = await AuthApi.Signup({
 				email: user.data.user?.email || '',
 				token: session?.access_token || '',
 			});

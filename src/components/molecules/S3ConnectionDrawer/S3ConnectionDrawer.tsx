@@ -100,7 +100,7 @@ const S3ConnectionDrawer: FC<S3ConnectionDrawerProps> = ({ isOpen, onOpenChange,
 				},
 			};
 
-			return await ConnectionApi.createConnection(payload);
+			return await ConnectionApi.Create(payload);
 		},
 		onSuccess: (response) => {
 			toast.success('S3 connection created successfully');
@@ -118,7 +118,7 @@ const S3ConnectionDrawer: FC<S3ConnectionDrawerProps> = ({ isOpen, onOpenChange,
 				name: formData.name,
 			};
 
-			return await ConnectionApi.updateConnection(connection.id, payload);
+			return await ConnectionApi.Update(connection.id, payload);
 		},
 		onSuccess: (response) => {
 			toast.success('S3 connection updated successfully');

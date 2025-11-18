@@ -33,9 +33,9 @@ const AddonDrawer: FC<Props> = ({ data, open, onOpenChange, trigger, refetchQuer
 	const { mutate: updateAddon, isPending } = useMutation({
 		mutationFn: (data: Partial<Addon>) => {
 			if (isEdit) {
-				return AddonApi.UpdateAddon(data.id!, data as any);
+				return AddonApi.Update(data.id!, data as any);
 			} else {
-				return AddonApi.CreateAddon(data as any);
+				return AddonApi.Create(data as any);
 			}
 		},
 		onSuccess: (data: Addon) => {

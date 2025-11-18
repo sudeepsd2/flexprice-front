@@ -27,7 +27,7 @@ const IntegrationDetails = () => {
 	// Fetch connections from API
 	const { data: connectionsResponse, refetch: refetchConnections } = useQuery({
 		queryKey: ['connections', name],
-		queryFn: () => ConnectionApi.getAllConnections({ provider_type: name.toLowerCase() as CONNECTION_PROVIDER_TYPE }),
+		queryFn: () => ConnectionApi.List({ provider_type: name.toLowerCase() as CONNECTION_PROVIDER_TYPE }),
 		enabled: !!name,
 	});
 
@@ -35,7 +35,7 @@ const IntegrationDetails = () => {
 
 	// Delete connection mutation
 	const { mutate: deleteConnection, isPending: isDeletingConnection } = useMutation({
-		mutationFn: (id: string) => ConnectionApi.deleteConnection(id),
+		mutationFn: (id: string) => ConnectionApi.Delete(id),
 		onSuccess: () => {
 			toast.success('Connection deleted successfully');
 			refetchConnections();

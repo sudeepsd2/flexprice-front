@@ -178,7 +178,7 @@ const StripeConnectionDrawer: FC<StripeConnectionDrawerProps> = ({ isOpen, onOpe
 				},
 			};
 
-			return await ConnectionApi.createConnection(payload);
+			return await ConnectionApi.Create(payload);
 		},
 		onSuccess: (response) => {
 			toast.success('Stripe connection created successfully');
@@ -210,7 +210,7 @@ const StripeConnectionDrawer: FC<StripeConnectionDrawerProps> = ({ isOpen, onOpe
 				},
 			};
 
-			return await ConnectionApi.updateConnection(connection.id, payload);
+			return await ConnectionApi.Update(connection.id, payload);
 		},
 		onSuccess: (response) => {
 			toast.success('Stripe connection updated successfully');

@@ -101,7 +101,7 @@ const CustomerSubscriptionDetailsPage: FC = () => {
 	const { data: creditGrants } = useQuery({
 		queryKey: ['creditGrants', subscription_id],
 		queryFn: async () => {
-			return await CreditGrantApi.getGrantCredits({
+			return await CreditGrantApi.List({
 				subscription_ids: [subscription_id!],
 			});
 		},

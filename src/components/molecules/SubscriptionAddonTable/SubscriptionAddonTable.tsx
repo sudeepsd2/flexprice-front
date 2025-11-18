@@ -73,7 +73,7 @@ const SubscriptionAddonTable: React.FC<Props> = ({ data, onChange, disabled, get
 	const { data: addons = [] } = useQuery({
 		queryKey: ['addons'],
 		queryFn: async () => {
-			const response = await AddonApi.ListAddon({ limit: 1000, offset: 0 });
+			const response = await AddonApi.List({ limit: 1000, offset: 0 });
 			return response.items;
 		},
 		staleTime: 5 * 60 * 1000,

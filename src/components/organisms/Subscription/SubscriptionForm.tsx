@@ -314,7 +314,7 @@ const SubscriptionForm = ({
 		queryFn: async () => {
 			if (addonIds.length === 0) return [];
 			try {
-				const promises = addonIds.map((addonId) => AddonApi.getAddonEntitlements(addonId));
+				const promises = addonIds.map((addonId) => AddonApi.GetEntitlements(addonId));
 				const results = await Promise.all(promises);
 				return results;
 			} catch (error) {

@@ -169,27 +169,27 @@ const PhaseList: React.FC<PhaseListProps> = ({
 			override_line_items:
 				Object.keys(phaseFormData.priceOverrides).length > 0
 					? Object.entries(phaseFormData.priceOverrides).map(([priceId, override]) => {
-							// Convert SLAB_TIERED to TIERED + SLAB for backend
-							let billingModel = override.billing_model;
-							let tierMode = override.tier_mode;
+						// Convert SLAB_TIERED to TIERED + SLAB for backend
+						let billingModel = override.billing_model;
+						let tierMode = override.tier_mode;
 
-							if (override.billing_model === 'SLAB_TIERED') {
-								billingModel = BILLING_MODEL.TIERED;
-								tierMode = TIER_MODE.SLAB;
-							} else if (override.billing_model === BILLING_MODEL.TIERED) {
-								tierMode = TIER_MODE.VOLUME;
-							}
+						if (override.billing_model === 'SLAB_TIERED') {
+							billingModel = BILLING_MODEL.TIERED;
+							tierMode = TIER_MODE.SLAB;
+						} else if (override.billing_model === BILLING_MODEL.TIERED) {
+							tierMode = TIER_MODE.VOLUME;
+						}
 
-							return {
-								price_id: priceId,
-								...(override.amount !== undefined && { amount: parseFloat(override.amount) }),
-								...(override.quantity !== undefined && { quantity: override.quantity }),
-								...(billingModel !== undefined && { billing_model: billingModel as BILLING_MODEL }),
-								...(tierMode !== undefined && { tier_mode: tierMode }),
-								...(override.tiers !== undefined && { tiers: override.tiers }),
-								...(override.transform_quantity !== undefined && { transform_quantity: override.transform_quantity }),
-							};
-						})
+						return {
+							price_id: priceId,
+							...(override.amount !== undefined && { amount: parseFloat(override.amount) }),
+							...(override.quantity !== undefined && { quantity: override.quantity }),
+							...(billingModel !== undefined && { billing_model: billingModel as BILLING_MODEL }),
+							...(tierMode !== undefined && { tier_mode: tierMode }),
+							...(override.tiers !== undefined && { tiers: override.tiers }),
+							...(override.transform_quantity !== undefined && { transform_quantity: override.transform_quantity }),
+						};
+					})
 					: undefined,
 			metadata: Object.keys(phaseFormData.metadata).length > 0 ? phaseFormData.metadata : undefined,
 		};

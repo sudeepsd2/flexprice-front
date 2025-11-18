@@ -38,7 +38,7 @@ const CustomerInformationTab = () => {
 	// Fetch Stripe connections to check availability
 	const { data: connectionsResponse } = useQuery({
 		queryKey: ['connections', CONNECTION_PROVIDER_TYPE.STRIPE],
-		queryFn: () => ConnectionApi.getPublishedConnections(),
+		queryFn: () => ConnectionApi.ListPublished(),
 		enabled: !!customerId && !isArchived,
 	});
 

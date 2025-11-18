@@ -46,7 +46,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ switchTab }) => {
 	// Use React Query for signup mutation
 	const { mutate: signup, isPending: isSignupPending } = useMutation({
 		mutationFn: async () => {
-			return await AuthApi.signup({
+			return await AuthApi.Signup({
 				email: signupData.email,
 				password: signupData.password,
 			});
