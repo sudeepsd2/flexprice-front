@@ -115,7 +115,7 @@ export { QueryBuilder, FilterPopover, SortDropdown, FilterMultiSelect } from './
 export type { FilterCondition, FilterField, FilterFieldType, FilterOperator, DataType, SortDirection } from './QueryBuilder';
 export { sanitizeFilterConditions, sanitizeSortConditions } from './QueryBuilder';
 
-export { CreditGrantsTable, CreditGrantModal, SubscriptionCreditGrantTable } from './CreditGrant';
+export { CreditGrantsTable, CreditGrantModal, SubscriptionCreditGrantTable, UpcomingCreditGrantApplicationsTable } from './CreditGrant';
 
 export { default as SubscriptionTaxAssociationTable } from './SubscriptionTaxAssociationTable';
 

@@ -8,6 +8,7 @@ import { Loader } from '@/components/atoms';
 import toast from 'react-hot-toast';
 import { RouteNames } from '@/core/routes/Routes';
 import CustomerUsageTable from '@/components/molecules/CustomerUsageTable';
+import { UpcomingCreditGrantApplicationsTable } from '@/components/molecules';
 
 type ContextType = {
 	isArchived: boolean;
@@ -45,11 +46,21 @@ const CustomerOverviewTab = () => {
 		queryFn: () => CustomerApi.getUsageSummary({ customer_id: customerId! }),
 	});
 
-	if (subscriptionsLoading || usageLoading) {
+	const {
+		data: upcomingCreditGrantApplications,
+		isLoading: upcomingGrantsLoading,
+		error: upcomingGrantsError,
+	} = useQuery({
+		queryKey: ['upcomingCreditGrantApplications', customerId],
+		queryFn: () => CustomerApi.getUpcomingCreditGrantApplications(customerId!),
+		enabled: !!customerId,
+	});
+
+	if (subscriptionsLoading || usageLoading || upcomingGrantsLoading) {
 		return <Loader />;
 	}
 
-	if (subscriptionsError || usageError) {
+	if (subscriptionsError || usageError || upcomingGrantsError) {
 		toast.error('Something went wrong');
 	}
 
@@ -88,6 +99,9 @@ const CustomerOverviewTab = () => {
 					<CustomerUsageTable data={usageData?.features ?? []} />
 				</Card>
 			)}
+
+			{/* upcoming credit grant applications */}
+			<UpcomingCreditGrantApplicationsTable data={upcomingCreditGrantApplications?.items ?? []} customerId={customerId} />
 		</div>
 	);
 };

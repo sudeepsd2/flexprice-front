@@ -1,5 +1,5 @@
 import { Card, FormHeader, Page, Spacer, Chip } from '@/components/atoms';
-import { SubscriptionPauseWarning } from '@/components/molecules';
+import { SubscriptionPauseWarning, UpcomingCreditGrantApplicationsTable } from '@/components/molecules';
 import { SubscriptionPreviewLineItemTable } from '@/components/molecules/InvoiceLineItemTable';
 import SubscriptionActionButton from '@/components/organisms/Subscription/SubscriptionActionButton';
 import { getSubscriptionStatus } from '@/components/organisms/Subscription/SubscriptionTable';
@@ -56,6 +56,14 @@ const CustomerSubscriptionDetailsPage: FC = () => {
 				entity_id: subscription_id!,
 				entity_type: TAXRATE_ENTITY_TYPE.SUBSCRIPTION,
 			});
+		},
+		enabled: !!subscription_id,
+	});
+
+	const { data: upcomingCreditGrantApplications } = useQuery({
+		queryKey: ['upcomingCreditGrantApplications', subscription_id],
+		queryFn: async () => {
+			return await SubscriptionApi.getUpcomingCreditGrantApplications(subscription_id!);
 		},
 		enabled: !!subscription_id,
 	});
@@ -271,6 +279,8 @@ const CustomerSubscriptionDetailsPage: FC = () => {
 					/>
 				</div>
 			)}
+
+			<UpcomingCreditGrantApplicationsTable data={upcomingCreditGrantApplications?.items ?? []} customerId={customerId} />
 		</div>
 	);
 };
