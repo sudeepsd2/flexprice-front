@@ -6,7 +6,7 @@ import { formatExpirationPeriod } from '@/utils/common/credit_grant_helpers';
 import { formatBillingPeriodForPrice } from '@/utils/common/helper_functions';
 import { formatAmount } from '@/components/atoms/Input/Input';
 import CreditGrantApi from '@/api/CreditGrantApi';
-import { Trash2 } from 'lucide-react';
+import { EllipsisVertical, Trash2 } from 'lucide-react';
 
 interface CreditGrantsTableProps {
 	data: CreditGrant[];
@@ -70,8 +70,12 @@ const CreditGrantsTable: React.FC<CreditGrantsTableProps> = ({ data, onDelete, s
 						deleteMutationFn={async () => {
 							await handleDelete(row);
 						}}
+						triggerIcon={<EllipsisVertical className='text-foreground size-4' />}
 						refetchQueryKey='creditGrants'
 						entityName={row.name}
+						edit={{
+							enabled: false,
+						}}
 						archive={{
 							enabled: true,
 							text: 'Delete',
