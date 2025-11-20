@@ -24,11 +24,7 @@ class EnvironmentApi {
 	}
 
 	public static async createEnvironment(payload: CreateEnvironmentPayload): Promise<Environment | null> {
-		try {
-			return await AxiosClient.post<Environment>(this.baseUrl, payload);
-		} catch (error) {
-			return null;
-		}
+		return await AxiosClient.post<Environment>(this.baseUrl, payload);
 	}
 
 	public static getActiveEnvironmentId(): string | null {
