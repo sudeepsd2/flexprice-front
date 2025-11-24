@@ -146,7 +146,7 @@ const RazorpayConnectionDrawer: FC<RazorpayConnectionDrawerProps> = ({ isOpen, o
 				};
 			}
 
-			return await ConnectionApi.createConnection(payload);
+			return await ConnectionApi.Create(payload);
 		},
 		onSuccess: (response) => {
 			toast.success('Razorpay connection created successfully');
@@ -173,7 +173,7 @@ const RazorpayConnectionDrawer: FC<RazorpayConnectionDrawerProps> = ({ isOpen, o
 				};
 			}
 
-			return await ConnectionApi.updateConnection(connection.id, payload);
+			return await ConnectionApi.Update(connection.id, payload);
 		},
 		onSuccess: (response) => {
 			toast.success('Razorpay connection updated successfully');

@@ -173,11 +173,12 @@ const DeveloperPage = () => {
 							deleteMutationFn={async (id: string) => {
 								await SecretKeysApi.deleteSecretKey(id);
 							}}
-							refetchQueryKey={'secret-keys'}
-							entityName={'API key'}
-							archiveText={'Delete'}
-							isEditDisabled
-							archiveIcon={<TrashIcon />}
+							refetchQueryKey='secret-keys'
+							entityName='API key'
+							archive={{
+								text: 'Delete',
+								icon: <TrashIcon />,
+							}}
 						/>
 					</div>
 				);

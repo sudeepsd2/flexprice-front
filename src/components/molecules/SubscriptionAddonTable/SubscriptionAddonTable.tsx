@@ -73,7 +73,7 @@ const SubscriptionAddonTable: React.FC<Props> = ({ data, onChange, disabled, get
 	const { data: addons = [] } = useQuery({
 		queryKey: ['addons'],
 		queryFn: async () => {
-			const response = await AddonApi.ListAddon({ limit: 1000, offset: 0 });
+			const response = await AddonApi.List({ limit: 1000, offset: 0 });
 			return response.items;
 		},
 		staleTime: 5 * 60 * 1000,
@@ -168,14 +168,18 @@ const SubscriptionAddonTable: React.FC<Props> = ({ data, onChange, disabled, get
 					const addonDetails = getAddonDetails(row.addon_id);
 					return (
 						<ActionButton
-							archiveText='Remove'
 							id={row.addon_id}
 							deleteMutationFn={() => handleDelete(row.internal_id)}
 							refetchQueryKey='addons'
 							entityName={addonDetails?.name || row.addon_id}
-							isEditDisabled={disabled}
-							isArchiveDisabled={disabled}
-							onEdit={() => handleEdit(row)}
+							edit={{
+								enabled: !disabled,
+								onClick: () => handleEdit(row),
+							}}
+							archive={{
+								enabled: !disabled,
+								text: 'Remove',
+							}}
 						/>
 					);
 				},

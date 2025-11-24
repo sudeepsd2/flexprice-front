@@ -68,14 +68,18 @@ const SubscriptionTaxAssociationTable: FC<Props> = ({ data, onChange, disabled }
 			hideOnEmpty: true,
 			render: (row) => (
 				<ActionButton
-					archiveText='Delete'
 					id={row.tax_rate_code}
 					deleteMutationFn={() => handleDelete(row.tax_rate_code)}
 					refetchQueryKey='subscription_tax_overrides'
 					entityName={`Tax Override ${row.tax_rate_code}`}
-					isEditDisabled={disabled}
-					isArchiveDisabled={disabled}
-					onEdit={() => handleEdit(row)}
+					edit={{
+						enabled: !disabled,
+						onClick: () => handleEdit(row),
+					}}
+					archive={{
+						enabled: !disabled,
+						text: 'Delete',
+					}}
 				/>
 			),
 		},

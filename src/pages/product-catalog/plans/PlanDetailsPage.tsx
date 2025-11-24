@@ -1,9 +1,9 @@
 // React imports
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 
 // Third-party libraries
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { EyeOff, Plus, Pencil, Trash2 } from 'lucide-react';
 import { uniqueId } from 'lodash';
 import toast from 'react-hot-toast';
@@ -16,6 +16,7 @@ import {
 	ApiDocsContent,
 	ColumnData,
 	CreditGrantModal,
+	CreditGrantsTable,
 	DetailsCard,
 	FlexpriceTable,
 	MetadataModal,
@@ -40,7 +41,6 @@ import {
 	ENTITLEMENT_ENTITY_TYPE,
 	CREDIT_GRANT_PERIOD_UNIT,
 	CREDIT_GRANT_EXPIRATION_TYPE,
-	CreditGrant,
 	CREDIT_SCOPE,
 	CREDIT_GRANT_CADENCE,
 	CREDIT_GRANT_PERIOD,
@@ -53,34 +53,7 @@ import { InternalCreditGrantRequest, CreateCreditGrantRequest } from '@/types/dt
 import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
 import formatDate from '@/utils/common/format_date';
 import formatChips from '@/utils/common/format_chips';
-import { formatExpirationPeriod } from '@/utils/common/credit_grant_helpers';
-
-const creditGrantColumns: ColumnData<CreditGrant>[] = [
-	{
-		title: 'Name',
-		render: (row) => {
-			return <span>{row.name}</span>;
-		},
-	},
-	{
-		title: 'Credits',
-		render: (row) => {
-			return <span>{formatAmount(row.credits.toString())}</span>;
-		},
-	},
-	{
-		title: 'Priority',
-		render: (row) => {
-			return <span>{row.priority ?? '--'}</span>;
-		},
-	},
-	{
-		title: 'Expiration Config',
-		render: (row) => {
-			return <span>{formatExpirationPeriod(row)}</span>;
-		},
-	},
-];
+import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
 
 export const formatInvoiceCadence = (cadence: string): string => {
 	switch (cadence.toUpperCase()) {
@@ -130,8 +103,6 @@ const PlanDetailsPage = () => {
 	const [creditGrantModalOpen, setCreditGrantModalOpen] = useState(false);
 	const [metadataModalOpen, setMetadataModalOpen] = useState(false);
 	const [metadata, setMetadata] = useState<Record<string, string>>({});
-	const [newCreditGrants, setNewCreditGrants] = useState<CreditGrant[]>([]);
-	const queryClient = useQueryClient();
 
 	const {
 		data: planData,
@@ -166,24 +137,15 @@ const PlanDetailsPage = () => {
 				plan_id: planId!,
 			};
 
-			// Add the new credit grant to local state first (for optimistic update)
-			const newGrant: CreditGrant = {
-				...grantWithPlanId,
-				id: uniqueId(),
-			} as CreditGrant;
-
-			setNewCreditGrants((prev) => [...prev, newGrant]);
-			return await CreditGrantApi.createCreditGrant(grantWithPlanId);
+			return await CreditGrantApi.Create(grantWithPlanId);
 		},
 		onSuccess: () => {
 			toast.success('Credit grant added successfully');
 			setCreditGrantModalOpen(false);
-			setNewCreditGrants([]);
-			queryClient.invalidateQueries({ queryKey: ['fetchPlan', planId] });
+			refetchQueries(['fetchPlan', planId!]);
 		},
 		onError: (error: ServerError) => {
 			toast.error(error.error.message || 'Failed to add credit grant');
-			setNewCreditGrants((prev) => prev.slice(0, -1));
 		},
 	});
 
@@ -194,7 +156,7 @@ const PlanDetailsPage = () => {
 		onSuccess: () => {
 			toast.success('Metadata updated successfully');
 			setMetadataModalOpen(false);
-			queryClient.invalidateQueries({ queryKey: ['fetchPlan', planId] });
+			refetchQueries(['fetchPlan', planId!]);
 		},
 		onError: (error: ServerError) => {
 			toast.error(error.error.message || 'Failed to update metadata');
@@ -245,16 +207,17 @@ const PlanDetailsPage = () => {
 			render(row) {
 				return (
 					<ActionButton
+						id={row?.id}
 						deleteMutationFn={async () => {
 							return await EntitlementApi.deleteEntitlementById(row?.id);
 						}}
-						archiveIcon={<Trash2 />}
-						archiveText='Delete'
-						id={row?.id}
-						isEditDisabled={true}
-						isArchiveDisabled={row?.status === ENTITY_STATUS.ARCHIVED}
-						refetchQueryKey={'fetchPlan'}
+						refetchQueryKey='fetchPlan'
 						entityName={row?.feature?.name}
+						archive={{
+							enabled: row?.status !== ENTITY_STATUS.ARCHIVED,
+							text: 'Delete',
+							icon: <Trash2 />,
+						}}
 					/>
 				);
 			},
@@ -282,7 +245,7 @@ const PlanDetailsPage = () => {
 		{ label: 'Created Date', value: formatDate(planData?.created_at ?? '') },
 		{
 			label: 'Status',
-			value: <Chip label={formatChips(planData?.status)} variant={planData?.status === 'published' ? 'success' : 'default'} />,
+			value: <Chip label={formatChips(planData?.status)} variant={planData?.status === ENTITY_STATUS.PUBLISHED ? 'success' : 'default'} />,
 		},
 	];
 
@@ -314,9 +277,6 @@ const PlanDetailsPage = () => {
 		setCreditGrantModalOpen(false);
 	};
 
-	// Combine existing and new credit grants for display
-	const allCreditGrants = [...(planData?.credit_grants || []), ...newCreditGrants];
-
 	return (
 		<Page
 			heading={planData?.name}
@@ -327,7 +287,11 @@ const PlanDetailsPage = () => {
 						Edit
 					</Button>
 
-					<Button onClick={() => archivePlan()} disabled={planData?.status !== 'published'} variant={'outline'} className='flex gap-2'>
+					<Button
+						onClick={() => archivePlan()}
+						disabled={planData?.status !== ENTITY_STATUS.PUBLISHED}
+						variant={'outline'}
+						className='flex gap-2'>
 						<EyeOff />
 						Archive
 					</Button>
@@ -359,7 +323,7 @@ const PlanDetailsPage = () => {
 				<DetailsCard variant='stacked' title='Plan Details' data={planDetails} />
 
 				{/* plan charges table */}
-				<PlanPriceTable plan={planData as Plan} onPriceUpdate={() => queryClient.invalidateQueries({ queryKey: ['fetchPlan', planId] })} />
+				<PlanPriceTable plan={planData as Plan} onPriceUpdate={() => refetchQueries(['fetchPlan', planId!])} />
 
 				{planData.entitlements?.length || 0 > 0 ? (
 					<Card variant='notched'>
@@ -385,7 +349,7 @@ const PlanDetailsPage = () => {
 					/>
 				)}
 
-				{allCreditGrants.length > 0 ? (
+				{planData.credit_grants && planData.credit_grants.length > 0 ? (
 					<Card variant='notched'>
 						<CardHeader
 							title='Credit Grants'
@@ -395,7 +359,13 @@ const PlanDetailsPage = () => {
 								</Button>
 							}
 						/>
-						<FlexpriceTable showEmptyRow data={allCreditGrants} columns={creditGrantColumns} />
+						<CreditGrantsTable
+							data={planData.credit_grants}
+							onDelete={async () => {
+								refetchQueries(['fetchPlan', planId!]);
+							}}
+							showEmptyRow
+						/>
 					</Card>
 				) : (
 					<NoDataCard

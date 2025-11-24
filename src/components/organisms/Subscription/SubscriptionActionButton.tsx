@@ -8,7 +8,7 @@ import { toast } from 'react-hot-toast';
 import DropdownMenu, { DropdownMenuOption } from '@/components/molecules/DropdownMenu/DropdownMenu';
 import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
 import { addDays, format } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
 
 interface Props {

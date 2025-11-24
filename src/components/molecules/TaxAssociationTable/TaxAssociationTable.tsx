@@ -49,16 +49,19 @@ const TaxAssociationTable: FC<Props> = ({ data, onEdit, showDelete = true }) => 
 			render(row) {
 				return (
 					<ActionButton
+						id={row?.id}
 						deleteMutationFn={async () => {
 							return await TaxApi.deleteTaxAssociation(row?.id);
 						}}
-						id={row?.id}
-						editPath={''}
-						isEditDisabled={false}
-						isArchiveDisabled={showDelete}
-						refetchQueryKey={'fetchTaxAssociations'}
+						refetchQueryKey='fetchTaxAssociations'
 						entityName={`Tax Association ${row?.id}`}
-						onEdit={() => onEdit?.(row)}
+						edit={{
+							enabled: true,
+							onClick: () => onEdit?.(row),
+						}}
+						archive={{
+							enabled: !showDelete,
+						}}
 					/>
 				);
 			},

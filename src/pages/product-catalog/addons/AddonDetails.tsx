@@ -11,7 +11,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { EyeOff, Plus, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { Card } from '@/components/atoms';
 import formatChips from '@/utils/common/format_chips';
 import { ChargeValueCell } from '@/components/molecules';
@@ -21,7 +21,7 @@ import { FEATURE_TYPE } from '@/models/Feature';
 import { getFeatureTypeChips } from '@/components/molecules/CustomerUsageTable/CustomerUsageTable';
 import { formatAmount } from '@/components/atoms/Input/Input';
 import { Entitlement } from '@/models/Entitlement';
-import { ENTITY_STATUS } from '@/models/base';
+import { ENTITY_STATUS } from '@/models';
 import { ENTITLEMENT_ENTITY_TYPE } from '@/models/Entitlement';
 import { EntitlementResponse } from '@/types/dto';
 
@@ -118,16 +118,17 @@ const getEntitlementColumns = (_addonId: string): ColumnData<EntitlementResponse
 		render(row) {
 			return (
 				<ActionButton
+					id={row?.id}
 					deleteMutationFn={async () => {
 						return await EntitlementApi.deleteEntitlementById(row?.id);
 					}}
-					archiveIcon={<Trash2 />}
-					archiveText='Delete'
-					id={row?.id}
-					isEditDisabled={true}
-					isArchiveDisabled={row?.status === ENTITY_STATUS.ARCHIVED}
-					refetchQueryKey={'fetchAddon'}
+					refetchQueryKey='fetchAddon'
 					entityName={row?.feature?.name}
+					archive={{
+						enabled: row?.status !== ENTITY_STATUS.ARCHIVED,
+						text: 'Delete',
+						icon: <Trash2 />,
+					}}
 				/>
 			);
 		},
@@ -173,14 +174,14 @@ const AddonDetails = () => {
 	} = useQuery({
 		queryKey: ['fetchAddon', id],
 		queryFn: async () => {
-			return await AddonApi.GetAddonById(id!);
+			return await AddonApi.Get(id!);
 		},
 		enabled: !!id,
 	});
 
 	const { mutate: archiveAddon } = useMutation({
 		mutationFn: async () => {
-			return await AddonApi.DeleteAddon(id!);
+			return await AddonApi.Delete(id!);
 		},
 		onSuccess: () => {
 			toast.success('Addon archived successfully');
@@ -236,7 +237,11 @@ const AddonDetails = () => {
 						Edit
 					</Button>
 
-					<Button onClick={() => archiveAddon()} disabled={addonData?.status !== 'published'} variant={'outline'} className='flex gap-2'>
+					<Button
+						onClick={() => archiveAddon()}
+						disabled={addonData?.status !== ENTITY_STATUS.PUBLISHED}
+						variant={'outline'}
+						className='flex gap-2'>
 						<EyeOff />
 						Archive
 					</Button>

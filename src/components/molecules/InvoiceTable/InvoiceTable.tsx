@@ -3,7 +3,7 @@ import { FC } from 'react';
 import FlexpriceTable, { ColumnData, RedirectCell } from '../Table';
 import { formatDateShort, getCurrencySymbol } from '@/utils/common/helper_functions';
 import { Chip } from '@/components/atoms';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import InvoiceTableMenu from './InvoiceTableMenu';
 import { RouteNames } from '@/core/routes/Routes';
 import { PAYMENT_STATUS } from '@/constants';

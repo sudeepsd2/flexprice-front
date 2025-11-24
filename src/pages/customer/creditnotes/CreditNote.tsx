@@ -3,7 +3,7 @@ import { ApiDocsContent } from '@/components/molecules';
 import { CreditNoteTable } from '@/components/molecules/CreditNoteTable';
 import CreditNoteApi from '@/api/CreditNoteApi';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
+import { useNavigate, useParams, useOutletContext } from 'react-router';
 import { Card } from '@/components/atoms';
 import { RouteNames } from '@/core/routes/Routes';
 

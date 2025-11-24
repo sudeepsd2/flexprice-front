@@ -30,6 +30,10 @@ export {
 	CREDIT_GRANT_PERIOD,
 } from './CreditGrant';
 
+// CreditGrantApplication
+export type { CreditGrantApplication } from './CreditGrantApplication';
+export { APPLICATION_STATUS, CREDIT_GRANT_APPLICATION_REASON } from './CreditGrantApplication';
+
 // CreditNote
 export type { CreditNote, CreditNoteLineItem } from './CreditNote';
 export { CREDIT_NOTE_STATUS, CREDIT_NOTE_REASON, CREDIT_NOTE_TYPE } from './CreditNote';

@@ -5,7 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { PlanApi } from '@/api/PlanApi';
 import toast from 'react-hot-toast';
 import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
 import { CreatePlanRequest, UpdatePlanRequest, PlanResponse, CreatePlanResponse } from '@/types/dto';
 interface Props {

@@ -3,10 +3,11 @@ import { ActionButton, Chip } from '@/components/atoms';
 import FlexpriceTable, { ColumnData } from '../Table';
 import { Coupon } from '@/models/Coupon';
 import { COUPON_TYPE } from '@/types/common/Coupon';
+import { ENTITY_STATUS } from '@/models';
 import formatChips from '@/utils/common/format_chips';
 import formatDate from '@/utils/common/format_date';
 import CouponApi from '@/api/CouponApi';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import CouponDrawer from '../CouponDrawer';
 import { RouteNames } from '@/core/routes/Routes';
 import { getCurrencySymbol } from '@/utils/common/helper_functions';
@@ -79,12 +80,16 @@ const CouponTable: FC<CouponTableProps> = ({ data, onEdit }) => {
 			render: (row) => (
 				<ActionButton
 					id={row.id}
-					isArchiveDisabled={row.status !== 'published'}
-					editPath={`${RouteNames.couponDetails}/${row.id}`}
 					deleteMutationFn={(id) => CouponApi.deleteCoupon(id)}
 					refetchQueryKey='fetchCoupons'
 					entityName='Coupon'
-					onEdit={() => handleEdit(row)}
+					edit={{
+						path: `${RouteNames.couponDetails}/${row.id}`,
+						onClick: () => handleEdit(row),
+					}}
+					archive={{
+						enabled: row.status === ENTITY_STATUS.PUBLISHED,
+					}}
 				/>
 			),
 		},

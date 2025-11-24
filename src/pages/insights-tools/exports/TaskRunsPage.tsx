@@ -1,5 +1,5 @@
 import { Page, Button } from '@/components/atoms';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import TaskRunsTable from '@/components/molecules/TaskRunsTable/TaskRunsTable';
 import { ApiDocsContent } from '@/components/molecules';

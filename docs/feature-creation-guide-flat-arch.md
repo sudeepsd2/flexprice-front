@@ -203,7 +203,7 @@ import { FC } from 'react';
 import FlexpriceTable, { ColumnData } from '@/components/molecules/Table';
 import [FeatureName] from '@/models/[FeatureName]';
 import { ActionButton, Chip } from '@/components/atoms';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
 import [FeatureName]Api from '../api/[feature-name]Api';
 import { map[FeatureName]ToViewModel } from '../mappers/[feature-name]Mapper';
@@ -290,7 +290,7 @@ import usePagination from '@/hooks/usePagination';
 import { use[FeatureName]List } from '@/hooks/use[FeatureName]List';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { useState } from 'react';
 import { FilterCondition, SortOption } from '@/types/common/QueryBuilder';
 import { [FEATURE_NAME]_FILTER_OPTIONS, [FEATURE_NAME]_SORT_OPTIONS } from '@/constants/[feature-name]Constants';
@@ -359,20 +359,17 @@ export default [FeatureName]sPage;
 ## Benefits of Flat Architecture
 
 1. **Centralized Organization**
-
    - All API services in one place
    - All models in one place
    - All formatters in one place
    - Easier to find related files
 
 2. **Code Reusability**
-
    - Easier to share common functionality
    - Better visibility of available utilities
    - Reduced duplication
 
 3. **Simplified Imports**
-
    - Consistent import paths
    - Clearer dependency structure
    - Easier to maintain
@@ -385,13 +382,11 @@ export default [FeatureName]sPage;
 ## When to Use Flat Architecture
 
 1. **Small to Medium Features**
-
    - When the feature has few files
    - When the feature is self-contained
    - When there's little shared functionality
 
 2. **Shared Utilities**
-
    - When multiple features use the same utilities
    - When you want to maintain a single source of truth
    - When you want to avoid duplication
@@ -404,13 +399,11 @@ export default [FeatureName]sPage;
 ## When to Use Feature-Based Architecture
 
 1. **Large Features**
-
    - When the feature has many files
    - When the feature is complex
    - When there's significant shared functionality
 
 2. **Independent Features**
-
    - When features are truly independent
    - When features have different requirements
    - When features need different versions of utilities
@@ -423,19 +416,16 @@ export default [FeatureName]sPage;
 ## Best Practices for Flat Architecture
 
 1. **Naming Conventions**
-
    - Prefix files with feature name
    - Use consistent naming patterns
    - Make names self-documenting
 
 2. **File Organization**
-
    - Group related files together
    - Use clear file names
    - Keep files focused
 
 3. **Import Management**
-
    - Use absolute imports
    - Keep imports clean
    - Avoid circular dependencies

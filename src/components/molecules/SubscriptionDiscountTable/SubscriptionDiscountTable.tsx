@@ -129,14 +129,18 @@ const SubscriptionDiscountTable: FC<Props> = ({ coupon, onChange, disabled, curr
 			hideOnEmpty: true,
 			render: (row) => (
 				<ActionButton
-					archiveText='Remove'
 					id={row.id}
 					deleteMutationFn={handleDelete}
 					refetchQueryKey='subscription_discount'
 					entityName={`Discount ${formatCouponName(row)}`}
-					isEditDisabled={disabled}
-					isArchiveDisabled={disabled}
-					onEdit={handleEdit}
+					edit={{
+						enabled: !disabled,
+						onClick: handleEdit,
+					}}
+					archive={{
+						enabled: !disabled,
+						text: 'Remove',
+					}}
 				/>
 			),
 		},

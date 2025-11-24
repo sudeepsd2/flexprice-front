@@ -4,7 +4,7 @@ import { toSentenceCase } from '@/utils/common/helper_functions';
 import { ExpandedPlan } from '@/types';
 import { useMemo, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
-import CreditGrantTable from '@/components/molecules/CreditGrant/CreditGrantTable';
+import SubscriptionCreditGrantTable from '@/components/molecules/CreditGrant/SubscriptionCreditGrantTable';
 import SubscriptionAddonTable from '@/components/molecules/SubscriptionAddonTable/SubscriptionAddonTable';
 import { BILLING_CYCLE } from '@/models/Subscription';
 import {
@@ -314,7 +314,7 @@ const SubscriptionForm = ({
 		queryFn: async () => {
 			if (addonIds.length === 0) return [];
 			try {
-				const promises = addonIds.map((addonId) => AddonApi.getAddonEntitlements(addonId));
+				const promises = addonIds.map((addonId) => AddonApi.GetEntitlements(addonId));
 				const results = await Promise.all(promises);
 				return results;
 			} catch (error) {
@@ -586,7 +586,7 @@ const SubscriptionForm = ({
 			{/* Credit Grants (Subscription Level) */}
 			{state.selectedPlan && (
 				<div className='mt-6 pt-6 border-t border-gray-200'>
-					<CreditGrantTable
+					<SubscriptionCreditGrantTable
 						getEmptyCreditGrant={() => getEmptyCreditGrant()}
 						data={relevantCreditGrants}
 						onChange={(data: InternalCreditGrantRequest[]) => {

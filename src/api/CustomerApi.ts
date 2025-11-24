@@ -9,6 +9,7 @@ import {
 	GetCustomerEntitlementsResponse,
 	CreateCustomerRequest,
 	UpdateCustomerRequest,
+	ListCreditGrantApplicationsResponse,
 } from '@/types/dto';
 import { generateQueryParams } from '@/utils/common/api_helper';
 
@@ -53,6 +54,13 @@ class CustomerApi {
 
 	public static async getUsageSummary(payload: GetCustomerEntitlementPayload): Promise<GetUsageSummaryResponse> {
 		return await AxiosClient.get(`${this.baseUrl}/${payload.customer_id}/usage`);
+	}
+
+	/**
+	 * Get upcoming credit grant applications for a customer
+	 */
+	public static async getUpcomingCreditGrantApplications(customerId: string): Promise<ListCreditGrantApplicationsResponse> {
+		return await AxiosClient.get<ListCreditGrantApplicationsResponse>(`${this.baseUrl}/${customerId}/grants/upcoming`);
 	}
 }
 

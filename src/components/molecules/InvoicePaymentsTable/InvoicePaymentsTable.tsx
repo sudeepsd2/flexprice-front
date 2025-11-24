@@ -9,7 +9,7 @@ import { RedirectCell } from '../Table';
 import { PAYMENT_METHOD_TYPE } from '@/constants';
 import DropdownMenu, { DropdownMenuOption } from '../DropdownMenu';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 interface Props {
 	data: Payment[];

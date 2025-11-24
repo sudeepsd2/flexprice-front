@@ -209,7 +209,7 @@ import { FC } from 'react';
 import FlexpriceTable, { ColumnData } from '@/components/molecules/Table';
 import [FeatureName] from '@/models/[FeatureName]';
 import { ActionButton, Chip } from '@/components/atoms';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
 import [FeatureName]Api from '../api/[feature-name]Api';
 import { map[FeatureName]ToViewModel } from '../mappers/[feature-name]Mapper';
@@ -296,7 +296,7 @@ import usePagination from '@/hooks/usePagination';
 import { use[FeatureName]List } from '../hooks/use[FeatureName]List';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { useState } from 'react';
 import { FilterCondition, SortOption } from '@/types/common/QueryBuilder';
 import { [FEATURE_NAME]_FILTER_OPTIONS, [FEATURE_NAME]_SORT_OPTIONS } from '../constants/filters';
@@ -365,33 +365,28 @@ export default [FeatureName]sPage;
 ## Best Practices
 
 1. **Type Safety**
-
    - Use `as const` for constant arrays and objects
    - Define proper TypeScript interfaces and enums
    - Use type guards for runtime type checking
 
 2. **Code Organization**
-
    - Keep API logic isolated in the API service
    - Move formatting logic to formatters
    - Use mappers for DTO to ViewModel transformations
    - Keep filter/sort configurations in constants
 
 3. **Component Structure**
-
    - Follow atomic design principles
    - Keep components small and focused
    - Use composition over inheritance
    - Implement proper prop types
 
 4. **State Management**
-
    - Use React Query for server state
    - Keep local state minimal
    - Use proper state management patterns
 
 5. **Error Handling**
-
    - Implement proper error boundaries
    - Use toast notifications for user feedback
    - Handle loading states appropriately

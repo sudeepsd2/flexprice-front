@@ -9,7 +9,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { EyeOff, Pencil } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { TaxRateResponse } from '@/types/dto/tax';
 import { TAX_RATE_TYPE, TAX_RATE_STATUS, TAX_RATE_SCOPE, TaxRate } from '@/models/Tax';
 import formatChips from '@/utils/common/format_chips';

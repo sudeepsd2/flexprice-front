@@ -1,5 +1,5 @@
 import MainLayout from '@/layouts/MainLayout';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router';
 import AuthMiddleware from '../auth/AuthProvider';
 import { useUser } from '@/hooks/UserContext';
 import { TenantMetadataKey } from '@/models/Tenant';

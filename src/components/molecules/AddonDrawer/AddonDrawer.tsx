@@ -5,7 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import AddonApi from '@/api/AddonApi';
 import toast from 'react-hot-toast';
 import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
 
 interface Props {
@@ -33,9 +33,9 @@ const AddonDrawer: FC<Props> = ({ data, open, onOpenChange, trigger, refetchQuer
 	const { mutate: updateAddon, isPending } = useMutation({
 		mutationFn: (data: Partial<Addon>) => {
 			if (isEdit) {
-				return AddonApi.UpdateAddon(data.id!, data as any);
+				return AddonApi.Update(data.id!, data as any);
 			} else {
-				return AddonApi.CreateAddon(data as any);
+				return AddonApi.Create(data as any);
 			}
 		},
 		onSuccess: (data: Addon) => {

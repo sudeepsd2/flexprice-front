@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import CustomerInvoiceDetail from '../customers/invoice/CustomerInvoiceDetail';
 import { useQuery } from '@tanstack/react-query';
 import usePagination from '@/hooks/usePagination';

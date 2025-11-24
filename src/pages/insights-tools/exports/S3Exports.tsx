@@ -1,13 +1,13 @@
 import { FormHeader, Loader, Page, Button } from '@/components/atoms';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { ArrowLeft, Plus, Settings, Trash2, Eye, BarChart3 } from 'lucide-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { ConnectionApi, TaskApi } from '@/api';
+import { ENTITY_STATUS, CONNECTION_PROVIDER_TYPE } from '@/models';
 import toast from 'react-hot-toast';
 import S3ConnectionDrawer from '@/components/molecules/S3ConnectionDrawer/S3ConnectionDrawer';
 import { ApiDocsContent } from '@/components/molecules';
-import { CONNECTION_PROVIDER_TYPE } from '@/models';
 
 const S3Exports = () => {
 	const navigate = useNavigate();
@@ -20,7 +20,7 @@ const S3Exports = () => {
 		isLoading,
 	} = useQuery({
 		queryKey: ['connections', 's3'],
-		queryFn: () => ConnectionApi.getAllConnections({ provider_type: CONNECTION_PROVIDER_TYPE.S3 }),
+		queryFn: () => ConnectionApi.List({ provider_type: CONNECTION_PROVIDER_TYPE.S3 }),
 	});
 
 	const connections = connectionsResponse?.connections || [];
@@ -37,7 +37,7 @@ const S3Exports = () => {
 							connection_id: connection.id,
 						});
 						// Filter out deleted tasks
-						const activeTasks = response.items.filter((task) => task.status !== 'deleted');
+						const activeTasks = response.items.filter((task) => task.status !== ENTITY_STATUS.DELETED);
 						counts[connection.id] = activeTasks.length;
 					} catch (error) {
 						counts[connection.id] = 0;
@@ -51,7 +51,7 @@ const S3Exports = () => {
 
 	// Delete connection mutation
 	const { mutate: deleteConnection, isPending: isDeletingConnection } = useMutation({
-		mutationFn: (id: string) => ConnectionApi.deleteConnection(id),
+		mutationFn: (id: string) => ConnectionApi.Delete(id),
 		onSuccess: () => {
 			toast.success('Connection deleted successfully');
 			refetchConnections();
@@ -152,7 +152,6 @@ const S3Exports = () => {
 			) : (
 				<div className='card text-center !py-12'>
 					<div className='text-gray-500 mb-4'>
-						<Settings className='w-12 h-12 mx-auto mb-4 text-gray-300' />
 						<h3 className='text-lg font-medium text-gray-900 mb-2'>No S3 Connections</h3>
 						<p className='text-gray-500 mb-6'>Create your first S3 connection to start exporting data.</p>
 						<Button

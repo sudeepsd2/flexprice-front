@@ -3,7 +3,7 @@ import { ActionButton, Chip } from '@/components/atoms';
 import FlexpriceTable, { ColumnData } from '../Table';
 import formatDate from '@/utils/common/format_date';
 import { Subscription, SUBSCRIPTION_CANCELLATION_TYPE, SUBSCRIPTION_STATUS } from '@/models/Subscription';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
 import SubscriptionApi from '@/api/SubscriptionApi';
 import RedirectCell from '../Table/RedirectCell';
@@ -70,22 +70,23 @@ const SubscriptionTable: FC<Props> = ({ data, onEdit }) => {
 			fieldVariant: 'interactive',
 			render: (row) => (
 				<ActionButton
-					isArchiveDisabled={row.subscription_status === SUBSCRIPTION_STATUS.CANCELLED}
-					entityName='Subscription'
-					isEditDisabled={true}
-					refetchQueryKey='fetchSubscriptions'
-					archiveText='Cancel'
-					archiveIcon={<Trash2 />}
+					id={row.id}
 					deleteMutationFn={async (id) => {
 						await SubscriptionApi.cancelSubscription(id, {
 							cancellation_type: SUBSCRIPTION_CANCELLATION_TYPE.IMMEDIATE,
 						});
 					}}
-					editPath={`${RouteNames.subscriptions}/${row.id}/edit`}
-					onEdit={() => {
-						onEdit?.(row);
+					refetchQueryKey='fetchSubscriptions'
+					entityName='Subscription'
+					edit={{
+						path: `${RouteNames.subscriptions}/${row.id}/edit`,
+						onClick: () => onEdit?.(row),
 					}}
-					id={row.id}
+					archive={{
+						enabled: row.subscription_status !== SUBSCRIPTION_STATUS.CANCELLED,
+						text: 'Cancel',
+						icon: <Trash2 />,
+					}}
 				/>
 			),
 		},

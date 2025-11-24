@@ -4,7 +4,7 @@ import { FC } from 'react';
 import FlexpriceTable, { ColumnData, RedirectCell } from '../Table';
 import { formatDateShort, getCurrencySymbol } from '@/utils/common/helper_functions';
 import { Chip } from '@/components/atoms';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
 
 export interface Props {

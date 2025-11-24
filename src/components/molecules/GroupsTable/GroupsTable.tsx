@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { ActionButton, Chip } from '@/components/atoms';
 import FlexpriceTable, { ColumnData } from '../Table';
 import { Group } from '@/models/Group';
+import { ENTITY_STATUS } from '@/models';
 import formatDate from '@/utils/common/format_date';
 import { GroupApi } from '@/api/GroupApi';
 
@@ -42,11 +43,15 @@ const GroupsTable: FC<GroupsTableProps> = ({ data, onEdit }) => {
 			render: (row) => (
 				<ActionButton
 					id={row.id}
-					isArchiveDisabled={row.status !== 'published'}
 					deleteMutationFn={(id) => GroupApi.deleteGroup(id)}
 					refetchQueryKey='fetchGroups'
 					entityName='Group'
-					onEdit={() => onEdit(row)}
+					edit={{
+						onClick: () => onEdit(row),
+					}}
+					archive={{
+						enabled: row.status === ENTITY_STATUS.PUBLISHED,
+					}}
 				/>
 			),
 		},

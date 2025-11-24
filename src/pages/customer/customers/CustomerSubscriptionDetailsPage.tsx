@@ -1,73 +1,22 @@
 import { Card, FormHeader, Page, Spacer, Chip } from '@/components/atoms';
-import { ColumnData, SubscriptionPauseWarning } from '@/components/molecules';
+import { SubscriptionPauseWarning, UpcomingCreditGrantApplicationsTable } from '@/components/molecules';
 import { SubscriptionPreviewLineItemTable } from '@/components/molecules/InvoiceLineItemTable';
 import SubscriptionActionButton from '@/components/organisms/Subscription/SubscriptionActionButton';
 import { getSubscriptionStatus } from '@/components/organisms/Subscription/SubscriptionTable';
 import { Skeleton } from '@/components/ui';
 import { RouteNames } from '@/core/routes/Routes';
 import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
-import { CustomerApi, SubscriptionApi, CreditGrantApi, TaxApi } from '@/api';
-import { formatBillingPeriodForPrice, formatDateShort, getCurrencySymbol } from '@/utils/common/helper_functions';
+import { CustomerApi, SubscriptionApi, TaxApi } from '@/api';
+import { formatDateShort, getCurrencySymbol } from '@/utils/common/helper_functions';
 import { useQuery } from '@tanstack/react-query';
 import { FC, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { useParams } from 'react-router-dom';
-import { formatExpirationType } from '@/utils/common/credit_grant_helpers';
-import { CreditGrant, CREDIT_GRANT_EXPIRATION_TYPE } from '@/models/CreditGrant';
-import FlexpriceTable from '@/components/molecules/Table';
+import { useParams } from 'react-router';
 import { INVOICE_TYPE } from '@/models/Invoice';
 import { TAXRATE_ENTITY_TYPE } from '@/models/Tax';
 import TaxAssociationTable from '@/components/molecules/TaxAssociationTable';
 import { SUBSCRIPTION_STATUS } from '@/models/Subscription';
 import { Subscription as SubscriptionType } from '@/models/Subscription';
-
-// Local helper function to format expiration period
-const formatExpirationPeriod = (grant: CreditGrant): string => {
-	if (grant.expiration_type === CREDIT_GRANT_EXPIRATION_TYPE.DURATION && grant.expiration_duration && grant.expiration_duration_unit) {
-		const duration = grant.expiration_duration;
-		const unit = grant.expiration_duration_unit.toLowerCase();
-
-		// Convert plural unit names to singular when duration is 1, and handle pluralization
-		let unitName = unit.endsWith('s') ? unit.slice(0, -1) : unit; // Remove 's' from 'days', 'weeks', etc.
-		if (duration !== 1) {
-			unitName += 's'; // Add 's' back for plural
-		}
-
-		return `${duration} ${unitName}`;
-	}
-
-	return grant.expiration_type ? formatExpirationType(grant.expiration_type) : '--';
-};
-
-const columns: ColumnData<CreditGrant>[] = [
-	{
-		title: 'Name',
-		fieldName: 'name',
-	},
-	{
-		title: 'Credits',
-		render: (row) => `${row.credits}`,
-	},
-	{
-		title: 'Priority',
-		render: (row) => row.priority?.toString() || '--',
-	},
-	{
-		title: 'Cadence',
-		render: (row) => {
-			const cadence = row.cadence.toLowerCase().replace('_', ' ');
-			return cadence.charAt(0).toUpperCase() + cadence.slice(1);
-		},
-	},
-	{
-		title: 'Period',
-		render: (row) => (row.period ? `${row.period_count || 1} ${formatBillingPeriodForPrice(row.period)}` : '--'),
-	},
-	{
-		title: 'Expiration',
-		render: (row) => formatExpirationPeriod(row),
-	},
-];
 
 const CustomerSubscriptionDetailsPage: FC = () => {
 	const { subscription_id, id: customerId } = useParams();
@@ -98,20 +47,6 @@ const CustomerSubscriptionDetailsPage: FC = () => {
 			!!subscription_id,
 	});
 
-	const { data: creditGrants } = useQuery({
-		queryKey: ['creditGrants', subscription_id],
-		queryFn: async () => {
-			return await CreditGrantApi.getGrantCredits({
-				subscription_ids: [subscription_id!],
-			});
-		},
-		enabled:
-			!!subscriptionDetails &&
-			subscriptionDetails.subscription_status !== SUBSCRIPTION_STATUS.CANCELLED &&
-			subscriptionDetails.subscription_status !== SUBSCRIPTION_STATUS.TRIALING &&
-			!!subscription_id,
-	});
-
 	const { data: subscriptionTaxAssociations } = useQuery({
 		queryKey: ['subscriptionTaxAssociations', subscription_id],
 		queryFn: async () => {
@@ -121,6 +56,14 @@ const CustomerSubscriptionDetailsPage: FC = () => {
 				entity_id: subscription_id!,
 				entity_type: TAXRATE_ENTITY_TYPE.SUBSCRIPTION,
 			});
+		},
+		enabled: !!subscription_id,
+	});
+
+	const { data: upcomingCreditGrantApplications } = useQuery({
+		queryKey: ['upcomingCreditGrantApplications', subscription_id],
+		queryFn: async () => {
+			return await SubscriptionApi.getUpcomingCreditGrantApplications(subscription_id!);
 		},
 		enabled: !!subscription_id,
 	});
@@ -267,16 +210,6 @@ const CustomerSubscriptionDetailsPage: FC = () => {
 				<Spacer className='!my-4' />
 			</Card>
 
-			{/* Credit Grants Section */}
-			{creditGrants?.items && creditGrants.items.length > 0 && (
-				<Card className='card mt-8'>
-					<FormHeader title='Credit Grants' variant='sub-header' titleClassName='font-semibold' />
-					<div className='mt-4'>
-						<FlexpriceTable data={creditGrants.items} columns={columns} showEmptyRow={false} />
-					</div>
-				</Card>
-			)}
-
 			{subscriptionTaxAssociations?.items && subscriptionTaxAssociations.items.length > 0 && (
 				<Card className='card mt-8'>
 					<FormHeader title='Tax Associations' variant='sub-header' titleClassName='font-semibold' />
@@ -346,6 +279,8 @@ const CustomerSubscriptionDetailsPage: FC = () => {
 					/>
 				</div>
 			)}
+
+			<UpcomingCreditGrantApplicationsTable data={upcomingCreditGrantApplications?.items ?? []} customerId={customerId} />
 		</div>
 	);
 };

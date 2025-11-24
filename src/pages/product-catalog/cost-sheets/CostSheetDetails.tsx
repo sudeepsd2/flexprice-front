@@ -3,6 +3,7 @@ import { ApiDocsContent, ColumnData, FlexpriceTable, CostSheetDrawer } from '@/c
 import { DetailsCard } from '@/components/molecules';
 import { RouteNames } from '@/core/routes/Routes';
 import { Price } from '@/models/Price';
+import { ENTITY_STATUS } from '@/models';
 import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
 import CostSheetApi from '@/api/CostSheetApi';
 import { getPriceTypeLabel } from '@/utils/common/helper_functions';
@@ -10,7 +11,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { EyeOff, Plus, Pencil } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { Card } from '@/components/atoms';
 import formatChips from '@/utils/common/format_chips';
 import { ChargeValueCell } from '@/components/molecules';
@@ -140,7 +141,12 @@ const CostSheetDetails = () => {
 		{ label: 'Lookup Key', value: costSheetData?.lookup_key },
 		{
 			label: 'Status',
-			value: <Chip label={formatChips(costSheetData?.status)} variant={costSheetData?.status === 'published' ? 'success' : 'default'} />,
+			value: (
+				<Chip
+					label={formatChips(costSheetData?.status)}
+					variant={costSheetData?.status === ENTITY_STATUS.PUBLISHED ? 'success' : 'default'}
+				/>
+			),
 		},
 		{ label: 'Description', value: costSheetData?.description || '--' },
 	];
@@ -157,7 +163,7 @@ const CostSheetDetails = () => {
 
 					<Button
 						onClick={() => archiveCostSheet()}
-						disabled={costSheetData?.status !== 'published'}
+						disabled={costSheetData?.status !== ENTITY_STATUS.PUBLISHED}
 						variant={'outline'}
 						className='flex gap-2'>
 						<EyeOff />

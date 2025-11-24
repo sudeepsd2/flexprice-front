@@ -6,7 +6,7 @@ import formatDate from '@/utils/common/format_date';
 import { useQuery } from '@tanstack/react-query';
 import { FC, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
 import { CREDIT_NOTE_STATUS, CREDIT_NOTE_TYPE } from '@/types/dto';
 import { Chip } from '@/components/atoms';

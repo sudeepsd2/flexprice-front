@@ -1,7 +1,7 @@
 import { Check, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Button } from '@/components/ui';
 import { formatBillingPeriodForPrice, getCurrencySymbol } from '@/utils';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
 import { formatAmount } from '@/components/atoms/Input/Input';
 import { PlanType } from '@/pages';

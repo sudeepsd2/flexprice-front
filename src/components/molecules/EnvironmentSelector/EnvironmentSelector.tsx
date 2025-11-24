@@ -7,7 +7,7 @@ import useUser from '@/hooks/useUser';
 import { Select, SelectContent, useSidebar } from '@/components/ui';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { SelectOption } from '@/components/atoms/Select/Select';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { Button } from '@/components/atoms';

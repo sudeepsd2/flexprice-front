@@ -1,15 +1,16 @@
-import { Loader, Page, Spacer, Card } from '@/components/atoms';
-import { DetailsCard, SubscriptionEntitlementsSection } from '@/components/molecules';
+import { Loader, Page, Spacer, Card, FormHeader } from '@/components/atoms';
+import { DetailsCard, SubscriptionEntitlementsSection, CreditGrantsTable } from '@/components/molecules';
 import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
 import CustomerApi from '@/api/CustomerApi';
 import SubscriptionApi from '@/api/SubscriptionApi';
+import CreditGrantApi from '@/api/CreditGrantApi';
 import { getCurrencySymbol } from '@/utils/common/helper_functions';
 import formatDate from '@/utils/common/format_date';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect, useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
-import { useParams } from 'react-router-dom';
-import { LineItem } from '@/models/Subscription';
+import { useParams } from 'react-router';
+import { LineItem, SUBSCRIPTION_STATUS } from '@/models/Subscription';
 import SubscriptionLineItemTable from '@/components/molecules/SubscriptionLineItemTable/SubscriptionLineItemTable';
 import PriceOverrideDialog from '@/components/molecules/PriceOverrideDialog/PriceOverrideDialog';
 import { getSubscriptionStatus } from '@/components/organisms/Subscription/SubscriptionTable';
@@ -17,6 +18,8 @@ import { UpdateSubscriptionLineItemRequest, DeleteSubscriptionLineItemRequest } 
 import { Price, BILLING_MODEL, TIER_MODE } from '@/models/Price';
 import { ExtendedPriceOverride } from '@/utils/common/price_override_helpers';
 import { RouteNames } from '@/core/routes/Routes';
+import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
+import { ENTITY_STATUS } from '@/models';
 
 type Params = {
 	id: string;
@@ -24,7 +27,6 @@ type Params = {
 
 const CustomerSubscriptionEditPage: React.FC = () => {
 	const { id: subscriptionId } = useParams<Params>();
-	const queryClient = useQueryClient();
 	const [editingLineItem, setEditingLineItem] = useState<LineItem | null>(null);
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 	const [overriddenPrices, setOverriddenPrices] = useState<Record<string, ExtendedPriceOverride>>({});
@@ -49,14 +51,29 @@ const CustomerSubscriptionEditPage: React.FC = () => {
 		enabled: !!subscriptionDetails?.customer_id && !!subscriptionDetails?.customer_id,
 	});
 
+	const { data: creditGrants } = useQuery({
+		queryKey: ['creditGrants', subscriptionId],
+		queryFn: async () => {
+			return await CreditGrantApi.List({
+				subscription_ids: [subscriptionId!],
+				status: ENTITY_STATUS.PUBLISHED,
+			});
+		},
+		enabled:
+			!!subscriptionDetails &&
+			subscriptionDetails.subscription_status !== SUBSCRIPTION_STATUS.CANCELLED &&
+			subscriptionDetails.subscription_status !== SUBSCRIPTION_STATUS.TRIALING &&
+			!!subscriptionId,
+	});
+
 	const { mutate: updateLineItem } = useMutation({
 		mutationFn: async ({ lineItemId, updateData }: { lineItemId: string; updateData: UpdateSubscriptionLineItemRequest }) => {
 			return await SubscriptionApi.updateSubscriptionLineItem(lineItemId, updateData);
 		},
 		onSuccess: () => {
 			toast.success('Line item updated successfully');
-			queryClient.invalidateQueries({ queryKey: ['subscriptionLineItems', subscriptionId] });
-			queryClient.invalidateQueries({ queryKey: ['subscriptionDetails', subscriptionId] });
+			refetchQueries(['subscriptionLineItems', subscriptionId!]);
+			refetchQueries(['subscriptionDetails', subscriptionId!]);
 		},
 		onError: (error: { error?: { message?: string } }) => {
 			toast.error(error?.error?.message || 'Failed to update line item');
@@ -73,8 +90,8 @@ const CustomerSubscriptionEditPage: React.FC = () => {
 		},
 		onSuccess: () => {
 			toast.success('Line item terminated successfully');
-			queryClient.invalidateQueries({ queryKey: ['subscriptionLineItems', subscriptionId] });
-			queryClient.invalidateQueries({ queryKey: ['subscriptionDetails', subscriptionId] });
+			refetchQueries(['subscriptionLineItems', subscriptionId!]);
+			refetchQueries(['subscriptionDetails', subscriptionId!]);
 		},
 		onError: (error: { error?: { message?: string } }) => {
 			toast.error(error?.error?.message || 'Failed to terminate line item');
@@ -336,6 +353,23 @@ const CustomerSubscriptionEditPage: React.FC = () => {
 						onEdit={handleEditLineItem}
 						onTerminate={handleTerminateLineItem}
 					/>
+				)}
+
+				{/* Credit Grants Section */}
+				{creditGrants?.items && creditGrants.items.length > 0 && (
+					<Card variant='notched'>
+						<FormHeader title='Credit Grants' variant='sub-header' titleClassName='font-semibold' />
+						<div className='mt-4'>
+							<CreditGrantsTable
+								data={creditGrants.items}
+								onDelete={async () => {
+									refetchQueries(['creditGrants', subscriptionId!]);
+									refetchQueries(['subscriptionDetails', subscriptionId!]);
+								}}
+								showEmptyRow={false}
+							/>
+						</div>
+					</Card>
 				)}
 
 				{/* Subscription Entitlements Section */}

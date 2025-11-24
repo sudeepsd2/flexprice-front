@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useParams, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useParams, useLocation } from 'react-router';
 import { useEffect, useState } from 'react';
 import { useBreadcrumbsStore } from '@/store';
 import { useQuery } from '@tanstack/react-query';

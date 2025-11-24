@@ -5,9 +5,9 @@ import formatDate from '@/utils/common/format_date';
 import formatChips from '@/utils/common/format_chips';
 import Customer from '@/models/Customer';
 import CustomerApi from '@/api/CustomerApi';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
-import { BaseEntityStatus } from '@/types/common';
+import { ENTITY_STATUS } from '@/models';
 
 export interface Props {
 	data: Customer[];
@@ -41,16 +41,18 @@ const CustomerTable: FC<Props> = ({ data, onEdit }) => {
 			fieldVariant: 'interactive',
 			render: (row) => (
 				<ActionButton
-					isArchiveDisabled={row.status === BaseEntityStatus.ARCHIVED}
-					isEditDisabled={row.status === BaseEntityStatus.ARCHIVED}
-					entityName='Customer'
-					refetchQueryKey='fetchCustomers'
-					deleteMutationFn={(id) => CustomerApi.deleteCustomerById(id)}
-					editPath={`/billing/customers/edit-customer?id=${row.id}`}
-					onEdit={() => {
-						onEdit(row);
-					}}
 					id={row.id}
+					deleteMutationFn={(id) => CustomerApi.deleteCustomerById(id)}
+					refetchQueryKey='fetchCustomers'
+					entityName='Customer'
+					edit={{
+						enabled: row.status === ENTITY_STATUS.PUBLISHED,
+						path: `/billing/customers/edit-customer?id=${row.id}`,
+						onClick: () => onEdit(row),
+					}}
+					archive={{
+						enabled: row.status === ENTITY_STATUS.PUBLISHED,
+					}}
 				/>
 			),
 		},

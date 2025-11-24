@@ -2,11 +2,12 @@ import { FC } from 'react';
 import { ActionButton, Chip } from '@/components/atoms';
 import FlexpriceTable, { ColumnData } from '../Table';
 import { Plan } from '@/models/Plan';
+import { ENTITY_STATUS } from '@/models';
 import formatChips from '@/utils/common/format_chips';
 import formatDate from '@/utils/common/format_date';
 import { PlanApi } from '@/api/PlanApi';
 import { RouteNames } from '@/core/routes/Routes';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 export interface PlansTableProps {
 	data: Plan[];
 	onEdit: (plan: Plan) => void;
@@ -42,12 +43,16 @@ const PlansTable: FC<PlansTableProps> = ({ data, onEdit }) => {
 			render: (row) => (
 				<ActionButton
 					id={row.id}
-					isArchiveDisabled={row.status !== 'published'}
-					editPath={`${RouteNames.plan}/edit-plan?id=${row.id}`}
 					deleteMutationFn={(id) => PlanApi.deletePlan(id)}
 					refetchQueryKey='fetchPlans'
 					entityName='Plan'
-					onEdit={() => onEdit(row)}
+					edit={{
+						path: `${RouteNames.plan}/edit-plan?id=${row.id}`,
+						onClick: () => onEdit(row),
+					}}
+					archive={{
+						enabled: row.status === ENTITY_STATUS.PUBLISHED,
+					}}
 				/>
 			),
 		},

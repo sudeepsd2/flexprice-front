@@ -4,7 +4,7 @@ import AuthApi from '@/api/AuthApi';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 const SignupConfirmation = () => {
 	const userContext = useUser();
@@ -35,7 +35,7 @@ const SignupConfirmation = () => {
 				return;
 			}
 
-			const signupResponse = await AuthApi.signup({
+			const signupResponse = await AuthApi.Signup({
 				email: user.data.user?.email || '',
 				token: session?.access_token || '',
 			});

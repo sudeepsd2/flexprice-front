@@ -7,7 +7,7 @@ import { useMutation } from '@tanstack/react-query';
 import { PriceApi } from '@/api/PriceApi';
 import { PlanApi } from '@/api/PlanApi';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
 import { getPriceTypeLabel } from '@/utils';
 import { BILLING_PERIOD } from '@/constants/constants';

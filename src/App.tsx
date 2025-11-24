@@ -1,4 +1,4 @@
-import { RouterProvider } from 'react-router-dom';
+import { RouterProvider } from 'react-router';
 import { MainRouter } from '@/core/routes/Routes';
 import { UserProvider } from '@/hooks/UserContext';
 import { Toaster } from 'react-hot-toast';

@@ -24,6 +24,7 @@ import {
 	DeleteSubscriptionLineItemRequest,
 	SubscriptionLineItemResponse,
 } from '@/types/dto/Subscription';
+import { ListCreditGrantApplicationsResponse } from '@/types/dto';
 import { generateExpandQueryParams, generateQueryParams } from '@/utils/common/api_helper';
 
 class SubscriptionApi {
@@ -177,6 +178,17 @@ class SubscriptionApi {
 		return await AxiosClient.get<{ features: any[]; subscription_id: string; plan_id: string }>(
 			`${this.baseUrl}/${subscriptionId}/entitlements`,
 		);
+	}
+
+	// =============================================================================
+	// CREDIT GRANT APPLICATION METHODS
+	// =============================================================================
+
+	/**
+	 * Get upcoming credit grant applications for a subscription
+	 */
+	public static async getUpcomingCreditGrantApplications(subscriptionId: string): Promise<ListCreditGrantApplicationsResponse> {
+		return await AxiosClient.get<ListCreditGrantApplicationsResponse>(`${this.baseUrl}/${subscriptionId}/grants/upcoming`);
 	}
 }
 

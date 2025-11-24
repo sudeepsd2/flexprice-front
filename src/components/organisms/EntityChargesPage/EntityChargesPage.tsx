@@ -2,7 +2,7 @@ import { Button, Loader, Page } from '@/components/atoms';
 import { Plan } from '@/models/Plan';
 import Addon from '@/models/Addon';
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { PlanApi, AddonApi, PriceApi, SubscriptionApi, CostSheetApi } from '@/api';
 import { CreateBulkPriceRequest } from '@/types/dto';
@@ -176,7 +176,7 @@ const EntityChargesPage: React.FC<EntityChargesPageProps> = ({ entityType, entit
 			if (entityType === ENTITY_TYPE.PLAN) {
 				return await PlanApi.getPlanById(entityId);
 			} else if (entityType === ENTITY_TYPE.ADDON) {
-				return await AddonApi.GetAddonById(entityId);
+				return await AddonApi.Get(entityId);
 			} else {
 				return await CostSheetApi.GetCostSheetById(entityId);
 			}

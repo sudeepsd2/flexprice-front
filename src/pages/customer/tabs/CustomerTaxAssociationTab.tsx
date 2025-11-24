@@ -1,4 +1,4 @@
-import { useParams, useOutletContext } from 'react-router-dom';
+import { useParams, useOutletContext } from 'react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardHeader, AddButton, Loader, NoDataCard, ShortPagination } from '@/components/atoms';
 import { ApiDocsContent } from '@/components/molecules';

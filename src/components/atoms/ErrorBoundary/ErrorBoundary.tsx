@@ -1,10 +1,10 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary';
-import { useRouteError } from 'react-router-dom';
+import { useRouteError } from 'react-router';
 import { AlertCircle, ArrowLeft, Bug, Code, Github, Home, Linkedin, MessageSquare, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/atoms';
 import { RouteNames } from '@/core/routes/Routes';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import * as Sentry from '@sentry/react';
 import { NODE_ENV, NodeEnv } from '@/types';
 import toast from 'react-hot-toast';

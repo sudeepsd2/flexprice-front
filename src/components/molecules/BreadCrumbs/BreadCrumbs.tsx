@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { BsChevronRight } from 'react-icons/bs';
 import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
 import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';

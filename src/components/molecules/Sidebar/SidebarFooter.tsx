@@ -3,7 +3,7 @@ import { RouteNames } from '@/core/routes/Routes';
 import { SidebarMenuButton, useSidebar, Popover, PopoverContent, PopoverTrigger, Skeleton } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import AuthService from '@/core/auth/AuthService';
 import useUser from '@/hooks/useUser';
 

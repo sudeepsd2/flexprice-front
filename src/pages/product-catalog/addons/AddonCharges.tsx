@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import EntityChargesPage, { ENTITY_TYPE } from '@/components/organisms/EntityChargesPage';
 
 const AddonChargesPage = () => {

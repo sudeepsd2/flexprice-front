@@ -4,7 +4,7 @@ import ConnectionApi from '@/api/ConnectionApi';
 import { useQuery } from '@tanstack/react-query';
 import { Country } from 'country-state-city';
 import { CreateCustomerDrawer, Detail, DetailsCard, MetadataModal, SaveCardModal } from '@/components/molecules';
-import { useParams, useOutletContext } from 'react-router-dom';
+import { useParams, useOutletContext } from 'react-router';
 import { Pencil, CreditCard } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { getTypographyClass } from '@/lib/typography';
@@ -38,7 +38,7 @@ const CustomerInformationTab = () => {
 	// Fetch Stripe connections to check availability
 	const { data: connectionsResponse } = useQuery({
 		queryKey: ['connections', CONNECTION_PROVIDER_TYPE.STRIPE],
-		queryFn: () => ConnectionApi.getPublishedConnections(),
+		queryFn: () => ConnectionApi.ListPublished(),
 		enabled: !!customerId && !isArchived,
 	});
 

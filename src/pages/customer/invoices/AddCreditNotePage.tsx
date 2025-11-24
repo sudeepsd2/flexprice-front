@@ -4,7 +4,7 @@ import { useBreadcrumbsStore } from '@/store';
 import InvoiceApi from '@/api/InvoiceApi';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { CreditNote } from '@/models';
 import { CreateCreditNoteLineItemRequest, CreateCreditNoteParams, CREDIT_NOTE_REASON, CREDIT_NOTE_TYPE } from '@/types';
 import CreditNoteApi from '@/api/CreditNoteApi';

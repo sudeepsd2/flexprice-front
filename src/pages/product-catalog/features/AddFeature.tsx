@@ -14,7 +14,7 @@ import { Gauge, SquareCheckBig, Wrench } from 'lucide-react';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { LuCircleFadingPlus, LuRefreshCw } from 'react-icons/lu';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 

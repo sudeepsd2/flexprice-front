@@ -14,7 +14,7 @@ interface Props {
 	getEmptyCreditGrant: () => InternalCreditGrantRequest;
 }
 
-const CreditGrantTable: React.FC<Props> = ({ data, onChange, disabled, getEmptyCreditGrant }) => {
+const SubscriptionCreditGrantTable: React.FC<Props> = ({ data, onChange, disabled, getEmptyCreditGrant }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [selectedCreditGrant, setSelectedCreditGrant] = useState<InternalCreditGrantRequest | null>(null);
 
@@ -73,14 +73,18 @@ const CreditGrantTable: React.FC<Props> = ({ data, onChange, disabled, getEmptyC
 			hideOnEmpty: true,
 			render: (row) => (
 				<ActionButton
-					archiveText='Delete'
 					id={row.id}
 					deleteMutationFn={() => handleDelete(row.id)}
 					refetchQueryKey='credit_grants'
 					entityName={row.name}
-					isEditDisabled={disabled}
-					isArchiveDisabled={disabled}
-					onEdit={() => handleEdit(row)}
+					edit={{
+						enabled: !disabled,
+						onClick: () => handleEdit(row),
+					}}
+					archive={{
+						enabled: !disabled,
+						text: 'Delete',
+					}}
 				/>
 			),
 		},
@@ -118,4 +122,4 @@ const CreditGrantTable: React.FC<Props> = ({ data, onChange, disabled, getEmptyC
 	);
 };
 
-export default CreditGrantTable;
+export default SubscriptionCreditGrantTable;

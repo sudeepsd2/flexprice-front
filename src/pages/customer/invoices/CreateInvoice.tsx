@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Button, FormHeader, Input, Loader, Page, Select, Spacer, Divider } from '@/components/atoms';
 import CustomerApi from '@/api/CustomerApi';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { useBreadcrumbsStore } from '@/store/useBreadcrumbsStore';
 import useUser from '@/hooks/useUser';
 import { currencyOptions } from '@/constants/constants';

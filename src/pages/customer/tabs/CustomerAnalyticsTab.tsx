@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useBreadcrumbsStore } from '@/store';
 import { Loader, FeatureMultiSelect, DateRangePicker } from '@/components/atoms';

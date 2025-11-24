@@ -1,11 +1,12 @@
 import { FC } from 'react';
 import FlexpriceTable, { ColumnData } from '../Table';
 import Addon, { ADDON_TYPE } from '@/models/Addon';
+import { ENTITY_STATUS } from '@/models';
 import { ActionButton, Chip } from '@/components/atoms';
 import { toSentenceCase } from '@/utils/common/helper_functions';
 import formatChips from '@/utils/common/format_chips';
 import formatDate from '@/utils/common/format_date';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
 import AddonApi from '@/api/AddonApi';
 
@@ -62,16 +63,19 @@ const AddonTable: FC<Props> = ({ data, onEdit }) => {
 			render(row) {
 				return (
 					<ActionButton
-						deleteMutationFn={async () => {
-							return await AddonApi.DeleteAddon(row?.id);
-						}}
 						id={row?.id}
-						editPath={''}
-						isEditDisabled={true}
-						isArchiveDisabled={row?.status === 'archived'}
-						refetchQueryKey={'fetchAddons'}
+						deleteMutationFn={async () => {
+							return await AddonApi.Delete(row?.id);
+						}}
+						refetchQueryKey='fetchAddons'
 						entityName={row?.name}
-						onEdit={() => onEdit?.(row)}
+						edit={{
+							enabled: false,
+							onClick: () => onEdit?.(row),
+						}}
+						archive={{
+							enabled: row?.status !== ENTITY_STATUS.ARCHIVED,
+						}}
 					/>
 				);
 			},

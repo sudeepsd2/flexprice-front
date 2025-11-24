@@ -1,9 +1,10 @@
 import { Page, Spacer, Chip, Card, CardHeader, Loader } from '@/components/atoms';
 import { Detail, ApiDocsContent } from '@/components/molecules';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import CouponApi from '@/api/CouponApi';
 import { COUPON_TYPE } from '@/types/common/Coupon';
+import { ENTITY_STATUS } from '@/models';
 import formatChips from '@/utils/common/format_chips';
 import formatDate from '@/utils/common/format_date';
 import toast from 'react-hot-toast';
@@ -56,7 +57,7 @@ const CouponDetails = () => {
 		},
 		{
 			label: 'Status',
-			value: <Chip variant={coupon.status === 'published' ? 'success' : 'default'} label={formatChips(coupon.status)} />,
+			value: <Chip variant={coupon.status === ENTITY_STATUS.PUBLISHED ? 'success' : 'default'} label={formatChips(coupon.status)} />,
 		},
 		{
 			label: 'Redemptions',

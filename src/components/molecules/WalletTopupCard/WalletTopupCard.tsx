@@ -100,8 +100,6 @@ const TopupCard: FC<TopupCardProps> = ({ walletId, currency, conversion_rate = 1
 			return false;
 		}
 
-		// Validate reference ID for purchased credits with invoice generation
-
 		if (expiry_date_utc) {
 			// Reset time to start of the day for both dates
 			const today = new Date();

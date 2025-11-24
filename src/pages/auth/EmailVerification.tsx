@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/atoms';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';

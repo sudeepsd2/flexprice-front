@@ -7,7 +7,7 @@ import InvoiceApi from '@/api/InvoiceApi';
 import toast from 'react-hot-toast';
 import InvoiceStatusModal from './InvoiceStatusModal';
 import InvoicePaymentStatusModal from './InvoicePaymentStatusModal';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
 import { PAYMENT_DESTINATION_TYPE } from '@/models/Payment';
 import { PAYMENT_STATUS } from '@/constants';

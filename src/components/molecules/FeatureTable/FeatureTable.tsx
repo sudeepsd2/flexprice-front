@@ -1,11 +1,12 @@
 import { FC } from 'react';
 import FlexpriceTable, { ColumnData } from '../Table';
 import Feature, { FEATURE_TYPE } from '@/models/Feature';
+import { ENTITY_STATUS } from '@/models';
 import { ActionButton, Chip } from '@/components/atoms';
 import { toSentenceCase } from '@/utils/common/helper_functions';
 import formatChips from '@/utils/common/format_chips';
 import formatDate from '@/utils/common/format_date';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
 import FeatureApi from '@/api/FeatureApi';
 import { getFeatureIcon } from '@/components/atoms/SelectFeature/SelectFeature';
@@ -60,15 +61,15 @@ const FeatureTable: FC<Props> = ({ data }) => {
 			render(row) {
 				return (
 					<ActionButton
+						id={row?.id}
 						deleteMutationFn={async () => {
 							return await FeatureApi.deleteFeature(row?.id);
 						}}
-						id={row?.id}
-						editPath={''}
-						isEditDisabled={true}
-						isArchiveDisabled={row?.status === 'archived'}
-						refetchQueryKey={'fetchFeatures'}
+						refetchQueryKey='fetchFeatures'
 						entityName={row?.name}
+						archive={{
+							enabled: row?.status !== ENTITY_STATUS.ARCHIVED,
+						}}
 					/>
 				);
 			},

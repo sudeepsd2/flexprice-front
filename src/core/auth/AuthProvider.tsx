@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router';
 import { useUser } from '@/hooks/UserContext';
 import { PageLoader } from '@/components/atoms';
 import useUserhook from '@/hooks/useUser';

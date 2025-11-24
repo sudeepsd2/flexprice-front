@@ -1,7 +1,7 @@
 import { Button, Spacer } from '@/components/atoms';
 import { RouteNames } from '@/core/routes/Routes';
 import { TriangleAlert } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 const ErrorPage = () => {
 	return (

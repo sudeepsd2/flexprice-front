@@ -1,9 +1,10 @@
-import { FormHeader, Loader, Page, Button } from '@/components/atoms';
+import { FormHeader, Loader, Page, Button, AddButton } from '@/components/atoms';
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Eye, Settings } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router';
+import { ArrowLeft, Trash2, Eye, Plus } from 'lucide-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { TaskApi, ConnectionApi } from '@/api';
+import { ENTITY_STATUS } from '@/models';
 import toast from 'react-hot-toast';
 import ExportDrawer from '@/components/molecules/ExportDrawer/ExportDrawer';
 import { formatEntityType } from '@/utils/common/helper_functions';
@@ -16,7 +17,7 @@ const ExportManagement = () => {
 	// Fetch connection details
 	const { data: connection, isLoading: isLoadingConnection } = useQuery({
 		queryKey: ['connection', connectionId],
-		queryFn: () => ConnectionApi.getConnectionById(connectionId!),
+		queryFn: () => ConnectionApi.Get(connectionId!),
 		enabled: !!connectionId,
 	});
 
@@ -32,7 +33,7 @@ const ExportManagement = () => {
 	});
 
 	// Filter out deleted tasks
-	const tasks = (tasksResponse?.items || []).filter((task) => task.status !== 'deleted');
+	const tasks = (tasksResponse?.items || []).filter((task) => task.status !== ENTITY_STATUS.DELETED);
 
 	// Delete task mutation
 	const { mutate: deleteTask, isPending: isDeletingTask } = useMutation({
@@ -72,14 +73,11 @@ const ExportManagement = () => {
 					<ArrowLeft className='w-4 h-4' />
 					Back to S3 Connections
 				</Button>
-				<Button
+				<AddButton
 					onClick={() => {
 						setIsDrawerOpen(true);
 					}}
-					className='flex items-center gap-2'>
-					<Plus className='w-4 h-4' />
-					Add Export Task
-				</Button>
+				/>
 			</div>
 
 			{/* Exports List */}
@@ -119,16 +117,16 @@ const ExportManagement = () => {
 					</div>
 				</div>
 			) : (
-				<div className='card text-center py-12'>
+				<div className='card text-center !py-12'>
 					<div className='text-gray-500 mb-4'>
-						<Settings className='w-12 h-12 mx-auto mb-4 text-gray-300' />
 						<h3 className='text-lg font-medium text-gray-900 mb-2'>No Export Tasks</h3>
-						<p className='text-gray-500 mb-4'>Create your first export task to start syncing data to S3.</p>
+						<p className='text-gray-500 mb-4 max-w-[500px] mx-auto'>Create your first export task to start syncing data to S3.</p>
 						<Button
+							variant='outline'
 							onClick={() => {
 								setIsDrawerOpen(true);
 							}}
-							className='flex items-center gap-2 mx-auto'>
+							className='!p-5 !bg-[#fbfbfb] !border-[#CFCFCF] flex items-center gap-2 mx-auto'>
 							<Plus className='w-4 h-4' />
 							Add Export Task
 						</Button>

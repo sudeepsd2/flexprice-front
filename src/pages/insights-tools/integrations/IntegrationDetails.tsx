@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { integrations } from './integrationsData';
 import { cn } from '@/lib/utils';
 import { Button, FormHeader, Page, Dialog } from '@/components/atoms';
@@ -6,6 +6,7 @@ import { useState } from 'react';
 import IntegrationDrawer from '@/components/molecules/IntegrationDrawer/IntegrationDrawer';
 import StripeConnectionDrawer from '@/components/molecules/StripeConnectionDrawer';
 import RazorpayConnectionDrawer from '@/components/molecules/RazorpayConnectionDrawer';
+import ChargebeeConnectionDrawer from '@/components/molecules/ChargebeeConnectionDrawer';
 import HubSpotConnectionDrawer from '@/components/molecules/HubSpotConnectionDrawer';
 import { PencilIcon, TrashIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -27,7 +28,7 @@ const IntegrationDetails = () => {
 	// Fetch connections from API
 	const { data: connectionsResponse, refetch: refetchConnections } = useQuery({
 		queryKey: ['connections', name],
-		queryFn: () => ConnectionApi.getAllConnections({ provider_type: name.toLowerCase() as CONNECTION_PROVIDER_TYPE }),
+		queryFn: () => ConnectionApi.List({ provider_type: name.toLowerCase() as CONNECTION_PROVIDER_TYPE }),
 		enabled: !!name,
 	});
 
@@ -35,7 +36,7 @@ const IntegrationDetails = () => {
 
 	// Delete connection mutation
 	const { mutate: deleteConnection, isPending: isDeletingConnection } = useMutation({
-		mutationFn: (id: string) => ConnectionApi.deleteConnection(id),
+		mutationFn: (id: string) => ConnectionApi.Delete(id),
 		onSuccess: () => {
 			toast.success('Connection deleted successfully');
 			refetchConnections();
@@ -138,6 +139,16 @@ const IntegrationDetails = () => {
 				/>
 			) : name.toLowerCase() === CONNECTION_PROVIDER_TYPE.RAZORPAY ? (
 				<RazorpayConnectionDrawer
+					isOpen={isDrawerOpen}
+					onOpenChange={(open) => {
+						setIsDrawerOpen(open);
+						if (!open) setEditingConnection(null);
+					}}
+					connection={editingConnection}
+					onSave={handleSaveConnection}
+				/>
+			) : name.toLowerCase() === CONNECTION_PROVIDER_TYPE.CHARGEBEE ? (
+				<ChargebeeConnectionDrawer
 					isOpen={isDrawerOpen}
 					onOpenChange={(open) => {
 						setIsDrawerOpen(open);

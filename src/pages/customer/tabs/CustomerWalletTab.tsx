@@ -18,7 +18,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { IoSearch } from 'react-icons/io5';
-import { useParams, useOutletContext } from 'react-router-dom';
+import { useParams, useOutletContext } from 'react-router';
 import CreateCustomerWalletModal from '../customers/CreateCustomerWalletModal';
 import { EllipsisVertical, Info, Pencil, SlidersHorizontal, Trash2, Wallet as WalletIcon, Bell, Minus } from 'lucide-react';
 import { getCurrencySymbol } from '@/utils/common/helper_functions';

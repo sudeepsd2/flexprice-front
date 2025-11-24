@@ -1,6 +1,6 @@
 // React and third-party libraries
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { EyeOff, Bell, EllipsisVertical } from 'lucide-react';
@@ -21,7 +21,6 @@ import { FeatureAlertDialog } from '@/components/molecules/FeatureAlertDialog';
 
 // Models and types
 import { FEATURE_TYPE } from '@/models/Feature';
-import { BaseEntityStatus } from '@/types/common/BaseEntity';
 import { formatMeterUsageResetPeriodToDisplay } from '@/types/formatters/Feature';
 
 // Local utilities
@@ -106,7 +105,7 @@ const FeatureDetails = () => {
 			await EntitlementApi.getAllEntitlements({
 				feature_ids: [featureId!],
 				expand: 'plans,features,prices',
-				status: BaseEntityStatus.PUBLISHED,
+				status: ENTITY_STATUS.PUBLISHED,
 			}),
 		enabled: !!featureId,
 	});
@@ -251,7 +250,7 @@ const FeatureDetails = () => {
 				<div className='flex gap-1'>
 					<Button
 						isLoading={isArchiving}
-						disabled={isArchiving || data?.status === ENTITY_STATUS.ARCHIVED}
+						disabled={isArchiving || data?.status !== ENTITY_STATUS.PUBLISHED}
 						variant={'outline'}
 						size={'lg'}
 						onClick={() => archiveFeature()}

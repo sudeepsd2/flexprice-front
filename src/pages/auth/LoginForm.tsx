@@ -1,7 +1,7 @@
 import supabase from '@/core/services/supbase/config';
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { data, useNavigate } from 'react-router-dom';
+import { data, useNavigate } from 'react-router';
 import { useUser } from '@/hooks/UserContext';
 import { Button, Input } from '@/components/atoms';
 import { EyeIcon, EyeOff } from 'lucide-react';
@@ -25,7 +25,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ switchTab }) => {
 
 	const { mutate: localLogin } = useMutation({
 		mutationFn: async () => {
-			return await AuthApi.login(email, password);
+			return await AuthApi.Login(email, password);
 		},
 		onSuccess: (data) => {
 			// Store token in a consistent format

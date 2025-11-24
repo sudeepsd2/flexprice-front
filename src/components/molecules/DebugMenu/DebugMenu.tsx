@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import useEnvironment from '@/hooks/useEnvironment';
 import { useQuery } from '@tanstack/react-query';
 import CustomerApi from '@/api/CustomerApi';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { Progress } from '@/components/ui';
 import { RouteNames } from '@/core/routes/Routes';
 import EventsApi from '@/api/EventsApi';
