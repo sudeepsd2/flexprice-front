@@ -1,5 +1,5 @@
 import { AxiosClient } from '@/core/axios/verbs';
-import { SubscriptionUsage, EXPAND } from '@/models';
+import { SubscriptionUsage } from '@/models';
 import {
 	ListSubscriptionsPayload,
 	ListSubscriptionsResponse,
@@ -25,7 +25,7 @@ import {
 	SubscriptionLineItemResponse,
 } from '@/types/dto/Subscription';
 import { ListCreditGrantApplicationsResponse } from '@/types/dto';
-import { generateExpandQueryParams, generateQueryParams } from '@/utils/common/api_helper';
+import { generateQueryParams } from '@/utils/common/api_helper';
 
 class SubscriptionApi {
 	private static baseUrl = '/subscriptions';
@@ -60,8 +60,7 @@ class SubscriptionApi {
 	 * Search subscriptions
 	 */
 	public static async searchSubscriptions(payload: ListSubscriptionsPayload): Promise<ListSubscriptionsResponse> {
-		const expand = generateExpandQueryParams([EXPAND.CUSTOMER, EXPAND.PLAN, EXPAND.SUBSCRIPTION]);
-		return await AxiosClient.post(`${this.baseUrl}/search`, { ...payload, expand });
+		return await AxiosClient.post(`${this.baseUrl}/search`, { ...payload });
 	}
 
 	/**

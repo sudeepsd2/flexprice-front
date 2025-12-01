@@ -11,12 +11,13 @@ import { formatDateShort, getCurrencySymbol } from '@/utils/common/helper_functi
 import { useQuery } from '@tanstack/react-query';
 import { FC, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { useParams } from 'react-router';
+import { useParams, Link } from 'react-router';
 import { INVOICE_TYPE } from '@/models/Invoice';
 import { TAXRATE_ENTITY_TYPE } from '@/models/Tax';
 import TaxAssociationTable from '@/components/molecules/TaxAssociationTable';
 import { SUBSCRIPTION_STATUS } from '@/models/Subscription';
 import { Subscription as SubscriptionType } from '@/models/Subscription';
+import { ExternalLink } from 'lucide-react';
 
 const CustomerSubscriptionDetailsPage: FC = () => {
 	const { subscription_id, id: customerId } = useParams();
@@ -33,6 +34,16 @@ const CustomerSubscriptionDetailsPage: FC = () => {
 		queryKey: ['fetchCustomerDetails', customerId],
 		queryFn: async () => await CustomerApi.getCustomerById(customerId!),
 		enabled: !!customerId,
+	});
+
+	// Fetch invoicing customer if different from subscription customer
+	const { data: invoicingCustomer } = useQuery({
+		queryKey: ['invoicingCustomer', subscriptionDetails?.invoicing_customer_id],
+		queryFn: async () => {
+			if (!subscriptionDetails?.invoicing_customer_id) return null;
+			return await CustomerApi.getCustomerById(subscriptionDetails.invoicing_customer_id);
+		},
+		enabled: !!subscriptionDetails?.invoicing_customer_id && subscriptionDetails.invoicing_customer_id !== subscriptionDetails?.customer_id,
 	});
 
 	const { data, isLoading, isError, refetch } = useQuery({
@@ -185,6 +196,21 @@ const CustomerSubscriptionDetailsPage: FC = () => {
 					<p className='text-[#09090B] text-sm'>{subscriptionDetails?.billing_cycle || '--'}</p>
 				</div>
 				<Spacer className='!my-4' />
+
+				{subscriptionDetails?.invoicing_customer_id && subscriptionDetails.invoicing_customer_id !== subscriptionDetails.customer_id && (
+					<>
+						<div className='w-full flex justify-between items-center'>
+							<p className='text-[#71717A] text-sm'>Invoicing Customer</p>
+							<Link
+								to={`${RouteNames.customers}/${subscriptionDetails.invoicing_customer_id}`}
+								className='inline-flex items-center text-sm gap-1.5 hover:underline transition-colors'>
+								{invoicingCustomer?.name || invoicingCustomer?.external_id || subscriptionDetails.invoicing_customer_id}
+								<ExternalLink className='w-3.5 h-3.5' />
+							</Link>
+						</div>
+						<Spacer className='!my-4' />
+					</>
+				)}
 
 				{subscriptionDetails?.commitment_amount && (
 					<div className='w-full flex justify-between items-center'>

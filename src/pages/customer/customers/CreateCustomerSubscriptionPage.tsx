@@ -506,14 +506,14 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 												}
 											}}
 											className={cn(
-												'w-full flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all duration-200',
+												'w-full flex items-start gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200',
 												isSelected
 													? 'border-[#0F172A] bg-[#0F172A]/5 shadow-sm'
 													: 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50',
 											)}>
 											<div
 												className={cn(
-													'flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-colors',
+													'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-colors',
 													isSelected ? 'bg-[#0F172A] text-white' : 'bg-gray-100 text-gray-600',
 												)}>
 												{item.icon && <item.icon className='w-5 h-5' />}
