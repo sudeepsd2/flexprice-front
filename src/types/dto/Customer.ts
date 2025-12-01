@@ -38,6 +38,7 @@ export interface GetUsageSummaryResponse {
 export interface GetCustomerByFiltersPayload extends Pagination {
 	filters: TypedBackendFilter[];
 	sort: TypedBackendSort[];
+	expand?: string;
 }
 
 // Tax Rate Override interface (if needed for create request)
