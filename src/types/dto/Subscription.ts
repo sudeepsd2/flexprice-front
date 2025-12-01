@@ -153,9 +153,8 @@ export interface CreateSubscriptionRequest {
 	// Customer identification - prioritized over external_customer_id if both provided
 	customer_id?: string;
 	external_customer_id?: string;
-	// InvoicingCustomerID is the customer ID to use for invoicing
-	// This can differ from the subscription customer (e.g., parent company invoicing for child company)
-	invoicing_customer_id?: string;
+	// InvoiceBillingConfig determines which customer should receive invoices for a subscription
+	invoice_billing_config?: string;
 
 	// Plan and billing configuration
 	plan_id: string;

@@ -69,7 +69,7 @@ export type SubscriptionFormState = {
 	entitlementOverrides: Record<string, EntitlementOverrideRequest>;
 	creditGrants: InternalCreditGrantRequest[];
 	enable_true_up: boolean;
-	invoiceCustomerId?: INVOICE_BILLING_CONFIG;
+	invoiceBillingConfig?: INVOICE_BILLING_CONFIG;
 };
 
 const usePlans = () => {
@@ -191,7 +191,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 		entitlementOverrides: {},
 		creditGrants: [],
 		enable_true_up: false,
-		invoiceCustomerId: undefined,
+		invoiceBillingConfig: undefined,
 	});
 
 	const { data: plans, isLoading: plansLoading, isError: plansError } = usePlans();
@@ -221,11 +221,11 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 		if (customerData?.external_id) {
 			updateBreadcrumb(2, customerData.external_id);
 		}
-		// Initialize invoice customer ID to parent if customer has parent
+		// Initialize invoice billing config to parent if customer has parent
 		if (customerData?.parent_customer_id) {
 			setSubscriptionState((prev) => ({
 				...prev,
-				invoiceCustomerId: INVOICE_BILLING_CONFIG.INVOICED_BY_PARENT,
+				invoiceBillingConfig: INVOICE_BILLING_CONFIG.INVOICED_BY_PARENT,
 			}));
 		}
 	}, [customerData, updateBreadcrumb]);
@@ -306,7 +306,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 			commitmentAmount,
 			entitlementOverrides,
 			creditGrants,
-			invoiceCustomerId,
+			invoiceBillingConfig,
 		} = subscriptionState;
 
 		if (!billingPeriod || !selectedPlan) {
@@ -401,10 +401,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 			credit_grants: creditGrants.length > 0 ? creditGrants.map(internalToCreateRequest) : undefined,
 			enable_true_up: subscriptionState.enable_true_up,
 			subscription_status: isDraftParam ? SUBSCRIPTION_STATUS.DRAFT : undefined,
-			invoicing_customer_id:
-				invoiceCustomerId === INVOICE_BILLING_CONFIG.INVOICED_BY_PARENT && customerData?.parent_customer_id
-					? customerData.parent_customer_id
-					: undefined,
+			invoice_billing_config: invoiceBillingConfig,
 		};
 
 		setIsDraft(isDraftParam);
@@ -436,7 +433,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 		},
 	];
 
-	const currentInvoiceValue = subscriptionState.invoiceCustomerId || INVOICE_BILLING_CONFIG.INVOICED_BY_PARENT;
+	const currentInvoiceValue = subscriptionState.invoiceBillingConfig || INVOICE_BILLING_CONFIG.INVOICED_BY_PARENT;
 	const selectedInvoiceOption = invoiceOptions.find((opt) => opt.value === currentInvoiceValue) || invoiceOptions[0];
 
 	return (
@@ -501,7 +498,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 												if (item.value) {
 													setSubscriptionState((prev) => ({
 														...prev,
-														invoiceCustomerId: item.value as INVOICE_BILLING_CONFIG,
+														invoiceBillingConfig: item.value as INVOICE_BILLING_CONFIG,
 													}));
 												}
 											}}
