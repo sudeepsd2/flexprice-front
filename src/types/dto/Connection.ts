@@ -66,6 +66,10 @@ export interface CreateConnectionPayload {
 			inbound: boolean;
 			outbound: boolean;
 		};
+		quote?: {
+			inbound: boolean;
+			outbound: boolean;
+		};
 	};
 }
 
@@ -85,6 +89,10 @@ export interface UpdateConnectionPayload {
 			outbound: boolean;
 		};
 		deal?: {
+			inbound: boolean;
+			outbound: boolean;
+		};
+		quote?: {
 			inbound: boolean;
 			outbound: boolean;
 		};

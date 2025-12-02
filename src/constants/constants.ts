@@ -122,6 +122,7 @@ export const subscriptionStatusOptions = [
 	{ label: 'Past Due', value: SUBSCRIPTION_STATUS.PAST_DUE },
 	{ label: 'Trialing', value: SUBSCRIPTION_STATUS.TRIALING },
 	{ label: 'Unpaid', value: SUBSCRIPTION_STATUS.UNPAID },
+	{ label: 'Draft', value: SUBSCRIPTION_STATUS.DRAFT },
 ];
 
 export const billingCycleOptions = [

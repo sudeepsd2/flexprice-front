@@ -6,13 +6,23 @@ import toast from 'react-hot-toast';
 import { Button, SelectOption } from '@/components/atoms';
 import { ApiDocsContent } from '@/components/molecules';
 import { UsageTable, SubscriptionForm } from '@/components/organisms';
+import { Building, User } from 'lucide-react';
 
 import { AddonApi, CustomerApi, PlanApi, SubscriptionApi, TaxApi, CouponApi } from '@/api';
 import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
 import { RouteNames } from '@/core/routes/Routes';
 import { ServerError } from '@/core/axios/types';
 
-import { BILLING_CADENCE, SubscriptionPhase, Coupon, TAXRATE_ENTITY_TYPE, EXPAND, BILLING_CYCLE } from '@/models';
+import {
+	BILLING_CADENCE,
+	SubscriptionPhase,
+	Coupon,
+	TAXRATE_ENTITY_TYPE,
+	EXPAND,
+	BILLING_CYCLE,
+	INVOICE_BILLING,
+	SUBSCRIPTION_STATUS,
+} from '@/models';
 import { InternalCreditGrantRequest, creditGrantToInternal, internalToCreateRequest } from '@/types/dto/CreditGrant';
 import { BILLING_PERIOD } from '@/constants/constants';
 
@@ -68,6 +78,7 @@ export type SubscriptionFormState = {
 	entitlementOverrides: Record<string, EntitlementOverrideRequest>;
 	creditGrants: InternalCreditGrantRequest[];
 	enable_true_up: boolean;
+	invoiceBillingConfig?: INVOICE_BILLING;
 };
 
 const usePlans = () => {
@@ -133,6 +144,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 	const navigate = useNavigate();
 	const updateBreadcrumb = useBreadcrumbsStore((state) => state.updateBreadcrumb);
 
+	const [isDraft, setIsDraft] = useState(false);
 	const { data: customerTaxAssociations } = useQuery({
 		queryKey: ['customerTaxAssociations', customerId],
 		queryFn: async () => {
@@ -188,6 +200,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 		entitlementOverrides: {},
 		creditGrants: [],
 		enable_true_up: false,
+		invoiceBillingConfig: undefined,
 	});
 
 	const { data: plans, isLoading: plansLoading, isError: plansError } = usePlans();
@@ -216,6 +229,13 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 	useEffect(() => {
 		if (customerData?.external_id) {
 			updateBreadcrumb(2, customerData.external_id);
+		}
+		// Initialize invoice billing config to parent if customer has parent
+		if (customerData?.parent_customer_id) {
+			setSubscriptionState((prev) => ({
+				...prev,
+				invoiceBillingConfig: INVOICE_BILLING.INVOICED_TO_PARENT,
+			}));
 		}
 	}, [customerData, updateBreadcrumb]);
 
@@ -263,8 +283,9 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 		mutationFn: async (data: CreateSubscriptionRequest) => {
 			return await SubscriptionApi.createSubscription(data);
 		},
-		onSuccess: async () => {
-			toast.success('Subscription created successfully');
+		onSuccess: async (_, variables) => {
+			const isDraft = variables.subscription_status === SUBSCRIPTION_STATUS.DRAFT;
+			toast.success(isDraft ? 'Draft subscription saved successfully' : 'Subscription created successfully');
 
 			refetchQueries(['debug-customers']);
 			refetchQueries(['debug-subscriptions']);
@@ -276,7 +297,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 		},
 	});
 
-	const handleSubscriptionSubmit = () => {
+	const handleSubscriptionSubmit = (isDraftParam: boolean = false) => {
 		const {
 			billingPeriod,
 			selectedPlan,
@@ -294,6 +315,7 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 			commitmentAmount,
 			entitlementOverrides,
 			creditGrants,
+			invoiceBillingConfig,
 		} = subscriptionState;
 
 		if (!billingPeriod || !selectedPlan) {
@@ -387,12 +409,41 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 			override_entitlements: Object.keys(entitlementOverrides).length > 0 ? Object.values(entitlementOverrides) : undefined,
 			credit_grants: creditGrants.length > 0 ? creditGrants.map(internalToCreateRequest) : undefined,
 			enable_true_up: subscriptionState.enable_true_up,
+			subscription_status: isDraftParam ? SUBSCRIPTION_STATUS.DRAFT : undefined,
+			invoice_billing: invoiceBillingConfig,
 		};
 
+		setIsDraft(isDraftParam);
 		createSubscription(payload);
 	};
 
+	// const handleDraftSubmit = () => {
+	// 	handleSubscriptionSubmit(true);
+	// };
+
+	const handleRegularSubmit = () => {
+		handleSubscriptionSubmit(false);
+	};
+
 	const navigateBack = () => navigate(`${RouteNames.customers}/${customerId}`);
+
+	const invoiceOptions = [
+		{
+			value: INVOICE_BILLING.INVOICED_TO_PARENT,
+			label: 'Invoice To Parent',
+			icon: Building,
+			description: 'Invoices will be sent to the parent customer',
+		},
+		{
+			value: INVOICE_BILLING.INVOICED_TO_SELF,
+			label: 'Invoice To Self',
+			icon: User,
+			description: 'Invoices will be sent to this customer',
+		},
+	];
+
+	const currentInvoiceValue = subscriptionState.invoiceBillingConfig || INVOICE_BILLING.INVOICED_TO_PARENT;
+	const selectedInvoiceOption = invoiceOptions.find((opt) => opt.value === currentInvoiceValue) || invoiceOptions[0];
 
 	return (
 		<div className={cn('flex gap-8 mt-5 relative mb-12')}>
@@ -422,18 +473,81 @@ const CreateCustomerSubscriptionPage: React.FC = () => {
 				/>
 
 				{subscriptionState.selectedPlan && !subscription_id && (
-					<div className='flex items-center justify-start space-x-4'>
-						<Button onClick={navigateBack} variant={'outline'}>
-							Cancel
-						</Button>
-						<Button onClick={handleSubscriptionSubmit} isLoading={isCreating}>
+					<div className='flex items-center justify-between'>
+						<div className='flex items-center space-x-4'>
+							<Button onClick={navigateBack} variant={'outline'} disabled={isCreating}>
+								Cancel
+							</Button>
+							{/* <Button onClick={handleDraftSubmit} isLoading={isCreating && isDraft} variant={'outline'} disabled={isCreating}>
+								Save as Draft
+							</Button> */}
+						</div>
+						<Button onClick={handleRegularSubmit} isLoading={isCreating && !isDraft} disabled={isCreating}>
 							Add Subscription
 						</Button>
 					</div>
 				)}
 			</div>
 
-			<div className='flex-[4]'></div>
+			<div className='flex-[4]'>
+				{customerData?.parent_customer_id && subscriptionState.selectedPlan && !subscription_id && (
+					<div className='sticky top-5'>
+						<div className='bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200'>
+							<div className='mb-4'>
+								<h3 className='text-base font-semibold text-gray-900 mb-1'>Invoice Customer</h3>
+								<p className='text-sm text-gray-500'>Choose which customer will receive invoices for this subscription</p>
+							</div>
+							<div className='space-y-3 mb-4'>
+								{invoiceOptions.map((item) => {
+									const isSelected = selectedInvoiceOption.value === item.value;
+									return (
+										<div
+											key={item.value}
+											onClick={() => {
+												if (item.value) {
+													setSubscriptionState((prev) => ({
+														...prev,
+														invoiceBillingConfig: item.value as INVOICE_BILLING,
+													}));
+												}
+											}}
+											className={cn(
+												'w-full flex items-start gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200',
+												isSelected
+													? 'border-[#0F172A] bg-[#0F172A]/5 shadow-sm'
+													: 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50',
+											)}>
+											<div
+												className={cn(
+													'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-colors',
+													isSelected ? 'bg-[#0F172A] text-white' : 'bg-gray-100 text-gray-600',
+												)}>
+												{item.icon && <item.icon className='w-5 h-5' />}
+											</div>
+											<div className='flex-1 min-w-0'>
+												<p className={cn('font-semibold text-sm mb-1', isSelected ? 'text-[#0F172A]' : 'text-gray-900')}>{item.label}</p>
+												<p className='text-sm text-gray-500 leading-relaxed'>{item.description}</p>
+											</div>
+											<div
+												className={cn(
+													'flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all',
+													isSelected ? 'border-[#0F172A] bg-[#0F172A]' : 'border-gray-300 bg-white',
+												)}>
+												{isSelected && <div className='w-2 h-2 rounded-full bg-white' />}
+											</div>
+										</div>
+									);
+								})}
+							</div>
+							<div className='pt-4 border-t border-gray-100'>
+								<p className='text-xs text-gray-500 leading-relaxed'>
+									<span className='font-medium text-gray-600'>Note:</span> This setting cannot be changed after the subscription is created.
+								</p>
+							</div>
+						</div>
+					</div>
+				)}
+			</div>
 		</div>
 	);
 };

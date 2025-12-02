@@ -13,6 +13,7 @@ interface HubSpotConnection extends Connection {
 	sync_config?: {
 		invoice?: { inbound: boolean; outbound: boolean };
 		deal?: { inbound: boolean; outbound: boolean };
+		quote?: { inbound: boolean; outbound: boolean };
 	};
 	access_token?: string;
 	client_secret?: string;
@@ -32,6 +33,7 @@ interface HubSpotFormData {
 	sync_config: {
 		invoice: boolean;
 		deal: boolean;
+		quote: boolean;
 	};
 }
 
@@ -46,6 +48,7 @@ const HubSpotConnectionDrawer: FC<HubSpotConnectionDrawerProps> = ({ isOpen, onO
 		sync_config: {
 			invoice: false,
 			deal: false,
+			quote: false,
 		},
 	});
 	const [errors, setErrors] = useState<Record<string, string>>({});
@@ -84,6 +87,17 @@ const HubSpotConnectionDrawer: FC<HubSpotConnectionDrawerProps> = ({ isOpen, onO
 			);
 		}
 
+		if (formData.sync_config.quote) {
+			scopes.push(
+				'crm.objects.line_items.read',
+				'crm.objects.line_items.write',
+				'crm.schemas.quotes.read',
+				'crm.schemas.quotes.write',
+				'crm.objects.quotes.read',
+				'crm.objects.quotes.write',
+			);
+		}
+
 		// Remove duplicates
 		return Array.from(new Set(scopes));
 	};
@@ -107,6 +121,7 @@ const HubSpotConnectionDrawer: FC<HubSpotConnectionDrawerProps> = ({ isOpen, onO
 					sync_config: {
 						invoice: syncConfig.invoice?.outbound || false,
 						deal: syncConfig.deal?.outbound || false,
+						quote: syncConfig.quote?.outbound || false,
 					},
 				});
 			} else {
@@ -117,6 +132,7 @@ const HubSpotConnectionDrawer: FC<HubSpotConnectionDrawerProps> = ({ isOpen, onO
 					sync_config: {
 						invoice: false,
 						deal: false,
+						quote: false,
 					},
 				});
 			}
@@ -190,6 +206,14 @@ const HubSpotConnectionDrawer: FC<HubSpotConnectionDrawerProps> = ({ isOpen, onO
 				};
 			}
 
+			// Only add quote config if toggle is true
+			if (formData.sync_config.quote) {
+				payload.sync_config.quote = {
+					inbound: false,
+					outbound: true,
+				};
+			}
+
 			return await ConnectionApi.Create(payload);
 		},
 		onSuccess: (response) => {
@@ -223,6 +247,14 @@ const HubSpotConnectionDrawer: FC<HubSpotConnectionDrawerProps> = ({ isOpen, onO
 			// Only add deal config if toggle is true
 			if (formData.sync_config.deal) {
 				payload.sync_config.deal = {
+					inbound: false,
+					outbound: true,
+				};
+			}
+
+			// Only add quote config if toggle is true
+			if (formData.sync_config.quote) {
+				payload.sync_config.quote = {
 					inbound: false,
 					outbound: true,
 				};
@@ -333,6 +365,15 @@ const HubSpotConnectionDrawer: FC<HubSpotConnectionDrawerProps> = ({ isOpen, onO
 								<p className='text-xs text-gray-500'>Push to HubSpot</p>
 							</div>
 							<Switch checked={formData.sync_config.deal} onCheckedChange={(checked) => handleSyncConfigChange('deal', checked)} />
+						</div>
+
+						{/* Quotes */}
+						<div className='flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg'>
+							<div>
+								<label className='text-sm font-medium text-gray-700'>Quotes</label>
+								<p className='text-xs text-gray-500'>Push to HubSpot</p>
+							</div>
+							<Switch checked={formData.sync_config.quote} onCheckedChange={(checked) => handleSyncConfigChange('quote', checked)} />
 						</div>
 					</div>
 				</div>

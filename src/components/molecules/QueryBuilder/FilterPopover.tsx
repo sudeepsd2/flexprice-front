@@ -289,13 +289,15 @@ const FilterPopover: React.FC<Props> = ({ fields, value = [], onChange, classNam
 													/>
 
 													<Select
-														options={field.operators.map((operator) => ({
-															value: operator,
-															label: operator
-																.toLowerCase()
-																.replace(/_/g, ' ')
-																.replace(/\b\w/g, (char) => char.toUpperCase()),
-														}))}
+														options={field.operators
+															.filter((operator) => operator != null)
+															.map((operator) => ({
+																value: operator,
+																label: operator
+																	.toLowerCase()
+																	.replace(/_/g, ' ')
+																	.replace(/\b\w/g, (char) => char.toUpperCase()),
+															}))}
 														value={filter.operator}
 														onChange={(value) => handleFilterUpdate(filter.id, { operator: value as FilterOperator })}
 														placeholder='Select operator'

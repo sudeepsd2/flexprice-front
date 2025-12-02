@@ -18,8 +18,9 @@ import {
 	SortOption,
 	SortDirection,
 } from '@/types/common/QueryBuilder';
-import { ENTITY_STATUS } from '@/models';
+import { ENTITY_STATUS, EXPAND } from '@/models';
 import { useQueryWithEmptyState } from '@/hooks/useQueryWithEmptyState';
+import { generateExpandQueryParams } from '@/utils/common/api_helper';
 
 const sortingOptions: SortOption[] = [
 	{
@@ -136,6 +137,7 @@ const CustomerListPage = () => {
 			offset,
 			filters: sanitizedFilters,
 			sort: sanitizedSorts,
+			expand: generateExpandQueryParams([EXPAND.PARENT_CUSTOMER]),
 		});
 	};
 

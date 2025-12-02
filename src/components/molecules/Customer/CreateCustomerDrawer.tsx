@@ -10,6 +10,7 @@ import { Country, State, City, IState } from 'country-state-city';
 import { z } from 'zod';
 import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
 import { logger } from '@/utils/common/Logger';
+import { CustomerSearchSelect } from '@/components/molecules/Customer';
 
 interface Props {
 	data?: Customer;
@@ -18,43 +19,72 @@ interface Props {
 	trigger?: React.ReactNode;
 }
 
+interface UIState {
+	internalOpen: boolean;
+	showBillingDetails: boolean;
+	parentCustomer: Customer | undefined;
+	activeState: IState | undefined;
+}
+
 const CreateCustomerDrawer: FC<Props> = ({ data, onOpenChange, open, trigger }) => {
-	const [formData, setFormData] = useState<Partial<CreateCustomerRequest>>(data || {});
 	const isEdit = !!data;
-	const [errors, setErrors] = useState<Partial<Record<keyof CreateCustomerRequest, string>>>({});
-	const [internalOpen, setInternalOpen] = useState(false);
 	const isControlled = open !== undefined && onOpenChange !== undefined;
-	const [showBillingDetails, setShowBillingDetails] = useState(false);
+
+	const [formData, setFormData] = useState<Partial<CreateCustomerRequest>>(data || {});
+	const [errors, setErrors] = useState<Partial<Record<keyof CreateCustomerRequest, string>>>({});
+	const [uiState, setUiState] = useState<UIState>({
+		internalOpen: false,
+		showBillingDetails: false,
+		parentCustomer: undefined,
+		activeState: undefined,
+	});
 
 	const handleChange = (name: keyof typeof formData, value: string | undefined) => {
 		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
 
-	const [activeState, setactiveState] = useState<IState>();
+	const updateUIState = (updates: Partial<UIState>) => {
+		setUiState((prev) => ({ ...prev, ...updates }));
+	};
 
 	useEffect(() => {
-		setFormData(data || {});
-		if (data) {
-			setShowBillingDetails(true);
-			if (data.address_country && data.address_state) {
-				const stateObj = State.getStatesOfCountry(data.address_country).find((state) => state.name === data.address_state);
-				if (stateObj) {
-					setactiveState(stateObj);
-					setFormData((prev) => ({ ...prev, address_state: stateObj.isoCode }));
-				}
-			} else {
-				setactiveState(undefined);
-				setFormData((prev) => ({ ...prev, address_state: undefined, address_city: undefined }));
-			}
+		if (!data) {
+			setFormData({});
+			updateUIState({
+				parentCustomer: undefined,
+				showBillingDetails: false,
+				activeState: undefined,
+			});
+			return;
 		}
+
+		setFormData(data);
+		updateUIState({ showBillingDetails: true });
+
+		// Handle state selection
+		if (data.address_country && data.address_state) {
+			const stateObj = State.getStatesOfCountry(data.address_country).find((state) => state.name === data.address_state);
+			if (stateObj) {
+				updateUIState({ activeState: stateObj });
+				setFormData((prev) => ({ ...prev, address_state: stateObj.isoCode }));
+			}
+		} else {
+			updateUIState({ activeState: undefined });
+			setFormData((prev) => ({ ...prev, address_state: undefined, address_city: undefined }));
+		}
+
+		// Handle parent customer
+		updateUIState({
+			parentCustomer: data.parent_customer,
+		});
 	}, [data]);
 
-	const currentOpen = isControlled ? open : internalOpen;
+	const currentOpen = isControlled ? open : uiState.internalOpen;
 	const toggleOpen = (open?: boolean) => {
 		if (isControlled) {
 			onOpenChange?.(open ?? false);
 		} else {
-			setInternalOpen((prev) => !prev);
+			updateUIState({ internalOpen: !uiState.internalOpen });
 		}
 	};
 
@@ -67,8 +97,8 @@ const CreateCustomerDrawer: FC<Props> = ({ data, onOpenChange, open, trigger }) 
 		: [];
 
 	const citiesOptions: SelectOption[] =
-		formData.address_country && activeState?.isoCode
-			? City.getCitiesOfState(formData.address_country, activeState.isoCode).map(({ name }) => ({
+		formData.address_country && uiState.activeState?.isoCode
+			? City.getCitiesOfState(formData.address_country, uiState.activeState.isoCode).map(({ name }) => ({
 					label: name,
 					value: name,
 				}))
@@ -125,58 +155,45 @@ const CreateCustomerDrawer: FC<Props> = ({ data, onOpenChange, open, trigger }) 
 		return true;
 	};
 
+	// Helper to build customer payload
+	const buildCustomerPayload = () => {
+		const basePayload = {
+			external_id: formData.external_id,
+			name: formData.name,
+			email: formData.email || undefined,
+			address_line1: formData.address_line1 || undefined,
+			address_line2: formData.address_line2 || undefined,
+			address_city: formData.address_city || undefined,
+			address_state: uiState.activeState?.name || undefined,
+			address_postal_code: formData.address_postal_code || undefined,
+			address_country: formData.address_country || undefined,
+			parent_customer_id: formData.parent_customer_id,
+			parent_customer_external_id: formData.parent_customer_external_id,
+		};
+
+		// Remove undefined values
+		return Object.fromEntries(Object.entries(basePayload).filter(([_, value]) => value !== undefined));
+	};
+
 	const { mutate: createCustomer, isPending } = useMutation({
 		mutationFn: async () => {
-			if (data) {
-				// Update customer
-				const updatePayload: UpdateCustomerRequest = {
-					external_id: formData.external_id,
-					name: formData.name,
-					email: formData.email || undefined,
-					address_line1: formData.address_line1 || undefined,
-					address_line2: formData.address_line2 || undefined,
-					address_city: formData.address_city || undefined,
-					address_state: activeState?.name || undefined,
-					address_postal_code: formData.address_postal_code || undefined,
-					address_country: formData.address_country || undefined,
-				};
+			const payload = buildCustomerPayload();
 
-				// Remove undefined values
-				Object.keys(updatePayload).forEach((key) => {
-					if (updatePayload[key as keyof UpdateCustomerRequest] === undefined) {
-						delete updatePayload[key as keyof UpdateCustomerRequest];
-					}
-				});
-
-				return await CustomerApi.updateCustomer(updatePayload, data.id);
-			} else {
-				// Create customer
-				const createPayload: CreateCustomerRequest = {
-					external_id: formData.external_id!,
-					name: formData.name!,
-					email: formData.email || '',
-					address_line1: formData.address_line1 || undefined,
-					address_line2: formData.address_line2 || undefined,
-					address_city: formData.address_city || undefined,
-					address_state: activeState?.name || undefined,
-					address_postal_code: formData.address_postal_code || undefined,
-					address_country: formData.address_country || undefined,
-				};
-
-				// Remove undefined values
-				Object.keys(createPayload).forEach((key) => {
-					if (createPayload[key as keyof CreateCustomerRequest] === undefined) {
-						delete createPayload[key as keyof CreateCustomerRequest];
-					}
-				});
-
-				return await CustomerApi.createCustomer(createPayload);
+			if (isEdit && data?.id) {
+				return await CustomerApi.updateCustomer(payload as UpdateCustomerRequest, data.id);
 			}
+
+			return await CustomerApi.createCustomer({
+				...payload,
+				external_id: formData.external_id!,
+				name: formData.name!,
+				email: formData.email || '',
+			} as CreateCustomerRequest);
 		},
 
 		onSuccess: async () => {
-			if (data) {
-				await refetchQueries(['fetchCustomerDetails', data.id || '']);
+			if (isEdit && data?.id) {
+				await refetchQueries(['fetchCustomerDetails', data.id]);
 				toast.success('Customer updated successfully');
 			} else {
 				await refetchQueries(['fetchCustomers']);
@@ -184,8 +201,7 @@ const CreateCustomerDrawer: FC<Props> = ({ data, onOpenChange, open, trigger }) 
 				setFormData({});
 			}
 
-			refetchQueries(['debug-customers']);
-			refetchQueries(['debug-subscriptions']);
+			await Promise.all([refetchQueries(['debug-customers']), refetchQueries(['debug-subscriptions'])]);
 			toggleOpen();
 		},
 		onError: (error: ServerError) => {
@@ -206,14 +222,14 @@ const CreateCustomerDrawer: FC<Props> = ({ data, onOpenChange, open, trigger }) 
 		<div>
 			<Sheet
 				isOpen={currentOpen}
+				size='lg'
 				onOpenChange={toggleOpen}
 				title={data ? 'Edit Customer' : 'Add Customer'}
 				description={
 					data ? 'Enter customer details to update the account.' : 'Enter customer details to create a new account in the system.'
 				}
 				trigger={trigger}>
-				<div className='space-y-4'>
-					<Spacer className='!h-4' />
+				<div className='space-y-8 mt-4'>
 					<div className='relative card !p-4 !mb-6'>
 						<span className='absolute -top-4 left-2 text-[#18181B] text-sm bg-white font-medium px-2 py-1'>Customer Details</span>
 						<div className='space-y-4'>
@@ -243,13 +259,13 @@ const CreateCustomerDrawer: FC<Props> = ({ data, onOpenChange, open, trigger }) 
 						</div>
 					</div>
 
-					{!showBillingDetails && (
-						<Button variant='outline' onClick={() => setShowBillingDetails(true)}>
+					{!uiState.showBillingDetails && (
+						<Button variant='outline' onClick={() => updateUIState({ showBillingDetails: true })}>
 							<Plus /> Add Billing Detail
 						</Button>
 					)}
 
-					{showBillingDetails && (
+					{uiState.showBillingDetails && (
 						<div className='relative card !p-4'>
 							<span className='absolute -top-4 left-2 text-[#18181B] text-sm bg-white font-medium px-2 py-1'>Billing Details</span>
 							<div className='space-y-4'>
@@ -267,7 +283,7 @@ const CreateCustomerDrawer: FC<Props> = ({ data, onOpenChange, open, trigger }) 
 											address_state: '',
 											address_postal_code: '',
 										}));
-										setactiveState(undefined);
+										updateUIState({ activeState: undefined });
 									}}
 								/>
 								<Input
@@ -300,7 +316,7 @@ const CreateCustomerDrawer: FC<Props> = ({ data, onOpenChange, open, trigger }) 
 												address_state: e,
 											});
 											const selectedState = e ? State.getStateByCodeAndCountry(e, formData.address_country || '') : undefined;
-											setactiveState(selectedState || undefined);
+											updateUIState({ activeState: selectedState || undefined });
 										}}
 										noOptionsText='No states Available'
 									/>
@@ -321,6 +337,36 @@ const CreateCustomerDrawer: FC<Props> = ({ data, onOpenChange, open, trigger }) 
 									onChange={(e) => handleChange('address_postal_code', e)}
 									error={errors.address_postal_code}
 									maxLength={20}
+								/>
+							</div>
+						</div>
+					)}
+
+					{isEdit && (
+						<div className='relative card !p-4'>
+							<span className='absolute -top-4 left-2 text-[#18181B] text-sm bg-white font-medium px-2 py-1'>Invoice Config</span>
+							<div className='space-y-4'>
+								<CustomerSearchSelect
+									value={uiState.parentCustomer}
+									excludeId={data?.id}
+									onChange={(customer) => {
+										// Guard against self-referential parent selection
+										const currentCustomerId = data?.id;
+										if (customer && customer.id === currentCustomerId) {
+											return;
+										}
+										updateUIState({ parentCustomer: customer || undefined });
+										setFormData((prev) => ({
+											...prev,
+											parent_customer_id: customer?.id,
+											parent_customer_external_id: undefined,
+										}));
+									}}
+									display={{
+										label: 'Parent Customer',
+										placeholder: 'Select parent customer',
+									}}
+									searchPlaceholder='Search for parent customer...'
 								/>
 							</div>
 						</div>

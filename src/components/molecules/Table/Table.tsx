@@ -48,7 +48,7 @@ const isInteractiveElement = (element: HTMLElement | null): boolean => {
 
 	// Check for interactive elements
 	const interactiveElements = ['button', 'a', 'input', 'select', 'textarea'];
-	if (interactiveElements.includes(element.tagName.toLowerCase())) return true;
+	if (element.tagName && interactiveElements.includes(element.tagName.toLowerCase())) return true;
 
 	// Check parent elements
 	return element.closest('[data-interactive="true"]') !== null;

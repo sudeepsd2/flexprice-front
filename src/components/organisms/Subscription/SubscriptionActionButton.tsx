@@ -1,6 +1,6 @@
-import { Subscription, SUBSCRIPTION_PRORATION_BEHAVIOR, SUBSCRIPTION_CANCELLATION_TYPE } from '@/models/Subscription';
+import { Subscription, SUBSCRIPTION_PRORATION_BEHAVIOR, SUBSCRIPTION_CANCELLATION_TYPE, SUBSCRIPTION_STATUS } from '@/models/Subscription';
 import { useMutation } from '@tanstack/react-query';
-import { CirclePause, CirclePlay, X, Plus, Pencil } from 'lucide-react';
+import { CirclePause, CirclePlay, X, Plus, Pencil, Play } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import SubscriptionApi from '@/api/SubscriptionApi';
 import { DatePicker, Modal, Input, Button, FormHeader, Spacer } from '@/components/atoms';
@@ -10,6 +10,7 @@ import { refetchQueries } from '@/core/services/tanstack/ReactQueryProvider';
 import { addDays, format } from 'date-fns';
 import { useNavigate } from 'react-router';
 import { RouteNames } from '@/core/routes/Routes';
+import { ServerError } from '@/core/axios/types';
 
 interface Props {
 	subscription: Subscription;
@@ -22,9 +23,11 @@ const SubscriptionActionButton: React.FC<Props> = ({ subscription }) => {
 		isResumeModalOpen: false,
 		isCancelModalOpen: false,
 		isAddPhaseModalOpen: false,
+		isActivateModalOpen: false,
 		pauseStartDate: new Date(),
 		pauseDays: '',
 		pauseReason: '',
+		activateStartDate: new Date(),
 	});
 
 	const pauseEndDate = useMemo(() => {
@@ -86,17 +89,44 @@ const SubscriptionActionButton: React.FC<Props> = ({ subscription }) => {
 		},
 	});
 
+	const { mutate: activateSubscription, isPending: isActivating } = useMutation({
+		mutationFn: (id: string) =>
+			SubscriptionApi.activateSubscription(id, {
+				start_date: state.activateStartDate.toISOString(),
+			}),
+		onSuccess: async () => {
+			setState((prev) => ({ ...prev, isActivateModalOpen: false }));
+			toast.success('Subscription activated successfully');
+			await refetchQueries(['subscriptionDetails']);
+			await refetchQueries(['subscriptions']);
+			await refetchQueries(['subscriptionInvoices']);
+		},
+		onError: (error: ServerError) => {
+			toast.error(error.error.message || 'Failed to activate subscription');
+		},
+	});
+
 	const isPaused = subscription.subscription_status.toUpperCase() === 'PAUSED';
 	const isCancelled = subscription.subscription_status.toUpperCase() === 'CANCELLED';
+	const isDraft = subscription.subscription_status === SUBSCRIPTION_STATUS.DRAFT;
 
 	const menuOptions: DropdownMenuOption[] = [
+		...(isDraft
+			? [
+					{
+						label: 'Activate Subscription',
+						icon: <Play className='h-4 w-4' />,
+						onSelect: () => setState((prev) => ({ ...prev, isActivateModalOpen: true })),
+					},
+				]
+			: []),
 		{
 			label: 'Edit Subscription',
 			icon: <Pencil className='h-4 w-4' />,
 			onSelect: () => navigate(`${RouteNames.subscriptions}/${subscription.id}/edit`),
 			disabled: isCancelled,
 		},
-		...(!isPaused && !isCancelled
+		...(!isPaused && !isCancelled && !isDraft
 			? [
 					{
 						label: 'Pause Subscription',
@@ -241,6 +271,45 @@ const SubscriptionActionButton: React.FC<Props> = ({ subscription }) => {
 						</Button>
 						<Button variant='destructive' onClick={() => cancelSubscription(subscription.id)} disabled={isCancelLoading}>
 							{isCancelLoading ? 'Cancelling...' : 'Yes, Cancel'}
+						</Button>
+					</div>
+				</div>
+			</Modal>
+
+			{/* Activate Modal */}
+			<Modal
+				isOpen={state.isActivateModalOpen}
+				onOpenChange={(open) => setState((prev) => ({ ...prev, isActivateModalOpen: open }))}
+				className='bg-white rounded-lg p-6 w-[560px] max-w-[90vw]'>
+				<div className=''>
+					<FormHeader
+						title='Activate Subscription'
+						variant='sub-header'
+						subtitle='Activating the subscription will start the billing cycle from the selected start date.'
+					/>
+					<Spacer className='!my-6' />
+					<div className='w-full'>
+						<DatePicker
+							label='Start Date'
+							date={state.activateStartDate}
+							setDate={(date) => setState((prev) => ({ ...prev, activateStartDate: date || new Date() }))}
+							className='!w-full'
+						/>
+					</div>
+
+					<div className='flex justify-end gap-3 pt-4'>
+						<Button
+							variant='outline'
+							onClick={() => setState((prev) => ({ ...prev, isActivateModalOpen: false }))}
+							disabled={isActivating}
+							className='px-6'>
+							Cancel
+						</Button>
+						<Button
+							onClick={() => activateSubscription(subscription.id)}
+							disabled={isActivating || !state.activateStartDate}
+							className='px-6'>
+							{isActivating ? 'Activating...' : 'Activate'}
 						</Button>
 					</div>
 				</div>

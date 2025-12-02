@@ -31,6 +31,8 @@ const getSubscriptionStatusChip = (status: SUBSCRIPTION_STATUS) => {
 			return <Chip variant='warning' label='Trialing' />;
 		case SUBSCRIPTION_STATUS.UNPAID:
 			return <Chip variant='failed' label='Unpaid' />;
+		case SUBSCRIPTION_STATUS.DRAFT:
+			return <Chip variant='warning' label='Draft' />;
 		default:
 			return <Chip variant='default' label='Inactive' />;
 	}

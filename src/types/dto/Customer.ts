@@ -38,6 +38,7 @@ export interface GetUsageSummaryResponse {
 export interface GetCustomerByFiltersPayload extends Pagination {
 	filters: TypedBackendFilter[];
 	sort: TypedBackendSort[];
+	expand?: string;
 }
 
 // Tax Rate Override interface (if needed for create request)
@@ -60,6 +61,8 @@ export interface CreateCustomerRequest {
 	address_country?: string;
 	metadata?: Metadata;
 	tax_rate_overrides?: TaxRateOverride[];
+	parent_customer_id?: string;
+	parent_customer_external_id?: string;
 }
 
 // Update Customer Request DTO
@@ -74,4 +77,6 @@ export interface UpdateCustomerRequest {
 	address_postal_code?: string;
 	address_country?: string;
 	metadata?: Metadata;
+	parent_customer_id?: string;
+	parent_customer_external_id?: string;
 }
