@@ -229,7 +229,7 @@ const CreateCustomerDrawer: FC<Props> = ({ data, onOpenChange, open, trigger }) 
 					data ? 'Enter customer details to update the account.' : 'Enter customer details to create a new account in the system.'
 				}
 				trigger={trigger}>
-				<div className='space-y-8'>
+				<div className='space-y-8 mt-4'>
 					<div className='relative card !p-4 !mb-6'>
 						<span className='absolute -top-4 left-2 text-[#18181B] text-sm bg-white font-medium px-2 py-1'>Customer Details</span>
 						<div className='space-y-4'>
@@ -344,7 +344,7 @@ const CreateCustomerDrawer: FC<Props> = ({ data, onOpenChange, open, trigger }) 
 
 					{isEdit && (
 						<div className='relative card !p-4'>
-							<span className='absolute -top-4 left-2 text-[#18181B] text-sm bg-white font-medium px-2 py-1'>Customer Hierarchy</span>
+							<span className='absolute -top-4 left-2 text-[#18181B] text-sm bg-white font-medium px-2 py-1'>Invoice Config</span>
 							<div className='space-y-4'>
 								<CustomerSearchSelect
 									value={uiState.parentCustomer}

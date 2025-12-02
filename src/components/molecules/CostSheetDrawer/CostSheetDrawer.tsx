@@ -117,7 +117,7 @@ const CostSheetDrawer: FC<Props> = ({ data, open, onOpenChange, trigger, refetch
 					setFormData({
 						...formData,
 						name: e,
-						lookup_key: isEdit ? formData.lookup_key : 'cost-sheet-' + e.replace(/\s/g, '-').toLowerCase(),
+						lookup_key: isEdit ? formData.lookup_key : 'cost-sheet-' + (e || '').replace(/\s/g, '-').toLowerCase(),
 					});
 				}}
 			/>
