@@ -39,7 +39,6 @@ export const RecentSubscriptionsCard: React.FC<RecentSubscriptionsCardProps> = (
 						</div>
 						{subscriptionsByPlan.length > 0 ? (
 							<div className='mt-4'>
-								<p className='text-xs font-medium text-[#6B7280] mb-3'>Breakdown by Plan</p>
 								<ResponsiveContainer width='100%' height={180}>
 									<PieChart>
 										<Pie

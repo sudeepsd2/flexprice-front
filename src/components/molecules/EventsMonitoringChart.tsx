@@ -42,19 +42,6 @@ const formatNumber = (value: number): string => {
 	return value.toString();
 };
 
-/**
- * Format lag time in a human-readable format
- */
-const formatLag = (lagMs: number): string => {
-	if (lagMs < 1000) {
-		return `${lagMs}ms`;
-	}
-	if (lagMs < 60000) {
-		return `${(lagMs / 1000).toFixed(1)}s`;
-	}
-	return `${(lagMs / 60000).toFixed(1)}m`;
-};
-
 interface EventsMonitoringChartProps {
 	data: GetMonitoringDataResponse;
 	title?: string;
@@ -83,24 +70,6 @@ export const EventsMonitoringChart: React.FC<EventsMonitoringChartProps> = ({
 						<CardTitle className='text-base font-medium'>{title}</CardTitle>
 						<CardDescription className='text-xs text-gray-500'>{description}</CardDescription>
 					</div>
-
-					{/* Show metrics only if we have data */}
-					{hasData && (
-						<div className='flex flex-wrap gap-4 text-xs'>
-							<div className='flex flex-col items-center px-3 py-2 bg-blue-50 rounded-lg border border-blue-100'>
-								<span className='text-blue-600 font-medium'>{formatNumber(data.total_count)}</span>
-								<span className='text-blue-500'>Total Events</span>
-							</div>
-							<div className='flex flex-col items-center px-3 py-2 bg-orange-50 rounded-lg border border-orange-100'>
-								<span className='text-orange-600 font-medium'>{formatLag(data.consumption_lag)}</span>
-								<span className='text-orange-500'>Consumption Lag</span>
-							</div>
-							<div className='flex flex-col items-center px-3 py-2 bg-purple-50 rounded-lg border border-purple-100'>
-								<span className='text-purple-600 font-medium'>{formatLag(data.post_processing_lag)}</span>
-								<span className='text-purple-500'>Processing Lag</span>
-							</div>
-						</div>
-					)}
 				</div>
 			</CardHeader>
 
