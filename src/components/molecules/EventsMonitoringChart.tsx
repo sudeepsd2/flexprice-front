@@ -5,6 +5,7 @@ import { CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaCh
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import { GetMonitoringDataResponse, EventCountPoint } from '@/types/dto';
+import { getTypographyClass } from '@/lib/typography';
 
 /**
  * Normalizes monitoring data for chart display
@@ -63,17 +64,17 @@ export const EventsMonitoringChart: React.FC<EventsMonitoringChartProps> = ({
 	const displayData = hasData ? chartData : [{ timestamp: new Date().toISOString(), event_count: 0, date: new Date().toISOString() }];
 
 	return (
-		<Card className={`py-2 sm:py-0 shadow-none ${className || ''}`}>
-			<CardHeader className='px-6 py-4'>
+		<Card className={`shadow-sm ${className || ''}`}>
+			<CardHeader className='pb-4'>
 				<div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
 					<div>
-						<CardTitle className='text-base font-medium'>{title}</CardTitle>
-						<CardDescription className='text-xs text-gray-500'>{description}</CardDescription>
+						<CardTitle className={getTypographyClass('section-title')}>{title}</CardTitle>
+						<CardDescription className={getTypographyClass('helper-text', 'mt-1')}>{description}</CardDescription>
 					</div>
 				</div>
 			</CardHeader>
 
-			<CardContent className='px-2 sm:px-6 pt-0 pb-4'>
+			<CardContent className='pt-0'>
 				{/* Show "No data" message overlay when there's no data */}
 				<div className='relative' style={{ width: '100%', height: 300 }}>
 					<ResponsiveContainer width='100%' height='100%'>

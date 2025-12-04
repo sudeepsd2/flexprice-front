@@ -3,6 +3,7 @@
 import { Select } from '@/components/atoms';
 import { WindowSize } from '@/models';
 import { TIME_PERIOD } from '@/constants/constants';
+import { getTypographyClass } from '@/lib/typography';
 
 const timePeriodOptions = [
 	{ value: TIME_PERIOD.LAST_HOUR, label: 'Last hour' },
@@ -35,8 +36,8 @@ export const DashboardControls: React.FC<DashboardControlsProps> = ({ timePeriod
 	return (
 		<div className='flex flex-col sm:flex-row gap-4 sm:justify-end mb-6'>
 			<div className='flex flex-col sm:flex-row gap-4'>
-				<div className='flex flex-col gap-1'>
-					<label className='text-xs font-medium text-gray-600'>Time Period</label>
+				<div className='flex flex-col gap-2'>
+					<label className={getTypographyClass('label-small', 'font-medium text-zinc-600')}>Time Period</label>
 					<Select
 						value={timePeriod}
 						options={timePeriodOptions}
@@ -44,8 +45,8 @@ export const DashboardControls: React.FC<DashboardControlsProps> = ({ timePeriod
 						className='min-w-[150px]'
 					/>
 				</div>
-				<div className='flex flex-col gap-1'>
-					<label className='text-xs font-medium text-gray-600'>Window Size</label>
+				<div className='flex flex-col gap-2'>
+					<label className={getTypographyClass('label-small', 'font-medium text-zinc-600')}>Window Size</label>
 					<Select
 						value={windowSize}
 						options={windowSizeOptions}

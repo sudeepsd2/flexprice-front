@@ -1,8 +1,10 @@
 'use client';
 
 import { Loader } from '@/components/atoms';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { Users } from 'lucide-react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { getTypographyClass } from '@/lib/typography';
 
 interface SubscriptionsByPlan {
 	count: number;
@@ -18,24 +20,26 @@ interface RecentSubscriptionsCardProps {
 
 export const RecentSubscriptionsCard: React.FC<RecentSubscriptionsCardProps> = ({ subscriptionsCount, subscriptionsByPlan, isLoading }) => {
 	return (
-		<div className='bg-white border border-[#E5E7EB] rounded-md shadow-sm overflow-hidden'>
-			<div className='p-6 border-b border-[#E5E7EB]'>
-				<div className='flex items-center justify-between mb-2'>
-					<h3 className='text-base font-medium text-[#111827]'>Recent Subscriptions</h3>
+		<Card className='shadow-sm'>
+			<CardHeader className='pb-4'>
+				<div className='flex items-center justify-between'>
+					<div>
+						<CardTitle className={getTypographyClass('section-title')}>Recent Subscriptions</CardTitle>
+						<CardDescription className={getTypographyClass('helper-text', 'mt-1')}>Created in last 24 hours</CardDescription>
+					</div>
 					<Users className='w-5 h-5 text-blue-600' />
 				</div>
-				<p className='text-xs text-[#6B7280]'>Created in last 24 hours</p>
-			</div>
-			<div className='p-6'>
+			</CardHeader>
+			<CardContent className='pt-0'>
 				{isLoading ? (
 					<div className='flex items-center justify-center py-8'>
 						<Loader />
 					</div>
 				) : (
 					<>
-						<div className='text-center mb-4'>
-							<p className='text-4xl font-medium text-[#111827]'>{subscriptionsCount}</p>
-							<p className='text-sm text-[#6B7280] mt-1'>New subscriptions</p>
+						<div className='text-center mb-6'>
+							<p className='text-4xl font-bold text-zinc-900'>{subscriptionsCount}</p>
+							<p className={getTypographyClass('body-small', 'text-zinc-600 mt-2')}>New subscriptions</p>
 						</div>
 						{subscriptionsByPlan.length > 0 ? (
 							<div className='mt-4'>
@@ -73,18 +77,20 @@ export const RecentSubscriptionsCard: React.FC<RecentSubscriptionsCardProps> = (
 											verticalAlign='bottom'
 											height={36}
 											iconType='circle'
-											formatter={(value) => <span className='text-xs text-[#6B7280]'>{value}</span>}
+											formatter={(value) => <span className={getTypographyClass('helper-text', 'text-zinc-600')}>{value}</span>}
 										/>
 									</PieChart>
 								</ResponsiveContainer>
 							</div>
 						) : (
-							<p className='text-center text-sm text-[#9CA3AF] py-4'>No subscriptions created in the last 24 hours</p>
+							<p className={getTypographyClass('body-small', 'text-center text-zinc-500 py-6')}>
+								No subscriptions created in the last 24 hours
+							</p>
 						)}
 					</>
 				)}
-			</div>
-		</div>
+			</CardContent>
+		</Card>
 	);
 };
 
