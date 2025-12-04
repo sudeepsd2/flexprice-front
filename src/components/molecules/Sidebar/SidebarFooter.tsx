@@ -1,4 +1,4 @@
-import { BookOpen, ExternalLink, ChevronsUpDown, LogOut, ListChecks, CreditCard } from 'lucide-react';
+import { BookOpen, ExternalLink, ChevronsUpDown, LogOut, ListChecks } from 'lucide-react';
 import { RouteNames } from '@/core/routes/Routes';
 import { SidebarMenuButton, useSidebar, Popover, PopoverContent, PopoverTrigger, Skeleton } from '@/components/ui';
 import { cn } from '@/lib/utils';
@@ -26,13 +26,13 @@ const SidebarFooter = () => {
 				navigate(RouteNames.onboarding);
 			},
 		},
-		{
-			label: 'Billing',
-			icon: CreditCard,
-			onClick: () => {
-				navigate(RouteNames.customerBilling);
-			},
-		},
+		// {
+		// 	label: 'Billing',
+		// 	icon: CreditCard,
+		// 	onClick: () => {
+		// 		navigate(RouteNames.customerBilling);
+		// 	},
+		// },
 		{
 			label: 'Logout',
 			icon: LogOut,

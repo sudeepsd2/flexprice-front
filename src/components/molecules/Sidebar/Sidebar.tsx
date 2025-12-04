@@ -11,6 +11,11 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 	const { open: sidebarOpen } = useSidebar();
 	const navMain: NavItem[] = [
 		{
+			title: 'Home',
+			url: RouteNames.home,
+			icon: LayoutPanelLeft,
+		},
+		{
 			title: 'Product Catalog',
 			url: RouteNames.features,
 			icon: Layers2,
@@ -35,10 +40,10 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 					title: 'Cost Sheets',
 					url: RouteNames.costSheets,
 				},
-				{
-					title: 'Groups',
-					url: RouteNames.groups,
-				},
+				// {
+				// 	title: 'Groups',
+				// 	url: RouteNames.groups,
+				// },
 			],
 		},
 		{
@@ -94,9 +99,13 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 		},
 		{
 			title: 'Developers',
-			url: RouteNames.webhooks,
+			url: RouteNames.events,
 			icon: CodeXml,
 			items: [
+				{
+					title: 'Events Debugger',
+					url: RouteNames.events,
+				},
 				{
 					title: 'API Keys',
 					url: RouteNames.apiKeys,
@@ -109,10 +118,6 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 					title: 'Webhooks',
 					url: RouteNames.webhooks,
 				},
-				{
-					title: 'Events Debugger',
-					url: RouteNames.events,
-				},
 			],
 		},
 		{
@@ -121,7 +126,6 @@ const AppSidebar: React.FC<React.ComponentProps<typeof Sidebar>> = ({ ...props }
 			icon: LayoutPanelLeft,
 		},
 	];
-
 	return (
 		<Sidebar
 			collapsible='icon'

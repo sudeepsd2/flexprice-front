@@ -27,3 +27,6 @@ export * from './usage';
 
 // Webhooks pages
 export * from './webhooks';
+
+// Home pages
+export * from './home';

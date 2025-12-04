@@ -73,6 +73,7 @@ import {
 	TaskRunsPage,
 	// Error pages
 	ErrorPage,
+	DashboardPage,
 } from '@/pages';
 import { RouterErrorElement } from '@/components/atoms/ErrorBoundary';
 
@@ -158,7 +159,10 @@ const DefaultRoute = () => {
 	const { user } = useUser();
 	const onboardingMetadata = user?.tenant?.metadata?.[TenantMetadataKey.ONBOARDING_COMPLETED];
 	const onboardingCompleted = onboardingMetadata === 'true';
-	return <Navigate to={onboardingCompleted ? RouteNames.pricing : RouteNames.onboarding} />;
+	if (onboardingCompleted) {
+		return <DashboardPage />;
+	}
+	return <Navigate to={RouteNames.onboarding} />;
 };
 
 export const MainRouter = createBrowserRouter([
