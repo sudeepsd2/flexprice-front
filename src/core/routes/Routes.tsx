@@ -73,7 +73,6 @@ import {
 	TaskRunsPage,
 	// Error pages
 	ErrorPage,
-	DashboardPage,
 } from '@/pages';
 import { RouterErrorElement } from '@/components/atoms/ErrorBoundary';
 
